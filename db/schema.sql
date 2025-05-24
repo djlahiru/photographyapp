@@ -53,7 +53,7 @@ CREATE TABLE payments (
     FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE
 );
 
--- Triggers to update 'updated_at' timestamps (optional, depending on SQLite version and usage)
+-- Triggers to update 'updated_at' timestamps
 -- For packages
 CREATE TRIGGER IF NOT EXISTS packages_updated_at
 AFTER UPDATE ON packages
@@ -85,3 +85,30 @@ FOR EACH ROW
 BEGIN
     UPDATE payments SET updated_at = CURRENT_TIMESTAMP WHERE id = OLD.id;
 END;
+
+-- Table: user_settings
+CREATE TABLE IF NOT EXISTS user_settings (
+    id INTEGER PRIMARY KEY CHECK (id = 1), -- Enforce single row for the single user
+    profile_name TEXT DEFAULT 'User',
+    profile_picture_path TEXT,
+    theme_mode TEXT DEFAULT 'Light' CHECK (theme_mode IN ('Light', 'Dark')),
+    theme_color TEXT DEFAULT 'Ocean Blue', -- Default to one of the nice names
+    datetime_format TEXT DEFAULT 'YYYY-MM-DD HH:MM',
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Trigger for user_settings updated_at
+CREATE TRIGGER IF NOT EXISTS trigger_user_settings_updated_at
+AFTER UPDATE ON user_settings
+FOR EACH ROW
+BEGIN
+    UPDATE user_settings SET updated_at = CURRENT_TIMESTAMP WHERE id = OLD.id;
+END;
+
+-- Initial Data (Seed Row) for user_settings
+-- This ensures the application has default settings to work with for the single user.
+-- It's recommended that a dedicated PHP initialization script handles seeding
+-- by executing this statement after ensuring the table structure is in place.
+INSERT OR IGNORE INTO user_settings (id, profile_name, theme_mode, theme_color, datetime_format)
+VALUES (1, 'User', 'Light', 'Ocean Blue', 'YYYY-MM-DD HH:MM');

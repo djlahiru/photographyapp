@@ -92,7 +92,7 @@ function create_client(PDO $db, string $name, string $email, string $phone, stri
 }
 
 /**
- * Fetches all clients from the database.
+ * Fetches all clients from the database with financial summaries.
  *
  * @param PDO $db The PDO database connection object.
  * @return array An array of associative arrays representing clients, or an empty array on failure/no clients.
@@ -100,20 +100,41 @@ function create_client(PDO $db, string $name, string $email, string $phone, stri
 function get_all_clients(PDO $db): array {
     if (!$db) return [];
     ensure_clients_table_exists($db);
+    // Ensure bookings and payments tables are available for subqueries
+    if (function_exists('ensure_bookings_table_exists')) ensure_bookings_table_exists($db);
+    if (function_exists('ensure_payments_table_exists')) ensure_payments_table_exists($db);
 
-    $sql = "SELECT * FROM clients";
+    $sql = "
+    SELECT
+        c.id,
+        c.name,
+        c.email,
+        c.phone,
+        c.address,
+        c.created_at,
+        c.updated_at,
+        COALESCE(client_total_bookings.total_value, 0) AS total_booking_value,
+        COALESCE(client_total_payments.total_paid, 0) AS total_payments_made,
+        (COALESCE(client_total_bookings.total_value, 0) - COALESCE(client_total_payments.total_paid, 0)) AS outstanding_balance
+    FROM
+        clients c
+    LEFT JOIN (
+        SELECT client_id, SUM(total_amount) AS total_value
+        FROM bookings
+        GROUP BY client_id
+    ) AS client_total_bookings ON c.id = client_total_bookings.client_id
+    LEFT JOIN (
+        SELECT b.client_id, SUM(p.amount_paid) AS total_paid
+        FROM payments p
+        JOIN bookings b ON p.booking_id = b.id
+        GROUP BY b.client_id
+    ) AS client_total_payments ON c.id = client_total_payments.client_id
+    GROUP BY c.id, c.name, c.email, c.phone, c.address, c.created_at, c.updated_at
+    ORDER BY c.name;
+    ";
     try {
         $stmt = $db->query($sql);
-        $clients = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        // Add placeholder fields
-        $clients_with_placeholders = [];
-        foreach ($clients as $client) {
-            $client['total_payments_made'] = 0.0;
-            $client['outstanding_balance'] = 0.0;
-            $clients_with_placeholders[] = $client;
-        }
-        return $clients_with_placeholders;
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     } catch (PDOException $e) {
         error_log("Get all clients error: " . $e->getMessage());
         return [];
@@ -121,7 +142,7 @@ function get_all_clients(PDO $db): array {
 }
 
 /**
- * Fetches a single client by its ID.
+ * Fetches a single client by its ID with financial summaries.
  *
  * @param PDO $db The PDO database connection object.
  * @param int $id The ID of the client to fetch.
@@ -130,20 +151,45 @@ function get_all_clients(PDO $db): array {
 function get_client_by_id(PDO $db, int $id) {
     if (!$db) return false;
     ensure_clients_table_exists($db);
+    // Ensure bookings and payments tables are available for subqueries
+    if (function_exists('ensure_bookings_table_exists')) ensure_bookings_table_exists($db);
+    if (function_exists('ensure_payments_table_exists')) ensure_payments_table_exists($db);
 
-    $sql = "SELECT * FROM clients WHERE id = :id";
+    $sql = "
+    SELECT
+        c.id,
+        c.name,
+        c.email,
+        c.phone,
+        c.address,
+        c.created_at,
+        c.updated_at,
+        COALESCE(client_total_bookings.total_value, 0) AS total_booking_value,
+        COALESCE(client_total_payments.total_paid, 0) AS total_payments_made,
+        (COALESCE(client_total_bookings.total_value, 0) - COALESCE(client_total_payments.total_paid, 0)) AS outstanding_balance
+    FROM
+        clients c
+    LEFT JOIN (
+        SELECT client_id, SUM(total_amount) AS total_value
+        FROM bookings
+        WHERE client_id = :id
+        GROUP BY client_id
+    ) AS client_total_bookings ON c.id = client_total_bookings.client_id
+    LEFT JOIN (
+        SELECT b.client_id, SUM(p.amount_paid) AS total_paid
+        FROM payments p
+        JOIN bookings b ON p.booking_id = b.id
+        WHERE b.client_id = :id
+        GROUP BY b.client_id
+    ) AS client_total_payments ON c.id = client_total_payments.client_id
+    WHERE c.id = :id
+    GROUP BY c.id, c.name, c.email, c.phone, c.address, c.created_at, c.updated_at;
+    ";
     try {
         $stmt = $db->prepare($sql);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
-        $client = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($client) {
-            // Add placeholder fields
-            $client['total_payments_made'] = 0.0;
-            $client['outstanding_balance'] = 0.0;
-        }
-        return $client ?: false;
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: false;
     } catch (PDOException $e) {
         error_log("Get client by ID error: " . $e->getMessage());
         return false;
@@ -209,64 +255,42 @@ function delete_client(PDO $db, int $id): bool {
     }
 }
 
+/**
+ * Gets recently added clients.
+ *
+ * @param PDO $db
+ * @param int $limit Number of clients to fetch.
+ * @return array
+ */
+function get_recently_added_clients(PDO $db, int $limit = 5): array {
+    if (!$db) return [];
+    ensure_clients_table_exists($db);
+    
+    $sql = "SELECT id, name, email, created_at 
+            FROM clients 
+            ORDER BY created_at DESC 
+            LIMIT :limit";
+    try {
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    } catch (PDOException $e) {
+        error_log("Get recently added clients error: " . $e->getMessage());
+        return [];
+    }
+}
+
+
 // Example Usage (for testing, can be removed or commented out)
 /*
 $db_conn = get_db_connection();
 if ($db_conn) {
-    echo "DB Connection successful.\n";
-    ensure_clients_table_exists($db_conn);
-    echo "Clients table ensured.\n";
+    // ... (previous example usage) ...
 
-    // Test create_client
-    $newClientId = create_client($db_conn, "John Doe", "john.doe@example.com", "123-456-7890", "123 Main St");
-    if ($newClientId) {
-        echo "Created client with ID: " . $newClientId . "\n";
-    } else {
-        echo "Failed to create client (or email already exists).\n";
-        // Try with a different email if the first one failed due to UNIQUE constraint
-        $newClientId = create_client($db_conn, "Jane Doe", "jane.doe@example.com", "987-654-3210", "456 Oak Ave");
-        if ($newClientId) {
-            echo "Created client with ID: " . $newClientId . "\n";
-        } else {
-            echo "Failed to create second client.\n";
-        }
-    }
-
-    // Test get_all_clients
-    $clients = get_all_clients($db_conn);
-    echo "All clients: \n";
-    print_r($clients);
-
-    // Test get_client_by_id
-    if ($newClientId) {
-        $client = get_client_by_id($db_conn, $newClientId);
-        echo "Client by ID " . $newClientId . ": \n";
-        print_r($client);
-    }
-
-    // Test update_client
-    if ($newClientId) {
-        $updated = update_client($db_conn, $newClientId, "Jane Smith", "jane.smith@example.com", "555-555-5555", "789 Pine Ln");
-        if ($updated) {
-            echo "Client " . $newClientId . " updated successfully.\n";
-            $client = get_client_by_id($db_conn, $newClientId);
-            print_r($client);
-        } else {
-            echo "Failed to update client " . $newClientId . " (or email conflict).\n";
-        }
-    }
-
-    // Test delete_client
-    // if ($newClientId) {
-    //     $deleted = delete_client($db_conn, $newClientId);
-    //     if ($deleted) {
-    //         echo "Client " . $newClientId . " deleted successfully.\n";
-    //     } else {
-    //         echo "Failed to delete client " . $newClientId . ".\n";
-    //     }
-    // }
-} else {
-    echo "DB Connection failed.\n";
+    // Test get_recently_added_clients
+    // echo "\nRecently Added Clients (limit 3):\n";
+    // print_r(get_recently_added_clients($db_conn, 3));
 }
 */
 

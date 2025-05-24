@@ -1,0 +1,202 @@
+/* Base Theme - Default Light Mode Variables and Styles */
+:root {
+    /* Color Palette */
+    --primary-color: #0d6efd;       /* Bootstrap Primary Blue */
+    --secondary-color: #6c757d;     /* Bootstrap Secondary Gray */
+    --success-color: #198754;       /* Bootstrap Success Green */
+    --danger-color: #dc3545;        /* Bootstrap Danger Red */
+    --warning-color: #ffc107;       /* Bootstrap Warning Yellow */
+    --info-color: #0dcaf0;          /* Bootstrap Info Cyan */
+    --light-color: #f8f9fa;         /* Bootstrap Light Gray */
+    --dark-color: #212529;          /* Bootstrap Dark Gray */
+
+    /* Backgrounds */
+    --background-color: #ffffff;
+    --body-bg: #f4f6f9; /* A slightly off-white for the main page background */
+    --card-bg: #ffffff;
+    --nav-bg: #e9ecef; /* Light gray for navbar */
+    --table-header-bg: #dee2e6;
+    --table-stripe-bg: #f2f2f2;
+    --modal-bg: #ffffff;
+
+    /* Text Colors */
+    --text-color: #212529;
+    --text-muted-color: #6c757d;
+    --link-color: var(--primary-color);
+    --link-hover-color: #0a58ca; /* Darker primary */
+    --heading-color: var(--dark-color);
+
+    /* Borders */
+    --border-color: #dee2e6;
+    --border-radius: 0.375rem; /* Bootstrap default */
+    --card-border-color: var(--border-color);
+    --input-border-color: #ced4da;
+
+    /* Spacing & Sizing (examples) */
+    --spacing-unit: 1rem;
+    --container-max-width: 1140px;
+    --nav-height: 56px;
+
+    /* Fonts */
+    --font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --font-size-base: 1rem;
+    --font-weight-base: 400;
+    --line-height-base: 1.5;
+
+    /* Gradients (optional, can be defined per theme) */
+    --gradient-start: var(--primary-color);
+    --gradient-end: #7928ca; /* Example secondary gradient color */
+    --header-gradient: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+}
+
+body {
+    font-family: var(--font-family-sans-serif);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-base);
+    line-height: var(--line-height-base);
+    color: var(--text-color);
+    background-color: var(--body-bg);
+    margin: 0;
+    padding: 0;
+}
+
+.app-container {
+    padding-top: 20px; /* Give some space from top */
+    padding-bottom: 20px;
+}
+
+/* Navbar Styling Example (can be expanded) */
+.navbar {
+    background-color: var(--nav-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+.navbar-brand {
+    color: var(--text-color);
+}
+.nav-link {
+    color: var(--text-color);
+}
+.nav-link:hover {
+    color: var(--link-hover-color);
+}
+
+
+/* Card Styling */
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border-color);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--spacing-unit);
+}
+.card-header {
+    background-color: var(--nav-bg); /* Similar to nav for consistency */
+    border-bottom: 1px solid var(--card-border-color);
+    color: var(--text-color);
+}
+.card-body {
+    color: var(--text-color);
+}
+
+/* Table Styling */
+.table {
+    background-color: var(--card-bg); /* Tables often inside cards or similar bg */
+    color: var(--text-color);
+}
+.table thead th {
+    background-color: var(--table-header-bg);
+    border-bottom: 2px solid var(--border-color);
+    color: var(--text-color);
+}
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: var(--table-stripe-bg);
+}
+.table-hover tbody tr:hover {
+    background-color: var(--border-color); /* Slightly darker for hover */
+}
+
+/* Form Elements */
+.form-control {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    border: 1px solid var(--input-border-color);
+}
+.form-control:focus {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(var(--primary-color-rgb, 13, 110, 253), 0.25); /* Needs --primary-color-rgb if using BS variables directly */
+}
+.form-select {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    border: 1px solid var(--input-border-color);
+}
+
+/* Buttons (Leverage Bootstrap classes, but can define overrides) */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff; /* Assuming primary is dark enough for white text */
+}
+.btn-primary:hover {
+    background-color: var(--link-hover-color); /* Darker primary */
+    border-color: var(--link-hover-color);
+}
+.btn-secondary {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: #fff;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--heading-color);
+    margin-top: var(--spacing-unit);
+    margin-bottom: calc(var(--spacing-unit) / 2);
+}
+
+a {
+    color: var(--link-color);
+    text-decoration: none;
+}
+a:hover {
+    color: var(--link-hover-color);
+    text-decoration: underline;
+}
+
+/* Utility classes (examples) */
+.text-primary { color: var(--primary-color) !important; }
+.text-secondary { color: var(--secondary-color) !important; }
+.bg-primary { background-color: var(--primary-color) !important; }
+.bg-secondary { background-color: var(--secondary-color) !important; }
+
+/* Add more base styles for other common elements like alerts, modals, etc. */
+.alert {
+    border-radius: var(--border-radius);
+}
+.alert-success {
+    background-color: var(--success-color);
+    color: #fff; /* Assuming success is dark enough */
+}
+.alert-danger {
+    background-color: var(--danger-color);
+    color: #fff; /* Assuming danger is dark enough */
+}
+.alert-warning {
+    background-color: var(--warning-color);
+    color: var(--dark-color); /* Warning yellow often needs dark text */
+}
+.alert-info {
+    background-color: var(--info-color);
+    color: #fff; /* Assuming info is dark enough */
+}
+
+/* For Bootstrap compatibility, ensure a primary-color-rgb variable if you use rgba with it */
+:root {
+    --primary-color-rgb: 13, 110, 253; /* Default Bootstrap Blue RGB */
+}
+body.theme-ocean-blue { --primary-color-rgb: 0, 119, 190; }
+body.theme-sanguine { --primary-color-rgb: 220, 53, 69; } /* Example for Sanguine (Bootstrap's danger red) */
+/* ... add more RGBs for other themes if they use rgba with primary color ... */
+
+```

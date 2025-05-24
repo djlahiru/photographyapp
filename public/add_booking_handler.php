@@ -1,9 +1,6 @@
 <?php
-require_once '../app/actions/booking_actions.php'; // Main actions for bookings
-// client_actions.php and package_actions.php are not directly called here,
-// but their tables (clients, packages) must exist for FK constraints.
-// booking_actions.php's ensure_bookings_table_exists should be robust enough,
-// or we assume they are created by their respective UI/listing pages.
+require_once '../app/actions/booking_actions.php'; 
+require_once '../app/actions/google_calendar_actions.php'; // For GCal integration
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $client_id = filter_input(INPUT_POST, 'client_id', FILTER_VALIDATE_INT);
@@ -71,7 +68,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $bookingId = create_booking($db, $client_id, $package_id, $booking_date, $booking_time, $location, $total_amount, $notes);
 
     if ($bookingId) {
-        header("Location: bookings.php?status=add_success");
+        // Attempt to add to Google Calendar if connected
+        $user_settings_for_gcal = get_user_settings($db); // From settings_actions.php (included via google_calendar_actions.php)
+        if ($user_settings_for_gcal && !empty($user_settings_for_gcal['google_access_token'])) {
+            $new_booking_details = get_booking_by_id($db, $bookingId); // Fetch full details for GCal
+            if ($new_booking_details) {
+                $gcal_event_id = add_booking_to_gcal($db, $new_booking_details);
+                if ($gcal_event_id) {
+                    // Success, gcal_event_id is already saved in add_booking_to_gcal
+                    // Optionally add a specific success message for GCal sync
+                } else {
+                    // Log or set a session flash message that GCal sync failed
+                    $_SESSION['gcal_sync_error'] = "Booking saved locally, but failed to sync to Google Calendar.";
+                }
+            }
+        }
+        
+        $redirect_status = 'add_success';
+        if(isset($_SESSION['gcal_sync_error'])) {
+            // Potentially append a gcal_sync_status to the redirect URL if you want to display it
+            // For now, the main success is booking creation. GCal error is logged.
+        }
+        header("Location: bookings.php?status_msg=" . $redirect_status); // Use status_msg
         exit;
     } else {
         // More specific error handling for FK violations if create_booking indicates it

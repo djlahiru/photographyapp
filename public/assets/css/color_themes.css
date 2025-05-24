@@ -1,0 +1,207 @@
+/* Color Theme Overrides */
+
+/* 1. Ocean Blue (Default - variables can be set here or in base_theme if it's the true default) */
+body.theme-ocean-blue {
+    --primary-color: #0077be;       /* A deep, clear blue */
+    --secondary-color: #0099cc;     /* A slightly lighter, complementary blue */
+    --accent-color: #87ceeb;        /* Sky blue for accents */
+    --text-on-primary: #ffffff;
+    --gradient-start: #0077be;
+    --gradient-end: #00bfff;        /* Sky blue for gradient end */
+    --primary-color-rgb: 0, 119, 190; /* For Bootstrap compatibility */
+}
+body.dark-mode.theme-ocean-blue {
+    --primary-color: #3498db;       /* Lighter blue for dark mode */
+    --secondary-color: #5dade2;
+    --accent-color: #aed6f1;
+    --primary-color-rgb: 52, 152, 219;
+}
+
+/* 2. Sanguine */
+body.theme-sanguine {
+    --primary-color: #c0392b;       /* A deep, rich red */
+    --secondary-color: #e74c3c;     /* A slightly brighter red */
+    --accent-color: #f5b7b1;        /* Light pink for accents */
+    --text-on-primary: #ffffff;
+    --gradient-start: #c0392b;
+    --gradient-end: #f1948a;        /* Lighter red for gradient */
+    --primary-color-rgb: 192, 57, 43;
+}
+body.dark-mode.theme-sanguine {
+    --primary-color: #e74c3c;       /* Brighter red for dark mode */
+    --secondary-color: #ec7063;
+    --accent-color: #fadbd8;
+    --primary-color-rgb: 231, 76, 60;
+}
+
+/* 3. Luscious Lime */
+body.theme-luscious-lime {
+    --primary-color: #27ae60;       /* A vibrant, fresh green */
+    --secondary-color: #2ecc71;     /* A slightly lighter green */
+    --accent-color: #a9dfbf;        /* Light green for accents */
+    --text-on-primary: #ffffff;
+    --gradient-start: #27ae60;
+    --gradient-end: #7dcea0;        /* Lighter green for gradient */
+    --primary-color-rgb: 39, 174, 96;
+}
+body.dark-mode.theme-luscious-lime {
+    --primary-color: #2ecc71;       /* Lighter green for dark mode */
+    --secondary-color: #58d68d;
+    --accent-color: #d4efdf;
+    --primary-color-rgb: 46, 204, 113;
+}
+
+/* 4. Purple Lake */
+body.theme-purple-lake {
+    --primary-color: #8e44ad;       /* A deep, mystical purple */
+    --secondary-color: #9b59b6;     /* A slightly lighter purple */
+    --accent-color: #d7bde2;        /* Lavender for accents */
+    --text-on-primary: #ffffff;
+    --gradient-start: #8e44ad;
+    --gradient-end: #c39bd3;        /* Lighter purple for gradient */
+    --primary-color-rgb: 142, 68, 173;
+}
+body.dark-mode.theme-purple-lake {
+    --primary-color: #9b59b6;       /* Lighter purple for dark mode */
+    --secondary-color: #af7ac5;
+    --accent-color: #ebdef0;
+    --primary-color-rgb: 155, 89, 182;
+}
+
+/* 5. Green Beach */
+body.theme-green-beach {
+    --primary-color: #16a085;       /* Tealish green */
+    --secondary-color: #1abc9c;     /* Lighter teal */
+    --accent-color: #a3e4d7;        /* Very light teal/mint */
+    --text-on-primary: #ffffff;
+    --gradient-start: #16a085;
+    --gradient-end: #76d7c4;        /* Lighter teal for gradient */
+    --primary-color-rgb: 22, 160, 133;
+}
+body.dark-mode.theme-green-beach {
+    --primary-color: #1abc9c;       /* Lighter teal for dark mode */
+    --secondary-color: #48c9b0;
+    --accent-color: #d1f2eb;
+    --primary-color-rgb: 26, 188, 156;
+}
+
+/* 6. Kashmir */
+body.theme-kashmir {
+    --primary-color: #d35400;       /* A warm, earthy orange, like saffron */
+    --secondary-color: #e67e22;     /* A slightly lighter orange */
+    --accent-color: #f5cba7;        /* Light peach for accents */
+    --text-on-primary: #ffffff;
+    --gradient-start: #d35400;
+    --gradient-end: #f0b27a;        /* Lighter orange for gradient */
+    --primary-color-rgb: 211, 84, 0;
+}
+body.dark-mode.theme-kashmir {
+    --primary-color: #e67e22;       /* Lighter orange for dark mode */
+    --secondary-color: #eb984e;
+    --accent-color: #fadbc0;        /* Even lighter peach */
+    --primary-color-rgb: 230, 126, 34;
+}
+
+/* 7. Antarctica */
+body.theme-antarctica {
+    --primary-color: #2c3e50;       /* Deep, cool blue-gray, like arctic waters */
+    --secondary-color: #34495e;     /* Slightly lighter blue-gray */
+    --accent-color: #bdc3c7;        /* Light silver/gray for ice */
+    --text-on-primary: #ffffff;
+    --gradient-start: #2c3e50;
+    --gradient-end: #95a5a6;        /* Lighter gray for gradient */
+    --primary-color-rgb: 44, 62, 80;
+}
+body.dark-mode.theme-antarctica {
+    --primary-color: #5d6d7e;       /* Lighter blue-gray for dark mode */
+    --secondary-color: #808b96;
+    --accent-color: #eaeded;        /* Very light gray */
+    --primary-color-rgb: 93, 109, 126;
+}
+
+/* 8. Yosemite */
+body.theme-yosemite {
+    --primary-color: #228B22;       /* Forest Green */
+    --secondary-color: #556B2F;     /* Dark Olive Green */
+    --accent-color: #90EE90;        /* Light Green for highlights */
+    --text-on-primary: #ffffff;
+    --gradient-start: #228B22;
+    --gradient-end: #8FBC8F;        /* Dark Sea Green for gradient */
+    --primary-color-rgb: 34, 139, 34;
+}
+body.dark-mode.theme-yosemite {
+    --primary-color: #3CB371;       /* Medium Sea Green - lighter for dark mode */
+    --secondary-color: #6B8E23;     /* Olive Drab */
+    --accent-color: #98FB98;        /* Pale Green */
+    --primary-color-rgb: 60, 179, 113;
+}
+
+/* 9. Winter Neva */
+body.theme-winter-neva {
+    --primary-color: #4682B4;       /* Steel Blue - like a frozen river */
+    --secondary-color: #B0C4DE;     /* Light Steel Blue - like snow/ice */
+    --accent-color: #E0FFFF;        /* Light Cyan - icy highlights */
+    --text-on-primary: #ffffff;
+    --gradient-start: #4682B4;
+    --gradient-end: #ADD8E6;        /* Light Blue for gradient */
+    --primary-color-rgb: 70, 130, 180;
+}
+body.dark-mode.theme-winter-neva {
+    --primary-color: #5F9EA0;       /* Cadet Blue - a bit lighter for dark mode */
+    --secondary-color: #778899;     /* Light Slate Gray */
+    --accent-color: #AFEEEE;        /* Pale Turquoise */
+    --primary-color-rgb: 95, 158, 160;
+}
+
+/* Apply primary color to Bootstrap components if not done in base_theme.css */
+/* This is a general approach. Base_theme already does some of this. */
+/* These ensure that the chosen theme's primary color is reflected in BS components */
+
+body[class*="theme-"] .btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--text-on-primary);
+}
+body[class*="theme-"] .btn-primary:hover {
+    opacity: 0.85; /* Generic hover effect */
+}
+body[class*="theme-"] .alert-primary { /* Example for alerts */
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--text-on-primary);
+}
+body[class*="theme-"] a, body[class*="theme-"] .text-primary {
+    color: var(--primary-color);
+}
+body[class*="theme-"] a:hover {
+    opacity: 0.8;
+}
+body[class*="theme-"] .form-control:focus, 
+body[class*="theme-"] .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(var(--primary-color-rgb, 13, 110, 253), 0.25); /* Fallback primary-color-rgb */
+}
+
+/* Specific dark mode adjustments for text-on-primary if needed */
+body.dark-mode.theme-ocean-blue .btn-primary, body.dark-mode.theme-ocean-blue .alert-primary { color: #000; } /* Example if dark theme primary is light */
+body.dark-mode.theme-sanguine .btn-primary, body.dark-mode.theme-sanguine .alert-primary { color: #fff; }
+body.dark-mode.theme-luscious-lime .btn-primary, body.dark-mode.theme-luscious-lime .alert-primary { color: #000; }
+body.dark-mode.theme-purple-lake .btn-primary, body.dark-mode.theme-purple-lake .alert-primary { color: #fff; }
+body.dark-mode.theme-green-beach .btn-primary, body.dark-mode.theme-green-beach .alert-primary { color: #000; }
+body.dark-mode.theme-kashmir .btn-primary, body.dark-mode.theme-kashmir .alert-primary { color: #000; }
+body.dark-mode.theme-antarctica .btn-primary, body.dark-mode.theme-antarctica .alert-primary { color: #fff; }
+body.dark-mode.theme-yosemite .btn-primary, body.dark-mode.theme-yosemite .alert-primary { color: #000; }
+body.dark-mode.theme-winter-neva .btn-primary, body.dark-mode.theme-winter-neva .alert-primary { color: #000; }
+
+/* Example: Header with Gradient */
+/* You might have a specific class for a header that uses this gradient */
+.main-header-gradient { /* Example class, apply to your header element */
+    background: var(--gradient-start); /* Fallback */
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    color: var(--text-on-primary); /* Ensure text is readable on gradient */
+    padding: 2rem 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: var(--border-radius);
+}
+
+```

@@ -239,101 +239,48 @@ function get_total_payments_for_booking(PDO $db, int $booking_id): float {
     }
 }
 
+/**
+ * Gets the total sum of payments made in the current month.
+ *
+ * @param PDO $db
+ * @return float
+ */
+function get_payments_this_month(PDO $db): float {
+    if (!$db) return 0.0;
+    ensure_payments_table_exists($db);
+    
+    $current_month_start = date('Y-m-01');
+    $current_month_end = date('Y-m-t'); // 't' gives the last day of the current month
+
+    $sql = "SELECT SUM(amount_paid) as total_monthly_payments 
+            FROM payments 
+            WHERE payment_date >= :start_date AND payment_date <= :end_date";
+    try {
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':start_date', $current_month_start);
+        $stmt->bindParam(':end_date', $current_month_end);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result && $result['total_monthly_payments'] !== null ? (float)$result['total_monthly_payments'] : 0.0;
+    } catch (PDOException $e) {
+        error_log("Get payments this month error: " . $e->getMessage());
+        return 0.0;
+    }
+}
+
 
 // Example Usage (for testing, can be removed or commented out)
 /*
 $db_conn = get_db_connection();
 if ($db_conn) {
-    echo "DB Connection successful for payments.\n";
-
-    // Prerequisite: Ensure bookings table exists and has some data for FK constraints
-    // This is simplified. In a real test, you'd use booking_actions.php
-    try {
-        // Ensure clients table for booking's FK
-        $db_conn->exec("CREATE TABLE IF NOT EXISTS clients (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT UNIQUE);");
-        $db_conn->exec("INSERT OR IGNORE INTO clients (id, name, email) VALUES (1, 'Test Client Pay', 'clientpay@example.com');");
-
-        // Ensure packages table for booking's FK
-        $db_conn->exec("CREATE TABLE IF NOT EXISTS packages (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, price REAL NOT NULL);");
-        $db_conn->exec("INSERT OR IGNORE INTO packages (id, name, price) VALUES (1, 'Test Package Pay', 99.99);");
-        
-        // Ensure bookings table
-        if (function_exists('ensure_bookings_table_exists')) { // If booking_actions.php is included
-            ensure_bookings_table_exists($db_conn);
-        } else { // Standalone: create bookings table for FK
-             $db_conn->exec("
-                CREATE TABLE IF NOT EXISTS bookings (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT, client_id INTEGER NOT NULL, package_id INTEGER, 
-                    booking_date TEXT NOT NULL, total_amount REAL, status TEXT DEFAULT 'pending',
-                    FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE,
-                    FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE SET NULL
-                );");
-        }
-        $db_conn->exec("INSERT OR IGNORE INTO bookings (id, client_id, package_id, booking_date, total_amount) VALUES (1, 1, 1, '2024-07-01', 99.99);");
-        $db_conn->exec("INSERT OR IGNORE INTO bookings (id, client_id, booking_date, total_amount) VALUES (2, 1, '2024-07-02', 200.00);");
-
-    } catch (PDOException $ex) {
-        echo "Error creating prerequisite tables/data: " . $ex->getMessage() . "\n";
-    }
+    // ... (previous example usage) ...
     
-    ensure_payments_table_exists($db_conn); // Ensure payments table itself is up
-    echo "Payments table ensured.\n";
-
-    // Test create_payment
-    $paymentId1 = create_payment($db_conn, 1, 50.00, '2024-07-05', 'cash', 'Initial deposit');
-    if ($paymentId1) echo "Created payment 1 with ID: $paymentId1\n"; else echo "Failed to create payment 1.\n";
-    
-    $paymentId2 = create_payment($db_conn, 1, 49.99, '2024-07-10', 'card', 'Final payment');
-    if ($paymentId2) echo "Created payment 2 with ID: $paymentId2\n"; else echo "Failed to create payment 2.\n";
-
-    $paymentId3 = create_payment($db_conn, 2, 100.00, '2024-07-11', 'bank transfer', 'Full payment booking 2');
-    if ($paymentId3) echo "Created payment 3 with ID: $paymentId3\n"; else echo "Failed to create payment 3.\n";
-
-    echo "\n--- Payments for Booking ID 1 ---\n";
-    $paymentsForBooking1 = get_payments_for_booking($db_conn, 1);
-    print_r($paymentsForBooking1);
-
-    echo "\n--- Total Payments for Booking ID 1 ---\n";
-    $totalForBooking1 = get_total_payments_for_booking($db_conn, 1);
-    echo "Total: $" . number_format($totalForBooking1, 2) . "\n"; // Expected: 99.99
-
-    echo "\n--- Total Payments for Booking ID 2 ---\n";
-    $totalForBooking2 = get_total_payments_for_booking($db_conn, 2);
-    echo "Total: $" . number_format($totalForBooking2, 2) . "\n"; // Expected: 100.00
-    
-    if ($paymentId1) {
-        echo "\n--- Payment by ID $paymentId1 ---\n";
-        $singlePayment = get_payment_by_id($db_conn, $paymentId1);
-        print_r($singlePayment);
-
-        echo "\n--- Updating Payment ID $paymentId1 ---\n";
-        $updateSuccess = update_payment($db_conn, $paymentId1, 55.00, '2024-07-06', 'cash', 'Corrected deposit amount');
-        if ($updateSuccess) {
-            echo "Payment $paymentId1 updated. New details:\n";
-            print_r(get_payment_by_id($db_conn, $paymentId1));
-        } else {
-            echo "Failed to update payment $paymentId1.\n";
-        }
-         echo "\n--- Total Payments for Booking ID 1 (after update) ---\n";
-        $totalForBooking1AfterUpdate = get_total_payments_for_booking($db_conn, 1);
-        echo "Total: $" . number_format($totalForBooking1AfterUpdate, 2) . "\n"; // Expected: 104.99
-    }
-    
-    // Test delete_payment
-    // if ($paymentId3) {
-    //     echo "\n--- Deleting Payment ID $paymentId3 ---\n";
-    //     if (delete_payment($db_conn, $paymentId3)) {
-    //         echo "Payment $paymentId3 deleted.\n";
-    //     } else {
-    //         echo "Failed to delete payment $paymentId3.\n";
-    //     }
-    //     echo "Payments for Booking ID 2 after deletion:\n";
-    //     print_r(get_payments_for_booking($db_conn, 2));
-    //     echo "Total for Booking ID 2 after deletion: $" . number_format(get_total_payments_for_booking($db_conn,2),2) . "\n";
-    // }
-
-} else {
-    echo "DB Connection failed for payments.\n";
+    // Test get_payments_this_month
+    // To test this properly, ensure you have some payments in the current month
+    // For example, if today is 2024-07-15:
+    // create_payment($db_conn, 1, 75.00, '2024-07-10', 'cash', 'Mid-month payment');
+    // create_payment($db_conn, 2, 120.00, date('Y-m-d'), 'card', 'Today payment');
+    // echo "\nPayments This Month: $" . number_format(get_payments_this_month($db_conn), 2) . "\n";
 }
 */
 

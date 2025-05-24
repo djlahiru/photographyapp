@@ -1,5 +1,6 @@
 <?php
 require_once '../app/actions/booking_actions.php';
+require_once '../app/actions/google_calendar_actions.php'; // For GCal integration
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $booking_id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
@@ -27,9 +28,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     $notes = trim($_POST['notes'] ?? '');
     if (empty($notes)) $notes = null;
+    
+    $category = trim($_POST['category'] ?? '');
+    if (empty($category)) $category = null;
 
-    // Category & Status are not part of the simplified update_booking signature from prompt.
-    // They are shown as read-only in edit_booking.php.
+    // Status is not updated by this handler, it's managed by update_booking_status_handler.php
 
     // Basic validation
     if (empty($booking_id) || empty($client_id) || empty($booking_date)) {
@@ -50,10 +53,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ensure_bookings_table_exists($db);
 
     // Call update_booking. The function will handle total_amount based on package if total_amount is null.
-    $success = update_booking($db, $booking_id, $client_id, $package_id, $booking_date, $booking_time, $location, $total_amount, $notes);
+    // Category is now passed.
+    $success = update_booking($db, $booking_id, $client_id, $package_id, $booking_date, $booking_time, $location, $total_amount, $notes, $category);
 
     if ($success) {
-        header("Location: bookings.php?status=edit_success");
+        // Attempt to update Google Calendar if connected
+        $user_settings_for_gcal = get_user_settings($db); // From settings_actions.php (included via google_calendar_actions.php)
+        if ($user_settings_for_gcal && !empty($user_settings_for_gcal['google_access_token'])) {
+            $updated_booking_details = get_booking_by_id($db, $booking_id); // Fetch full details for GCal
+            if ($updated_booking_details) {
+                // update_booking_in_gcal will try to add if GCal event ID is missing or event not found on GCal
+                $gcal_event_id = update_booking_in_gcal($db, $updated_booking_details);
+                if ($gcal_event_id) {
+                    // Optionally add a specific success message for GCal sync
+                } else {
+                    // Log or set a session flash message that GCal sync failed
+                    $_SESSION['gcal_sync_error'] = "Booking updated locally, but failed to sync/update to Google Calendar.";
+                }
+            }
+        }
+        
+        $redirect_status = 'edit_success';
+        // Similar to add_booking_handler, can check $_SESSION['gcal_sync_error'] if needed
+        header("Location: bookings.php?status_msg=" . $redirect_status); // Use status_msg
         exit;
     } else {
         // More specific error can be passed if update_booking provides it

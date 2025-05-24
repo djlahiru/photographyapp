@@ -1,0 +1,144 @@
+/* Dark Mode Overrides */
+body.dark-mode {
+    /* Dark Mode Color Palette */
+    --primary-color-dark-theme: #4dabf7;       /* A lighter, vibrant blue for dark mode */
+    --secondary-color-dark-theme: #868e96;     /* A lighter gray for dark mode */
+    --success-color-dark-theme: #40c057;       /* Lighter green */
+    --danger-color-dark-theme: #fa5252;        /* Lighter red */
+    --warning-color-dark-theme: #fab005;       /* Lighter yellow */
+    --info-color-dark-theme: #3bc9db;          /* Lighter cyan */
+
+    /* Backgrounds */
+    --background-color: #121212;        /* Very dark grey, standard for dark themes */
+    --body-bg: #1c1c1c;                 /* Slightly lighter than main background */
+    --card-bg: #1e1e1e;                 /* Cards a bit lighter than body */
+    --nav-bg: #2c2c2c;                  /* Navbar darker than cards */
+    --table-header-bg: #343a40;         /* Darker gray for table headers */
+    --table-stripe-bg: #252525;         /* Stripe color for tables */
+    --modal-bg: #2c2c2c;
+
+    /* Text Colors */
+    --text-color: #e0e0e0;              /* Light gray for general text */
+    --text-muted-color: #adb5bd;        /* Lighter muted text */
+    --link-color: var(--primary-color-dark-theme);
+    --link-hover-color: #74c0fc;        /* Even lighter blue for hover */
+    --heading-color: #f1f3f5;           /* Very light gray for headings */
+
+    /* Borders */
+    --border-color: #495057;            /* Darker border color */
+    --card-border-color: var(--border-color);
+    --input-border-color: #555;
+
+    /* Form Elements */
+    --input-bg: #2c2c2c; /* Input background */
+}
+
+/* Specific overrides for Bootstrap components if needed */
+body.dark-mode .navbar {
+    background-color: var(--nav-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+body.dark-mode .navbar-brand,
+body.dark-mode .nav-link {
+    color: var(--text-color);
+}
+body.dark-mode .nav-link:hover {
+    color: var(--link-hover-color);
+}
+
+body.dark-mode .card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border-color);
+}
+body.dark-mode .card-header {
+    background-color: #343a40; /* Slightly darker than card-bg for contrast */
+    border-bottom: 1px solid var(--card-border-color);
+    color: var(--heading-color);
+}
+body.dark-mode .card-body {
+    color: var(--text-color);
+}
+
+body.dark-mode .table {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+}
+body.dark-mode .table thead th {
+    background-color: var(--table-header-bg);
+    color: var(--heading-color);
+}
+body.dark-mode .table-striped tbody tr:nth-of-type(odd) {
+    background-color: var(--table-stripe-bg);
+}
+body.dark-mode .table-hover tbody tr:hover {
+    background-color: #383838; /* Slightly lighter hover for dark mode */
+}
+body.dark-mode .table td, body.dark-mode .table th {
+    border-color: var(--border-color);
+}
+
+
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    border: 1px solid var(--input-border-color);
+}
+body.dark-mode .form-control::placeholder {
+    color: var(--text-muted-color);
+}
+body.dark-mode .form-control:focus,
+body.dark-mode .form-select:focus {
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    border-color: var(--primary-color-dark-theme);
+    box-shadow: 0 0 0 0.25rem rgba(var(--primary-color-rgb, 77, 171, 247), 0.35); /* Use a lighter shadow */
+}
+
+/* Buttons in Dark Mode - Adjust if base Bootstrap classes are not sufficient */
+body.dark-mode .btn-primary {
+    background-color: var(--primary-color-dark-theme);
+    border-color: var(--primary-color-dark-theme);
+    color: #000; /* Dark text on lighter blue */
+}
+body.dark-mode .btn-primary:hover {
+    background-color: #228be6; /* Slightly darker shade of the dark theme primary */
+    border-color: #228be6;
+}
+body.dark-mode .btn-secondary {
+    background-color: var(--secondary-color-dark-theme);
+    border-color: var(--secondary-color-dark-theme);
+    color: #fff;
+}
+body.dark-mode .btn-outline-secondary {
+    color: var(--secondary-color-dark-theme);
+    border-color: var(--secondary-color-dark-theme);
+}
+body.dark-mode .btn-outline-secondary:hover {
+    color: #fff;
+    background-color: var(--secondary-color-dark-theme);
+}
+
+
+body.dark-mode .alert-success {
+    background-color: var(--success-color-dark-theme);
+    color: #000;
+}
+body.dark-mode .alert-danger {
+    background-color: var(--danger-color-dark-theme);
+    color: #000;
+}
+body.dark-mode .alert-warning {
+    background-color: var(--warning-color-dark-theme);
+    color: #000;
+}
+body.dark-mode .alert-info {
+    background-color: var(--info-color-dark-theme);
+    color: #000;
+}
+
+/* Ensure primary color RGB variable is set for dark mode if it uses rgba shadows */
+body.dark-mode {
+    --primary-color-rgb: 77, 171, 247; /* RGB for --primary-color-dark-theme */
+}
+```
