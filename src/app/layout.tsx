@@ -1,5 +1,5 @@
 
-'use client'; // Root layout needs to be client for useEffect to apply theme from localStorage
+'use client'; 
 
 import type { ReactNode } from 'react';
 import { useEffect } from 'react';
@@ -10,28 +10,21 @@ import 'react-toastify/dist/ReactToastify.css';
 import { I18nProviderClient } from '@/components/i18n-provider-client';
 import { useTheme } from 'next-themes';
 
-// Metadata has to be static or generated in generateMetadata for server components.
-// For a fully dynamic title based on client-side i18n, it's more complex.
-// export const metadata: Metadata = {
-//   title: 'WorkFlowZen',
-//   description: 'Manage your work with zen-like focus.',
-// };
-
 type AccentTheme = 'default' | 'oceanic' | 'forest' | 'sunset';
+type FontTheme = 'default-sans' | 'classic-serif' | 'modern-mono';
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { theme: nextTheme } = useTheme(); // For knowing light/dark mode
+  const { theme: nextTheme } = useTheme(); 
 
   useEffect(() => {
-    // Apply persisted accent theme from localStorage
+    // Apply persisted accent theme
     const storedAccentTheme = localStorage.getItem('accentTheme') as AccentTheme | null;
     const currentHtmlClasses = document.documentElement.className.split(' ');
     
-    // Remove any existing accent theme classes
     currentHtmlClasses.forEach(cls => {
       if (cls.startsWith('theme-accent-')) {
         document.documentElement.classList.remove(cls);
@@ -41,9 +34,20 @@ export default function RootLayout({
     if (storedAccentTheme && storedAccentTheme !== 'default') {
       document.documentElement.classList.add(`theme-accent-${storedAccentTheme}`);
     }
-  }, [nextTheme]); // Rerun if nextTheme changes to ensure accent theme is reapplied correctly with light/dark
 
-  // Set document title using i18n after mount
+    // Apply persisted font theme
+    const storedFontTheme = localStorage.getItem('fontTheme') as FontTheme | null;
+    currentHtmlClasses.forEach(cls => {
+      if (cls.startsWith('font-theme-')) {
+        document.documentElement.classList.remove(cls);
+      }
+    });
+    if (storedFontTheme && storedFontTheme !== 'default-sans') {
+      document.documentElement.classList.add(`font-theme-${storedFontTheme}`);
+    }
+
+  }, [nextTheme]); 
+
   useEffect(() => {
     if (typeof window !== 'undefined' && I18nProviderClient && (I18nProviderClient as any).i18n) {
       const i18nInstance = (I18nProviderClient as any).i18n;
@@ -55,7 +59,6 @@ export default function RootLayout({
          });
        }
     } else {
-        // Fallback title if i18n is not ready
         document.title = "WorkFlowZen";
     }
   }, []);
@@ -84,3 +87,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+    

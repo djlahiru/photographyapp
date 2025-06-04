@@ -17,6 +17,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 type AvatarShape = 'circle' | 'square';
 type AccentTheme = 'default' | 'oceanic' | 'forest' | 'sunset';
+type FontTheme = 'default-sans' | 'classic-serif' | 'modern-mono';
 
 const ACCENT_THEMES: { value: AccentTheme; label: string }[] = [
   { value: 'default', label: 'Default Violet' },
@@ -25,8 +26,14 @@ const ACCENT_THEMES: { value: AccentTheme; label: string }[] = [
   { value: 'sunset', label: 'Sunset Orange' },
 ];
 
+const FONT_THEMES: { value: FontTheme; label: string }[] = [
+  { value: 'default-sans', label: 'Default Sans' },
+  { value: 'classic-serif', label: 'Classic Serif' },
+  { value: 'modern-mono', label: 'Modern Mono' },
+];
+
 export default function SettingsPage() {
-  const { theme: nextTheme } = useTheme(); // System theme from next-themes
+  const { theme: nextTheme } = useTheme();
   const [user, setUser] = useState({
     name: "Admin User",
     email: "admin@workflowzen.com",
@@ -41,25 +48,29 @@ export default function SettingsPage() {
 
   const [avatarShape, setAvatarShape] = useState<AvatarShape>('circle');
   const [currentAccentTheme, setCurrentAccentTheme] = useState<AccentTheme>('default');
+  const [currentFontTheme, setCurrentFontTheme] = useState<FontTheme>('default-sans');
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentDateTime(new Date()), 1000 * 60);
     
-    // Load preferences from localStorage
     const storedShape = localStorage.getItem('avatarShape') as AvatarShape | null;
     if (storedShape) setAvatarShape(storedShape);
 
     const storedAccentTheme = localStorage.getItem('accentTheme') as AccentTheme | null;
     if (storedAccentTheme) {
       setCurrentAccentTheme(storedAccentTheme);
-      document.documentElement.className = nextTheme || ''; // remove previous theme class
-      if (nextTheme) document.documentElement.classList.add(nextTheme); // re-apply next-themes class
-      if (storedAccentTheme !== 'default') {
-        document.documentElement.classList.add(`theme-accent-${storedAccentTheme}`);
-      }
+      // Accent theme application is handled in RootLayout
     }
+
+    const storedFontTheme = localStorage.getItem('fontTheme') as FontTheme | null;
+    if (storedFontTheme) {
+      setCurrentFontTheme(storedFontTheme);
+      // Font theme application is handled in RootLayout initially, then here for dynamic changes
+      handleFontThemeChange(storedFontTheme, false); // Apply without saving again
+    }
+    
     return () => clearInterval(timer);
-  }, [nextTheme]);
+  }, []);
 
   const handleRequestPackage = () => {
     if (!packageName.trim()) {
@@ -81,8 +92,6 @@ export default function SettingsPage() {
   };
   
   const handleSaveChanges = () => {
-    // In a real app, persist user.name, user.email, user.bio
-    // For avatarShape and accentTheme, they are already saved to localStorage on change
     toast.success("Profile changes saved (simulated).");
     if (profileImageFile) {
         console.log("New profile image to 'upload':", profileImageFile.name);
@@ -98,25 +107,38 @@ export default function SettingsPage() {
   const handleAvatarShapeChange = (shape: AvatarShape) => {
     setAvatarShape(shape);
     localStorage.setItem('avatarShape', shape);
-    // Force re-render of components reading from localStorage (e.g., UserProfileCard) might need a more robust solution
-    // For now, UserProfileCard reads on its mount/update.
   };
 
   const handleAccentThemeChange = (themeValue: AccentTheme) => {
     setCurrentAccentTheme(themeValue);
     localStorage.setItem('accentTheme', themeValue);
     
-    // Remove old theme class
     ACCENT_THEMES.forEach(t => {
         if (t.value !== 'default') {
             document.documentElement.classList.remove(`theme-accent-${t.value}`);
         }
     });
-    // Add new theme class if not default
     if (themeValue !== 'default') {
         document.documentElement.classList.add(`theme-accent-${themeValue}`);
     }
   };
+
+  const handleFontThemeChange = (themeValue: FontTheme, save: boolean = true) => {
+    setCurrentFontTheme(themeValue);
+    if (save) {
+      localStorage.setItem('fontTheme', themeValue);
+    }
+    
+    FONT_THEMES.forEach(t => {
+      if (t.value !== 'default-sans') {
+        document.documentElement.classList.remove(`font-theme-${t.value}`);
+      }
+    });
+    if (themeValue !== 'default-sans') {
+      document.documentElement.classList.add(`font-theme-${themeValue}`);
+    }
+  };
+
 
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
@@ -191,8 +213,8 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center"><Droplet className="mr-2 h-5 w-5" /> Theme Customization</CardTitle>
-          <CardDescription>Personalize the look of WorkFlowZen.</CardDescription>
+          <CardTitle className="flex items-center"><Droplet className="mr-2 h-5 w-5" /> Theme & Appearance</CardTitle>
+          <CardDescription>Personalize the look and feel of WorkFlowZen.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
@@ -203,7 +225,7 @@ export default function SettingsPage() {
             </p>
           </div>
           <div>
-            <Label>Accent Color</Label>
+            <Label className="flex items-center"><Droplet className="mr-1.5 h-4 w-4" />Accent Color</Label>
             <RadioGroup value={currentAccentTheme} onValueChange={(value) => handleAccentThemeChange(value as AccentTheme)} className="grid grid-cols-2 gap-4 mt-2 sm:grid-cols-2">
               {ACCENT_THEMES.map(item => (
                 <Label
@@ -213,7 +235,6 @@ export default function SettingsPage() {
                 >
                   <RadioGroupItem value={item.value} id={`accent-${item.value}`} />
                   <span>{item.label}</span>
-                   {/* Dynamic color preview swatch */}
                   <span className={`ml-auto h-4 w-4 rounded-full border theme-preview-${item.value}`}></span>
                 </Label>
               ))}
@@ -228,6 +249,23 @@ export default function SettingsPage() {
               .theme-preview-sunset { background-color: hsl(25 90% 55%); }
               .dark .theme-preview-sunset { background-color: hsl(25 80% 65%); }
             `}</style>
+          </div>
+           <div>
+            <Label className="flex items-center"><Edit3 className="mr-1.5 h-4 w-4" /> Font Style</Label>
+            <RadioGroup value={currentFontTheme} onValueChange={(value) => handleFontThemeChange(value as FontTheme)} className="grid grid-cols-1 gap-4 mt-2 sm:grid-cols-2">
+              {FONT_THEMES.map(item => (
+                <Label
+                  key={item.value}
+                  htmlFor={`font-${item.value}`}
+                  className="flex items-center space-x-2 p-3 border rounded-md hover:bg-accent/10 cursor-pointer has-[:checked]:bg-accent/20 has-[:checked]:border-accent"
+                >
+                  <RadioGroupItem value={item.value} id={`font-${item.value}`} />
+                  <span style={{ fontFamily: item.value === 'classic-serif' ? 'Georgia, serif' : item.value === 'modern-mono' ? "'Courier New', monospace" : undefined }}>
+                    {item.label}
+                  </span>
+                </Label>
+              ))}
+            </RadioGroup>
           </div>
         </CardContent>
       </Card>
