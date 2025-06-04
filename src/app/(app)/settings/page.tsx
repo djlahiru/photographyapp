@@ -1,10 +1,15 @@
+
+'use client';
+
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { UserCircle, CalendarCog, LinkIcon, UnlinkIcon } from "lucide-react";
+import { UserCircle, CalendarCog, LinkIcon, UnlinkIcon, PackagePlus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 
 export default function SettingsPage() {
@@ -15,6 +20,25 @@ export default function SettingsPage() {
     avatarUrl: "https://placehold.co/100x100.png",
   };
   const isCalendarConnected = true; // Math.random() > 0.5;
+
+  const [packageName, setPackageName] = useState('');
+  const { toast } = useToast();
+
+  const handleRequestPackage = () => {
+    if (!packageName.trim()) {
+      toast({
+        title: "Package Name Required",
+        description: "Please enter a package name first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    toast({
+      title: "Request Package Installation",
+      description: `To install "${packageName}", please tell the AI assistant: "Add package: ${packageName}"`,
+      duration: 9000, // Keep toast longer for copying
+    });
+  };
 
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
@@ -84,6 +108,33 @@ export default function SettingsPage() {
           </p>
         </CardContent>
       </Card>
+
+      <Separator />
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center"><PackagePlus className="mr-2 h-5 w-5"/> Manage Project Packages</CardTitle>
+          <CardDescription>Use this section to request new package installations via the AI assistant.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="packageName">Package Name</Label>
+            <Input 
+              id="packageName" 
+              placeholder="e.g., framer-motion or lodash@4.17.21" 
+              value={packageName}
+              onChange={(e) => setPackageName(e.target.value)}
+            />
+          </div>
+          <Button onClick={handleRequestPackage}>
+            Get Installation Instructions
+          </Button>
+           <p className="text-xs text-muted-foreground">
+            This will not install the package directly. It will provide you with instructions on how to ask the AI assistant to add the package to your project.
+          </p>
+        </CardContent>
+      </Card>
+
     </div>
   );
 }
