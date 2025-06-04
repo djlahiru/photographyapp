@@ -1,26 +1,27 @@
+
 import type { ElementType } from 'react';
-import { Layout, List, Package, Users, BookOpen, Calendar, Settings as SettingsIcon, Briefcase } from 'react-feather';
+import { Layout, List, Package, Users, BookOpen, Calendar, Settings as SettingsIcon } from 'react-feather';
 
 export interface NavItem {
   href: string;
-  label: string;
-  icon: ElementType; // Changed from LucideIcon
+  labelKey: string; // Changed from label to labelKey for i18n
+  icon: ElementType;
   disabled?: boolean;
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: Layout },
-  { href: '/tasks', label: 'Tasks', icon: List }, // Was ListChecks, List is a close equivalent
-  { href: '/bookings', label: 'Bookings', icon: BookOpen },
-  { href: '/calendar', label: 'Calendar', icon: Calendar }, // Was CalendarDays
-  { href: '/clients', label: 'Clients', icon: Users },
-  { href: '/packages', label: 'Packages', icon: Package },
+  { href: '/dashboard', labelKey: 'nav.dashboard', icon: Layout },
+  { href: '/tasks', labelKey: 'nav.tasks', icon: List },
+  { href: '/bookings', labelKey: 'nav.bookings', icon: BookOpen },
+  { href: '/calendar', labelKey: 'nav.calendar', icon: Calendar },
+  { href: '/clients', labelKey: 'nav.clients', icon: Users },
+  { href: '/packages', labelKey: 'nav.packages', icon: Package },
 ];
 
 export const SETTINGS_NAV_ITEM: NavItem = {
   href: '/settings',
-  label: 'Settings',
-  icon: SettingsIcon, // Renamed to avoid conflict with Settings component if any
+  labelKey: 'nav.settings', // Changed from label to labelKey
+  icon: SettingsIcon,
 };
 
-export const APP_NAME = "WorkFlowZen";
+export const APP_NAME_KEY = "appName"; // Key for app name translation

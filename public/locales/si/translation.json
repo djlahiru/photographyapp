@@ -1,0 +1,26 @@
+
+{
+  "appName": "WorkFlowZen (සිංහල)",
+  "greeting": {
+    "morning": "සුබ උදෑසනක්",
+    "afternoon": "සුබ සන්ධ්‍යාවක්",
+    "evening": "සුබ සැන්දෑවක්"
+  },
+  "nav": {
+    "dashboard": "පාලන පුවරුව",
+    "tasks": "කාර්යයන්",
+    "bookings": "වෙන් කිරීම්",
+    "calendar": "දින දර්ශනය",
+    "clients": "සේවාලාභීන්",
+    "packages": "පැකේජ",
+    "settings": "සැකසුම්"
+  },
+  "searchPlaceholder": "සොයන්න...",
+  "toggleNotifications": "දැනුම්දීම් ටොගල් කරන්න",
+  "toggleTheme": "තේමාව ටොගල් කරන්න",
+  "language": "භාෂාව",
+  "english": "ඉංග්‍රීසි",
+  "sinhala": "සිංහල",
+  "tamil": "දෙමළ",
+  "logout": "ඉවත් වන්න"
+}

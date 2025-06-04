@@ -13,11 +13,12 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { UserProfileCard } from './user-profile-card';
-import { NAV_ITEMS, APP_NAME, SETTINGS_NAV_ITEM } from '@/lib/constants';
+import { NAV_ITEMS, SETTINGS_NAV_ITEM } from '@/lib/constants';
 import type { UserProfile } from '@/types';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { LogOut } from 'react-feather';
+import { useTranslation } from 'react-i18next';
 
 // Mock user data for now
 const mockUser: UserProfile = {
@@ -29,6 +30,7 @@ const mockUser: UserProfile = {
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { t } = useTranslation();
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" side="left" className="border-r border-sidebar-border">
@@ -43,7 +45,7 @@ export function AppSidebar() {
                 <SidebarMenuButton
                   asChild
                   isActive={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
-                  tooltip={item.label}
+                  tooltip={t(item.labelKey)}
                   className={cn(
                     "justify-start",
                     (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href)))
@@ -53,7 +55,7 @@ export function AppSidebar() {
                 >
                   <a>
                     <item.icon className="h-5 w-5" />
-                    <span>{item.label}</span>
+                    <span>{t(item.labelKey)}</span>
                   </a>
                 </SidebarMenuButton>
               </Link>
@@ -62,11 +64,10 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
-         {/* Placeholder for logout or other footer items */}
          <div className="p-2">
             <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
                 <LogOut className="h-5 w-5 mr-2" />
-                <span>Logout</span>
+                <span>{t('logout')}</span>
             </Button>
          </div>
       </SidebarFooter>

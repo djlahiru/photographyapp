@@ -1,0 +1,26 @@
+
+{
+  "appName": "WorkFlowZen",
+  "greeting": {
+    "morning": "Good morning",
+    "afternoon": "Good afternoon",
+    "evening": "Good evening"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "tasks": "Tasks",
+    "bookings": "Bookings",
+    "calendar": "Calendar",
+    "clients": "Clients",
+    "packages": "Packages",
+    "settings": "Settings"
+  },
+  "searchPlaceholder": "Search...",
+  "toggleNotifications": "Toggle notifications",
+  "toggleTheme": "Toggle theme",
+  "language": "Language",
+  "english": "English",
+  "sinhala": "Sinhala",
+  "tamil": "Tamil",
+  "logout": "Logout"
+}

@@ -1,15 +1,17 @@
-export function getGreeting(name?: string): string {
+
+// Returns a translation key and optionally the name
+export function getGreetingParts(name?: string): { greetingKey: string; name?: string } {
   const now = new Date();
   const hours = now.getHours();
-  let greetingText: string;
+  let greetingKey: string;
 
   if (hours < 12) {
-    greetingText = "Good morning";
+    greetingKey = "greeting.morning";
   } else if (hours < 18) {
-    greetingText = "Good afternoon";
+    greetingKey = "greeting.afternoon";
   } else {
-    greetingText = "Good evening";
+    greetingKey = "greeting.evening";
   }
 
-  return name ? `${greetingText}, ${name}!` : `${greetingText}!`;
+  return { greetingKey, name };
 }

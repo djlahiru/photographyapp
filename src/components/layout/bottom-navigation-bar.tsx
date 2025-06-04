@@ -6,9 +6,11 @@ import { usePathname } from 'next/navigation';
 import { NAV_ITEMS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import type { NavItem } from '@/lib/constants';
+import { useTranslation } from 'react-i18next';
 
 export function BottomNavigationBar() {
   const pathname = usePathname();
+  const { t } = useTranslation();
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 flex h-16 items-center justify-around border-t border-border bg-background/95 backdrop-blur-sm md:hidden">
@@ -25,7 +27,7 @@ export function BottomNavigationBar() {
             aria-current={isActive ? 'page' : undefined}
           >
             <item.icon className={cn('h-5 w-5', isActive ? 'text-primary' : '')} />
-            <span className="truncate">{item.label}</span>
+            <span className="truncate">{t(item.labelKey)}</span>
           </Link>
         );
       })}
