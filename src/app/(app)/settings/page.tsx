@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { UserCircle, CalendarCog, LinkIcon, UnlinkIcon, PackagePlus } from "lucide-react";
+import { User, Settings as SettingsIcon, Link as LinkIconFeather, Unlink, Package } from "react-feather"; // Was UserCircle, CalendarCog, LinkIcon, UnlinkIcon, PackagePlus
 import { toast } from 'react-toastify';
 
 
@@ -40,7 +40,7 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center"><UserCircle className="mr-2 h-5 w-5"/> Profile Settings</CardTitle>
+          <CardTitle className="flex items-center"><User className="mr-2 h-5 w-5"/> Profile Settings</CardTitle>
           <CardDescription>Update your personal information and profile picture.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -69,7 +69,7 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center"><CalendarCog className="mr-2 h-5 w-5"/> Google Calendar Integration</CardTitle>
+          <CardTitle className="flex items-center"><SettingsIcon className="mr-2 h-5 w-5"/> Google Calendar Integration</CardTitle>
           <CardDescription>Connect your Google Calendar to sync bookings automatically.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -80,7 +80,7 @@ export default function SettingsPage() {
                 <p className="text-sm text-green-600">Your bookings are syncing with Google Calendar.</p>
               </div>
               <Button variant="destructive" size="sm">
-                <UnlinkIcon className="mr-2 h-4 w-4" /> Disconnect
+                <Unlink className="mr-2 h-4 w-4" /> Disconnect
               </Button>
             </div>
           ) : (
@@ -90,7 +90,7 @@ export default function SettingsPage() {
                 <p className="text-sm text-muted-foreground">Connect to sync your bookings.</p>
               </div>
               <Button>
-                <LinkIcon className="mr-2 h-4 w-4" /> Connect Google Calendar
+                <LinkIconFeather className="mr-2 h-4 w-4" /> Connect Google Calendar
               </Button>
             </div>
           )}
@@ -104,7 +104,7 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center"><PackagePlus className="mr-2 h-5 w-5"/> Manage Project Packages</CardTitle>
+          <CardTitle className="flex items-center"><Package className="mr-2 h-5 w-5"/> Manage Project Packages</CardTitle>
           <CardDescription>Use this section to request new package installations via the AI assistant.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

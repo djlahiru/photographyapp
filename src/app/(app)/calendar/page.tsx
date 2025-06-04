@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { CalendarDays } from "lucide-react";
+import { Calendar as CalendarIcon } from "react-feather"; // Was CalendarDays
 
 export default function CalendarPage() {
   return (
@@ -15,7 +15,7 @@ export default function CalendarPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
-            <CalendarDays className="mr-2 h-6 w-6 text-primary" />
+            <CalendarIcon className="mr-2 h-6 w-6 text-primary" />
             In-App Calendar
           </CardTitle>
           <CardDescription>

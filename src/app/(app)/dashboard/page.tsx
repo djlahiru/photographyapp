@@ -2,7 +2,7 @@ import { SummaryStats } from "@/components/dashboard/summary-stats";
 import { OverviewList } from "@/components/dashboard/overview-list";
 import { CalendarStatus } from "@/components/dashboard/calendar-status";
 import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
-import { BookOpenText, Clock, UserPlus, MoreHorizontal } from "lucide-react";
+import { BookOpen, Clock, UserPlus, MoreHorizontal } from "react-feather"; // Was BookOpenText
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 

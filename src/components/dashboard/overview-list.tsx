@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import type { LucideIcon } from "lucide-react";
+import type { ElementType } from "react"; // Changed from LucideIcon
 import { cn } from "@/lib/utils";
 
 interface OverviewItem {
@@ -18,7 +18,7 @@ interface OverviewItem {
 interface OverviewListProps {
   title: string;
   items: OverviewItem[];
-  icon: LucideIcon;
+  icon: ElementType; // Changed from LucideIcon
   emptyMessage?: string;
   itemAction?: (item: OverviewItem) => React.ReactNode;
 }

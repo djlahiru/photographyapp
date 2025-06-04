@@ -1,8 +1,9 @@
+
 'use client';
 
 import type { UserProfile } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Settings } from 'lucide-react';
+// Settings icon is imported from constants, which now uses react-feather's Settings
 import Link from 'next/link';
 import { APP_NAME, SETTINGS_NAV_ITEM } from '@/lib/constants';
 import { Button } from '../ui/button';

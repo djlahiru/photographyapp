@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, ListChecks, Users, Briefcase } from "lucide-react";
+import { DollarSign, List, Users, Briefcase } from "react-feather"; // ListChecks -> List
 
 interface StatCardProps {
   title: string;
@@ -28,7 +28,7 @@ export function SummaryStats() {
   const stats = [
     { title: "Active Bookings", value: "12", icon: Briefcase, description: "+2 from last month" },
     { title: "Payments This Month", value: "$2,350", icon: DollarSign, description: "Total revenue" },
-    { title: "Tasks In Progress", value: "8", icon: ListChecks, description: "Across all projects" },
+    { title: "Tasks In Progress", value: "8", icon: List, description: "Across all projects" }, // Was ListChecks
     { title: "New Clients", value: "3", icon: Users, description: "Joined this week" },
   ];
 

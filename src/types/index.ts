@@ -1,5 +1,5 @@
 
-import type { LucideIcon } from 'lucide-react';
+import type { Icon as FeatherIcon } from 'react-feather';
 
 export interface UserProfile {
   id: string;
@@ -51,7 +51,7 @@ export interface BookingActivityLogEntry {
   timestamp: string; // ISO date string
   action: string; // e.g., "Booking confirmed", "Payment of $50 received", "Status updated to Completed"
   actor?: string; // e.g., "System", "Admin", "Client Name" (optional)
-  iconName?: keyof typeof import('lucide-react'); // Name of the Lucide icon
+  iconName?: keyof typeof import('react-feather'); // Name of the Feather icon
 }
 
 export interface Booking {

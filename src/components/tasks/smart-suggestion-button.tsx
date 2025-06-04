@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Sparkles } from 'lucide-react';
+import { Zap } from 'react-feather'; // Was Sparkles
 import {
   Dialog,
   DialogContent,
@@ -54,14 +54,14 @@ export function SmartSuggestionButton() {
   return (
     <>
       <Button variant="outline" onClick={() => setIsOpen(true)}>
-        <Sparkles className="mr-2 h-4 w-4 text-accent" />
+        <Zap className="mr-2 h-4 w-4 text-accent" />
         Smart Suggest
       </Button>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center">
-              <Sparkles className="mr-2 h-5 w-5 text-accent" />
+              <Zap className="mr-2 h-5 w-5 text-accent" />
               AI Task Suggestions
             </DialogTitle>
             <DialogDescription>

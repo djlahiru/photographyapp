@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -5,7 +6,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { getGreeting } from '@/lib/date-utils';
 import { APP_NAME } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
-import { Bell, Search, Moon, Sun } from 'lucide-react';
+import { Bell, Search, Moon, Sun } from 'react-feather';
 import { Input } from '@/components/ui/input';
 import { useTheme } from 'next-themes';
 

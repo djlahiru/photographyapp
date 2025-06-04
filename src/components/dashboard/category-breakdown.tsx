@@ -1,9 +1,10 @@
+
 'use client'
 
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart"
-import { PieChart } from "lucide-react"
+import { PieChart } from "react-feather"
 
 
 const chartData = [

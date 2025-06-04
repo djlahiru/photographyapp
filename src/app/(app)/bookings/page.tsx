@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, History, CalendarDays, User, Tag, DollarSign, CheckCircle, Mail } from "lucide-react";
+import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIcon, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle } from "react-feather";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { Booking, BookingStatus } from "@/types";
@@ -46,7 +46,7 @@ const statusVariantMap: Record<BookingStatus, "default" | "secondary" | "destruc
 };
 
 const statusIconMap: Record<BookingStatus, React.ElementType> = {
-  Pending: History,
+  Pending: Clock, // Was History
   Confirmed: CheckCircle,
   Completed: CheckCircle,
   Cancelled: Trash2,
@@ -118,7 +118,7 @@ export default function BookingsPage() {
                                     <DropdownMenuItem>Track Payment</DropdownMenuItem>
                                     {booking.activityLog && booking.activityLog.length > 0 && (
                                       <DropdownMenuItem onClick={() => setSelectedBookingForLog(booking)}>
-                                          <History className="mr-2 h-4 w-4" /> View Activity Log
+                                          <Clock className="mr-2 h-4 w-4" /> View Activity Log
                                       </DropdownMenuItem>
                                     )}
                                     <DropdownMenuSeparator />
@@ -129,7 +129,7 @@ export default function BookingsPage() {
                     </CardHeader>
                     <CardContent className="p-4 flex-grow space-y-3 text-sm">
                         <div className="flex items-center">
-                            <CalendarDays className="h-4 w-4 mr-2 text-muted-foreground" />
+                            <CalendarIcon className="h-4 w-4 mr-2 text-muted-foreground" />
                             <span>{format(new Date(booking.bookingDate), "eee, MMM d, yyyy 'at' h:mm a")}</span>
                         </div>
                         {booking.category && (

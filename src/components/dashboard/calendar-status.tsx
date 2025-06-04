@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, Link as LinkIcon } from "lucide-react";
+import { CheckCircle, XCircle, Link as LinkIconFeather } from "react-feather";
 
 export function CalendarStatus() {
   // Placeholder status
@@ -23,7 +23,7 @@ export function CalendarStatus() {
             <XCircle className="h-16 w-16 text-destructive" />
             <p className="text-foreground">Not connected to Google Calendar.</p>
             <Button>
-              <LinkIcon className="mr-2 h-4 w-4" /> Connect Calendar
+              <LinkIconFeather className="mr-2 h-4 w-4" /> Connect Calendar
             </Button>
           </>
         )}

@@ -4,7 +4,7 @@
 import type { BookingActivityLogEntry } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import * as LucideIcons from 'lucide-react';
+import * as FeatherIcons from 'react-feather'; // Changed from LucideIcons
 import { format } from 'date-fns';
 
 interface BookingActivityLogProps {
@@ -14,11 +14,11 @@ interface BookingActivityLogProps {
 }
 
 // A helper to get the icon component by name
-const getIcon = (iconName?: keyof typeof LucideIcons.icons) => {
-  if (!iconName || !LucideIcons[iconName]) {
-    return <LucideIcons.History className="h-5 w-5 text-muted-foreground" />;
+const getIcon = (iconName?: keyof typeof FeatherIcons) => { // Changed from LucideIcons
+  if (!iconName || !FeatherIcons[iconName as keyof typeof FeatherIcons]) { // Ensure type safety
+    return <FeatherIcons.Clock className="h-5 w-5 text-muted-foreground" />; // Was History
   }
-  const IconComponent = LucideIcons[iconName] as LucideIcons.LucideIcon;
+  const IconComponent = FeatherIcons[iconName as keyof typeof FeatherIcons] as React.ElementType; // Was LucideIcon
   return <IconComponent className="h-5 w-5 text-primary" />;
 };
 
@@ -36,7 +36,7 @@ export function BookingActivityLog({
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-10 text-center">
-            <LucideIcons.ClipboardList className="h-12 w-12 text-muted-foreground mb-3" />
+            <FeatherIcons.Clipboard className="h-12 w-12 text-muted-foreground mb-3" /> 
             <p className="text-muted-foreground">No activity recorded yet.</p>
           </div>
         </CardContent>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -16,7 +17,7 @@ import { NAV_ITEMS, APP_NAME, SETTINGS_NAV_ITEM } from '@/lib/constants';
 import type { UserProfile } from '@/types';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
-import { LogOut } from 'lucide-react';
+import { LogOut } from 'react-feather';
 
 // Mock user data for now
 const mockUser: UserProfile = {
