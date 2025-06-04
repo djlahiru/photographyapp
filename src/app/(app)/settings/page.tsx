@@ -20,7 +20,7 @@ export default function SettingsPage() {
     email: "admin@workflowzen.com",
     avatarUrl: "https://placehold.co/100x100.png",
   });
-  const isCalendarConnected = true;
+  const [isCalendarConnected, setIsCalendarConnected] = useState(true); // Simulate connection state
 
   const [packageName, setPackageName] = useState('');
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
@@ -47,36 +47,38 @@ export default function SettingsPage() {
         setUser(prevUser => ({ ...prevUser, avatarUrl: reader.result as string }));
       };
       reader.readAsDataURL(file);
-      // No toast here, only on save
-    } else {
-      // Revert to initial or placeholder if image is cleared before saving.
-      // For this demo, if user had "user.avatarUrl" and clears the *newly selected* file,
-      // the preview should revert to "user.avatarUrl" if it was previously set, or a placeholder.
-      // The current ImageUploadDropzone handles this by reverting to `initialImageUrl`.
     }
   };
   
   const handleSaveChanges = () => {
-    // In a real app, you would:
-    // 1. Upload profileImageFile if it exists and is new
-    // 2. Update user.name and user.email in your database
-    // 3. Update user.avatarUrl with the new URL from storage
-    let changesMade = false;
+    let changesMade = false; // Simplified check
     if (profileImageFile) {
-        console.log("New profile image to upload:", profileImageFile.name);
-        // Simulate upload success and get a new URL
-        // For demo: setUser(prevUser => ({ ...prevUser, avatarUrl: "new_uploaded_url.png" }));
-        setProfileImageFile(null); // Reset file state after "saving"
+        // Simulate upload success and update user.avatarUrl in a real app
+        console.log("New profile image to 'upload':", profileImageFile.name);
+        // For demo, the preview is already updated. Reset file state after "saving".
+        setProfileImageFile(null); 
         changesMade = true;
     }
-    // Add logic here if user.name or user.email changed and needs saving
-    // For now, we just check if a new image was "processed"
-    if(changesMade) {
+    // Add checks here if user.name or user.email was actually changed
+    // For this demo, any click on "Save Profile Changes" will show a toast if an image was staged.
+    // Or, you could compare current user state with an initial state.
+    
+    // Example: To make it more realistic, check if name/email changed:
+    // const initialUserName = "Admin User"; // Store initial state or fetch from a source
+    // const initialUserEmail = "admin@workflowzen.com";
+    // if (user.name !== initialUserName || user.email !== initialUserEmail) changesMade = true;
+    
+    if(changesMade) { // This condition could be more robust
         toast.success("Profile changes saved (simulated).");
     } else {
         toast.info("No new changes to save in profile.");
     }
   };
+
+  const toggleCalendarConnection = () => {
+    setIsCalendarConnected(!isCalendarConnected);
+    toast.success(isCalendarConnected ? "Google Calendar disconnected (simulated)." : "Google Calendar connected (simulated).");
+  }
 
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
@@ -159,7 +161,6 @@ export default function SettingsPage() {
                 Actual date/time format selection will be available in a future update.
             </p>
           </div>
-          {/* Future: Add controls for selecting date/time format */}
         </CardContent>
       </Card>
       
@@ -167,7 +168,7 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center"><SettingsIcon className="mr-2 h-5 w-5"/> Google Calendar Integration</CardTitle>
+          <CardTitle className="flex items-center"><LinkIconFeather className="mr-2 h-5 w-5"/> Google Calendar Integration</CardTitle>
           <CardDescription>Connect your Google Calendar to sync bookings automatically.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -177,7 +178,7 @@ export default function SettingsPage() {
                 <p className="font-medium text-green-700 dark:text-green-300">Calendar Connected</p>
                 <p className="text-sm text-green-600 dark:text-green-400">Your bookings are syncing with Google Calendar.</p>
               </div>
-              <Button variant="destructive" size="sm">
+              <Button variant="destructive" size="sm" onClick={toggleCalendarConnection}>
                 <Slash className="mr-2 h-4 w-4" /> Disconnect
               </Button>
             </div>
@@ -187,13 +188,13 @@ export default function SettingsPage() {
                 <p className="font-medium">Calendar Not Connected</p>
                 <p className="text-sm text-muted-foreground">Connect to sync your bookings.</p>
               </div>
-              <Button>
+              <Button onClick={toggleCalendarConnection}>
                 <LinkIconFeather className="mr-2 h-4 w-4" /> Connect Google Calendar
               </Button>
             </div>
           )}
            <p className="text-xs text-muted-foreground">
-            Authorizing WorkFlowZen will allow it to create, update, and delete events in your connected Google Calendar.
+            Authorizing WorkFlowZen will allow it to (simulated) create, update, and delete events in your connected Google Calendar.
           </p>
         </CardContent>
       </Card>
@@ -219,7 +220,7 @@ export default function SettingsPage() {
             Get Installation Instructions
           </Button>
            <p className="text-xs text-muted-foreground">
-            This will not install the package directly. It will provide you with instructions on how to ask the AI assistant to add the package to your project.
+            This will not install the package directly. It will generate instructions on how to ask the AI assistant to add the desired package to your project's dependencies.
           </p>
         </CardContent>
       </Card>
@@ -227,3 +228,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+
