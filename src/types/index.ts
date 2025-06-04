@@ -1,4 +1,6 @@
 
+import type { LucideIcon } from 'lucide-react';
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -44,15 +46,25 @@ export interface Client {
 
 export type BookingStatus = 'Pending' | 'Confirmed' | 'Completed' | 'Cancelled';
 
+export interface BookingActivityLogEntry {
+  id: string;
+  timestamp: string; // ISO date string
+  action: string; // e.g., "Booking confirmed", "Payment of $50 received", "Status updated to Completed"
+  actor?: string; // e.g., "System", "Admin", "Client Name" (optional)
+  iconName?: keyof typeof import('lucide-react'); // Name of the Lucide icon
+}
+
 export interface Booking {
   id: string;
-  client: Client;
-  package: PhotographyPackage;
+  client: Client; // For simplicity, we'll use clientName directly on mock data for now
+  clientName: string; // Keep for mock data simplicity as client object is not fully mocked
+  packageName: string;
   bookingDate: string; // ISO date string
   category?: string;
   status: BookingStatus;
   notes?: string;
-  payments: Payment[];
+  payments?: Payment[]; // Optional for now, assuming payments might be part of activity log too
+  activityLog?: BookingActivityLogEntry[];
 }
 
 export interface Payment {

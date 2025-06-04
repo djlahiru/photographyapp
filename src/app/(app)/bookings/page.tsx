@@ -1,17 +1,40 @@
+
+'use client';
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical } from "lucide-react";
+import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, History } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import type { BookingStatus } from "@/types";
+import type { Booking, BookingStatus } from "@/types";
+import { BookingActivityLog } from "@/components/bookings/booking-activity-log";
+import React from "react";
 
 // Mock data for bookings
-const mockBookings = [
-  { id: "1", clientName: "Alice Wonderland", packageName: "Basic Portrait Session", bookingDate: "2024-08-15", category: "Portrait", status: "Confirmed" as BookingStatus },
+const mockBookings: Booking[] = [
+  { 
+    id: "1", 
+    clientName: "Alice Wonderland", 
+    packageName: "Basic Portrait Session", 
+    bookingDate: "2024-08-15", 
+    category: "Portrait", 
+    status: "Confirmed" as BookingStatus,
+    activityLog: [
+      { id: "log1a", timestamp: "2024-08-01T10:00:00Z", action: "Booking created by Alice Wonderland.", actor: "Alice Wonderland", iconName: "PlusCircle" },
+      { id: "log1b", timestamp: "2024-08-02T11:30:00Z", action: "Payment of $75 received (Deposit).", actor: "System", iconName: "DollarSign" },
+      { id: "log1c", timestamp: "2024-08-03T14:15:00Z", action: "Booking status changed to Confirmed.", actor: "Admin", iconName: "CheckCircle" },
+      { id: "log1d", timestamp: "2024-08-14T09:00:00Z", action: "Reminder email sent to client.", actor: "System", iconName: "Mail" },
+    ]
+  },
   { id: "2", clientName: "Bob The Builder", packageName: "Standard Wedding Package", bookingDate: "2024-09-20", category: "Wedding", status: "Completed" as BookingStatus },
   { id: "3", clientName: "Charlie Chaplin", packageName: "Family Lifestyle Shoot", bookingDate: "2024-07-30", category: "Family", status: "Pending" as BookingStatus },
-  { id: "4", clientName: "Diana Prince", packageName: "Basic Portrait Session", bookingDate: "2024-08-05", category: "Portrait", status: "Cancelled" as BookingStatus },
+  { id: "4", clientName: "Diana Prince", packageName: "Basic Portrait Session", bookingDate: "2024-08-05", category: "Portrait", status: "Cancelled" as BookingStatus,
+    activityLog: [
+       { id: "log4a", timestamp: "2024-07-20T10:00:00Z", action: "Booking requested.", actor: "Diana Prince", iconName: "FilePlus" },
+       { id: "log4b", timestamp: "2024-07-28T16:00:00Z", action: "Booking cancelled by client.", actor: "Diana Prince", iconName: "XCircle" },
+    ]
+  },
 ];
 
 const statusVariantMap: Record<BookingStatus, "default" | "secondary" | "destructive" | "outline" | "success" | "warning"> = {
@@ -24,6 +47,8 @@ const statusVariantMap: Record<BookingStatus, "default" | "secondary" | "destruc
 export default function BookingsPage() {
   // Placeholder for status filter state
   // const [selectedStatuses, setSelectedStatuses] = React.useState<BookingStatus[]>([]);
+
+  const firstBookingWithLog = mockBookings.find(b => b.activityLog && b.activityLog.length > 0);
 
   return (
     <div className="space-y-6">
@@ -120,6 +145,15 @@ export default function BookingsPage() {
             )}
         </CardContent>
       </Card>
+
+      {firstBookingWithLog && firstBookingWithLog.activityLog && (
+        <BookingActivityLog 
+            logs={firstBookingWithLog.activityLog} 
+            title={`Activity Log for ${firstBookingWithLog.clientName}'s Booking`}
+            description={`Timeline of events for booking ID: ${firstBookingWithLog.id}`}
+        />
+      )}
     </div>
   );
 }
+
