@@ -8,97 +8,115 @@ body {
 
 @layer base {
   :root {
-    --background: 210 25% 96%; /* Light Gray #F0F4F8 */
-    --foreground: 210 10% 23%; /* Dark Gray for text */
+    /* Gradient Backgrounds */
+    --gradient-bg-start-hsl: 210 40% 96%; /* Lighter Sky Blue */
+    --gradient-bg-end-hsl: 230 50% 92%;   /* Slightly Deeper, Cool Lavender */
+    
+    --sidebar-gradient-bg-start-hsl: 212 35% 92%;
+    --sidebar-gradient-bg-end-hsl: 225 40% 88%;
 
-    --card: 210 25% 100%; /* White */
-    --card-foreground: 210 10% 23%; /* Dark Gray for text */
+    /* Core Colors */
+    --background: 215 30% 97%;             /* Fallback/Solid BG - Very Light Blue-Gray */
+    --foreground: 220 25% 20%;             /* Dark Slate Blue */
 
-    --popover: 210 25% 100%; /* White */
-    --popover-foreground: 210 10% 23%; /* Dark Gray for text */
+    --card: 220 40% 99%;                   /* Almost White, cool tint */
+    --card-foreground: 220 25% 20%;
 
-    --primary: 207 88% 70%; /* Calm Blue #64B5F6 */
-    --primary-foreground: 210 60% 10%; /* Dark text on Calm Blue */
+    --popover: 220 40% 99%;
+    --popover-foreground: 220 25% 20%;
 
-    --secondary: 210 25% 92%; /* Slightly darker than background */
-    --secondary-foreground: 210 10% 23%; /* Dark Gray for text */
+    --primary: 195 85% 45%;                /* Azure Blue */
+    --primary-foreground: 210 60% 98%;      /* White/Very Light Blue for text on primary */
 
-    --muted: 210 25% 90%; /* Muted elements */
-    --muted-foreground: 210 10% 45%; /* Muted text */
+    --secondary: 210 25% 90%;              /* Light Gray-Blue */
+    --secondary-foreground: 220 15% 35%;    /* Medium-Dark Gray-Blue */
 
-    --accent: 33 100% 62%; /* Soft Orange #FFAB40 */
-    --accent-foreground: 30 60% 10%; /* Dark text on Soft Orange */
+    --muted: 210 30% 94%;                  /* Lighter Gray-Blue */
+    --muted-foreground: 210 20% 55%;       /* Medium Gray-Blue */
 
-    --destructive: 0 84.2% 60.2%;
+    --accent: 270 70% 65%;                 /* Vibrant Violet */
+    --accent-foreground: 270 60% 98%;       /* White/Very Light Lavender for text on accent */
+
+    --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 210 20% 85%; /* Borders */
-    --input: 210 20% 90%; /* Input background */
-    --ring: 207 88% 65%; /* Ring color, slightly darker blue */
+    --border: 210 25% 85%;                 /* Slightly darker than secondary */
+    --input: 210 30% 96%;                  /* Very Light Blue, similar to gradient start */
+    --ring: 195 85% 40%;                   /* Slightly darker primary */
 
     --radius: 0.5rem;
 
     /* Sidebar specific theme */
-    --sidebar-background: 210 20% 94%; /* Slightly off-white */
-    --sidebar-foreground: 210 15% 30%; /* Readable text for sidebar */
-    --sidebar-primary: 207 88% 65%; /* Sidebar primary elements */
-    --sidebar-primary-foreground: 210 60% 10%;
-    --sidebar-accent: 33 100% 60%; /* Sidebar accent elements */
-    --sidebar-accent-foreground: 30 60% 10%;
-    --sidebar-border: 210 20% 88%;
-    --sidebar-ring: 207 88% 60%;
+    --sidebar-background: 212 35% 92%;      /* Fallback from sidebar-gradient-bg-start-hsl */
+    --sidebar-foreground: 220 20% 25%;
+    --sidebar-primary: 195 80% 42%;         /* Slightly deeper primary for sidebar */
+    --sidebar-primary-foreground: 210 60% 98%;
+    --sidebar-accent: 270 65% 62%;          /* Slightly deeper accent for sidebar */
+    --sidebar-accent-foreground: 270 60% 98%;
+    --sidebar-border: 210 25% 80%;
+    --sidebar-ring: 195 80% 42%;
 
-    --chart-1: 207 88% 70%;
-    --chart-2: 33 100% 62%;
-    --chart-3: 120 40% 60%;
-    --chart-4: 280 50% 65%;
-    --chart-5: 60 70% 60%;
+    /* Chart Colors */
+    --chart-1: 195 85% 45%;
+    --chart-2: 270 70% 65%;
+    --chart-3: 150 60% 50%; /* Sea Green */
+    --chart-4: 30 90% 60%;  /* Warm Orange */
+    --chart-5: 240 60% 70%; /* Royal Blue */
   }
 
   .dark {
-    /* Define dark mode colors if needed, for now keeping them similar to light or default */
-    --background: 210 10% 12%;
-    --foreground: 210 25% 96%;
+    /* Gradient Backgrounds */
+    --gradient-bg-start-hsl: 220 25% 12%; /* Very Dark Blue */
+    --gradient-bg-end-hsl: 240 30% 18%;   /* Dark Purple-Blue */
 
-    --card: 210 10% 15%;
-    --card-foreground: 210 25% 96%;
+    --sidebar-gradient-bg-start-hsl: 222 20% 18%;
+    --sidebar-gradient-bg-end-hsl: 235 25% 22%;
 
-    --popover: 210 10% 15%;
-    --popover-foreground: 210 25% 96%;
+    /* Core Colors */
+    --background: 225 20% 15%;             /* Fallback/Solid BG */
+    --foreground: 210 30% 90%;             /* Light Gray-Blue text */
 
-    --primary: 207 88% 60%;
-    --primary-foreground: 210 60% 5%;
+    --card: 220 25% 18%;                   /* Slightly lighter than bg */
+    --card-foreground: 210 30% 90%;
 
-    --secondary: 210 10% 20%;
-    --secondary-foreground: 210 25% 96%;
+    --popover: 220 25% 18%;
+    --popover-foreground: 210 30% 90%;
 
-    --muted: 210 10% 25%;
-    --muted-foreground: 210 15% 65%;
+    --primary: 195 75% 55%;                /* Brighter Azure for dark mode */
+    --primary-foreground: 210 40% 10%;      /* Dark text on primary */
 
-    --accent: 33 100% 58%;
-    --accent-foreground: 30 60% 5%;
+    --secondary: 220 20% 25%;              /* Dark Gray-Blue */
+    --secondary-foreground: 210 25% 75%;    /* Lighter Gray-Blue text */
 
-    --destructive: 0 70% 50%;
+    --muted: 220 15% 30%;
+    --muted-foreground: 210 20% 60%;
+
+    --accent: 270 70% 70%;                 /* Brighter Violet for dark mode */
+    --accent-foreground: 270 40% 10%;       /* Dark text on accent */
+
+    --destructive: 0 65% 50%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 210 10% 30%;
-    --input: 210 10% 25%;
-    --ring: 207 88% 55%;
+    --border: 220 20% 35%;
+    --input: 220 20% 22%;
+    --ring: 195 75% 50%;
     
-    --sidebar-background: 210 10% 18%;
-    --sidebar-foreground: 210 20% 85%;
-    --sidebar-primary: 207 88% 55%;
-    --sidebar-primary-foreground: 210 60% 5%;
-    --sidebar-accent: 33 100% 55%;
-    --sidebar-accent-foreground: 30 60% 5%;
-    --sidebar-border: 210 10% 28%;
-    --sidebar-ring: 207 88% 50%;
+    /* Sidebar specific theme */
+    --sidebar-background: 222 20% 18%;      /* Fallback from sidebar-gradient-bg-start-hsl */
+    --sidebar-foreground: 210 25% 85%;
+    --sidebar-primary: 195 70% 52%;
+    --sidebar-primary-foreground: 210 40% 10%;
+    --sidebar-accent: 270 65% 68%;
+    --sidebar-accent-foreground: 270 40% 10%;
+    --sidebar-border: 220 15% 30%;
+    --sidebar-ring: 195 70% 52%;
 
-    --chart-1: 207 88% 60%;
-    --chart-2: 33 100% 58%;
-    --chart-3: 120 35% 50%;
-    --chart-4: 280 45% 55%;
-    --chart-5: 60 65% 50%;
+    /* Chart Colors */
+    --chart-1: 195 75% 55%;
+    --chart-2: 270 70% 70%;
+    --chart-3: 150 50% 45%;
+    --chart-4: 30 80% 55%;
+    --chart-5: 240 50% 65%;
   }
 }
 
@@ -107,6 +125,19 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background-color: hsl(var(--background)); /* Body gets a solid background now */
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .content-area-gradient {
+    background-image: linear-gradient(145deg, hsl(var(--gradient-bg-start-hsl)), hsl(var(--gradient-bg-end-hsl)));
+    background-color: hsl(var(--gradient-bg-start-hsl)); /* Fallback */
+  }
+  .sidebar-area-gradient {
+    background-image: linear-gradient(145deg, hsl(var(--sidebar-gradient-bg-start-hsl)), hsl(var(--sidebar-gradient-bg-end-hsl)));
+    background-color: hsl(var(--sidebar-gradient-bg-start-hsl)); /* Fallback */
   }
 }
