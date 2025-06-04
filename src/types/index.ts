@@ -40,37 +40,42 @@ export interface Client {
     email?: string;
   };
   address?: string;
-  totalPayments: number;
-  outstandingBalance: number;
+  totalPayments: number; // Overall summary
+  outstandingBalance: number; // Overall summary
+  // We will derive payment history from their bookings for display on client card
 }
 
 export type BookingStatus = 'Pending' | 'Confirmed' | 'Completed' | 'Cancelled';
+export type PaymentStatus = 'Paid' | 'Pending' | 'Failed' | 'Refunded';
+
+export interface Payment {
+  id: string;
+  bookingId: string; 
+  amount: number;
+  paymentDate: string; // ISO date string
+  method?: string; // e.g., 'Credit Card', 'Bank Transfer'
+  status: PaymentStatus;
+  description?: string; // e.g., "Deposit for Wedding Package"
+}
 
 export interface BookingActivityLogEntry {
   id: string;
   timestamp: string; // ISO date string
   action: string; // e.g., "Booking confirmed", "Payment of $50 received", "Status updated to Completed"
   actor?: string; // e.g., "System", "Admin", "Client Name" (optional)
-  iconName?: keyof typeof import('react-feather'); // Name of the Feather icon
+  iconName?: keyof typeof import('react-feather'); 
 }
 
 export interface Booking {
   id: string;
-  client: Client; // For simplicity, we'll use clientName directly on mock data for now
-  clientName: string; // Keep for mock data simplicity as client object is not fully mocked
+  // client: Client; // Ideal state, for now use clientName
+  clientName: string; 
   packageName: string;
   bookingDate: string; // ISO date string
   category?: string;
   status: BookingStatus;
+  price: number; // Ensure price is always present
   notes?: string;
-  payments?: Payment[]; // Optional for now, assuming payments might be part of activity log too
+  payments?: Payment[]; 
   activityLog?: BookingActivityLogEntry[];
-}
-
-export interface Payment {
-  id: string;
-  bookingId: string;
-  amount: number;
-  paymentDate: string; // ISO date string
-  method?: string; // e.g., 'Credit Card', 'Bank Transfer'
 }

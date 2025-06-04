@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIcon, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle, Search } from "react-feather";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import type { Booking, BookingStatus } from "@/types";
+import type { Booking, BookingStatus, Payment, PaymentStatus } from "@/types";
 import { BookingActivityLog } from "@/components/bookings/booking-activity-log";
 import React from "react";
 import { format } from 'date-fns';
@@ -22,17 +22,51 @@ export const mockBookings: Booking[] = [
     category: "Portrait",
     status: "Confirmed" as BookingStatus,
     price: 150,
+    payments: [
+      { id: "p1a", bookingId: "1", amount: 75, paymentDate: "2024-08-02T11:30:00Z", method: "Credit Card", status: "Paid" as PaymentStatus, description: "Deposit" },
+      { id: "p1b", bookingId: "1", amount: 75, paymentDate: "2024-08-14T10:00:00Z", method: "Credit Card", status: "Paid" as PaymentStatus, description: "Final Payment" }
+    ],
     activityLog: [
       { id: "log1a", timestamp: "2024-08-01T10:00:00Z", action: "Booking created by Alice Wonderland.", actor: "Alice Wonderland", iconName: "PlusCircle" },
       { id: "log1b", timestamp: "2024-08-02T11:30:00Z", action: "Payment of $75 received (Deposit).", actor: "System", iconName: "DollarSign" },
       { id: "log1c", timestamp: "2024-08-03T14:15:00Z", action: "Booking status changed to Confirmed.", actor: "Admin", iconName: "CheckCircle" },
       { id: "log1d", timestamp: "2024-08-14T09:00:00Z", action: "Reminder email sent to client.", actor: "System", iconName: "Mail" },
+      { id: "log1e", timestamp: "2024-08-14T10:00:00Z", action: "Final payment of $75 received.", actor: "System", iconName: "DollarSign" },
     ]
   },
-  { id: "2", clientName: "Bob The Builder", packageName: "Standard Wedding Package", bookingDate: "2024-09-20T10:30:00Z", category: "Wedding", status: "Completed" as BookingStatus, price: 2500 },
-  { id: "3", clientName: "Charlie Chaplin", packageName: "Family Lifestyle Shoot", bookingDate: "2024-07-30T16:00:00Z", category: "Family", status: "Pending" as BookingStatus, price: 350 },
+  { 
+    id: "2", 
+    clientName: "Bob The Builder", 
+    packageName: "Standard Wedding Package", 
+    bookingDate: "2024-09-20T10:30:00Z", 
+    category: "Wedding", 
+    status: "Completed" as BookingStatus, 
+    price: 2500,
+    payments: [
+      { id: "p2a", bookingId: "2", amount: 1000, paymentDate: "2024-07-10T10:00:00Z", method: "Bank Transfer", status: "Paid" as PaymentStatus, description: "Initial Deposit" },
+      { id: "p2b", bookingId: "2", amount: 1500, paymentDate: "2024-09-15T14:00:00Z", method: "Bank Transfer", status: "Paid" as PaymentStatus, description: "Final Balance" }
+    ]
+  },
+  { 
+    id: "3", 
+    clientName: "Charlie Chaplin", 
+    packageName: "Family Lifestyle Shoot", 
+    bookingDate: "2024-07-30T16:00:00Z", 
+    category: "Family", 
+    status: "Pending" as BookingStatus, 
+    price: 350,
+    payments: [
+      { id: "p3a", bookingId: "3", amount: 100, paymentDate: "2024-07-20T12:00:00Z", method: "PayPal", status: "Pending" as PaymentStatus, description: "Deposit" }
+    ] 
+  },
   {
-    id: "4", clientName: "Diana Prince", packageName: "Basic Portrait Session", bookingDate: "2024-08-05T09:00:00Z", category: "Portrait", status: "Cancelled" as BookingStatus, price: 150,
+    id: "4", 
+    clientName: "Diana Prince", 
+    packageName: "Basic Portrait Session", 
+    bookingDate: "2024-08-05T09:00:00Z", 
+    category: "Portrait", 
+    status: "Cancelled" as BookingStatus, 
+    price: 150,
     activityLog: [
        { id: "log4a", timestamp: "2024-07-20T10:00:00Z", action: "Booking requested.", actor: "Diana Prince", iconName: "FilePlus" },
        { id: "log4b", timestamp: "2024-07-28T16:00:00Z", action: "Booking cancelled by client.", actor: "Diana Prince", iconName: "XCircle" },
