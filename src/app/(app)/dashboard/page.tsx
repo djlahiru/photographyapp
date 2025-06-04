@@ -5,7 +5,8 @@ import { CalendarStatus } from "@/components/dashboard/calendar-status";
 import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
 import { RevenueGoalChart } from "@/components/dashboard/revenue-goal-chart";
 import { ProjectStatusProgress } from "@/components/dashboard/project-status-progress";
-import { BookOpen, Clock, UserPlus, MoreHorizontal } from "react-feather"; // Was BookOpenText
+import { WorkProgressTracker } from "@/components/dashboard/work-progress-tracker"; // Import new component
+import { BookOpen, Clock, UserPlus, MoreHorizontal } from "react-feather"; 
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -34,6 +35,17 @@ const itemActionMenu = (item: { id: string }) => (
   </DropdownMenu>
 );
 
+// Mock data for WorkProgressTracker
+const projectStages = [
+  { name: "Booked" },
+  { name: "Planning" },
+  { name: "Shooting" },
+  { name: "Editing" },
+  { name: "Review" },
+  { name: "Delivered" },
+];
+const currentProjectStage = "Editing";
+
 
 export default function DashboardPage() {
   return (
@@ -57,6 +69,7 @@ export default function DashboardPage() {
         />
          <div className="lg:col-span-1 space-y-8">
           <RevenueGoalChart />
+          <WorkProgressTracker stages={projectStages} currentStageName={currentProjectStage} />
           <CategoryBreakdown />
           <ProjectStatusProgress />
           <CalendarStatus />
