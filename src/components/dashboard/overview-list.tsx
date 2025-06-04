@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,6 +14,7 @@ interface OverviewItem {
   fallbackText?: string;
   status?: string;
   statusVariant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning";
+  dataAiHint?: string;
 }
 
 interface OverviewListProps {
@@ -35,7 +37,7 @@ const statusColorMap = {
 
 export function OverviewList({ title, items, icon: Icon, emptyMessage = "No items to display.", itemAction }: OverviewListProps) {
   return (
-    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <Card className="shadow-lg hover:shadow-xl transition-shadow transition-transform duration-300 hover:-translate-y-1">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-lg font-semibold text-foreground font-headline">{title}</CardTitle>
         <Icon className="h-6 w-6 text-primary" />
@@ -51,7 +53,7 @@ export function OverviewList({ title, items, icon: Icon, emptyMessage = "No item
                   <div className="flex items-center space-x-3">
                     {item.imageUrl && (
                        <Avatar className="h-10 w-10">
-                        <AvatarImage src={item.imageUrl} alt={item.title} data-ai-hint="user profile" />
+                        <AvatarImage src={item.imageUrl} alt={item.title} data-ai-hint={item.dataAiHint || "list item"} />
                         <AvatarFallback>{item.fallbackText || item.title.charAt(0)}</AvatarFallback>
                       </Avatar>
                     )}

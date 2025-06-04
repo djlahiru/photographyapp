@@ -1,7 +1,10 @@
+
 import { SummaryStats } from "@/components/dashboard/summary-stats";
 import { OverviewList } from "@/components/dashboard/overview-list";
 import { CalendarStatus } from "@/components/dashboard/calendar-status";
 import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
+import { RevenueGoalChart } from "@/components/dashboard/revenue-goal-chart";
+import { ProjectStatusProgress } from "@/components/dashboard/project-status-progress";
 import { BookOpen, Clock, UserPlus, MoreHorizontal } from "react-feather"; // Was BookOpenText
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -9,7 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 // Mock data for lists
 const upcomingBookings = [
   { id: "1", title: "Smith Wedding", subtitle: "Tomorrow, 2:00 PM", status: "Confirmed", statusVariant: "success" as const, imageUrl: "https://placehold.co/40x40.png", fallbackText: "SW", dataAiHint: "wedding couple" },
-  { id: "2", title: " корпоративный мероприятие Doe", subtitle: "Next week", status: "Pending", statusVariant: "warning" as const, imageUrl: "https://placehold.co/40x40.png", fallbackText: "DE", dataAiHint: "corporate event" },
+  { id: "2", title: "Doe Corporate Event", subtitle: "Next week", status: "Pending", statusVariant: "warning" as const, imageUrl: "https://placehold.co/40x40.png", fallbackText: "DE", dataAiHint: "corporate event" },
 ];
 
 const recentClients = [
@@ -53,7 +56,9 @@ export default function DashboardPage() {
             itemAction={itemActionMenu}
         />
          <div className="lg:col-span-1 space-y-8">
+          <RevenueGoalChart />
           <CategoryBreakdown />
+          <ProjectStatusProgress />
           <CalendarStatus />
         </div>
       </div>

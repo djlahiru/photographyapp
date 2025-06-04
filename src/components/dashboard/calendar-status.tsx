@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle, Link as LinkIconFeather } from "react-feather";
@@ -7,7 +8,7 @@ export function CalendarStatus() {
   const isConnected = true; //Math.random() > 0.5;
 
   return (
-    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <Card className="shadow-lg hover:shadow-xl transition-shadow transition-transform duration-300 hover:-translate-y-1">
       <CardHeader>
         <CardTitle className="text-lg font-semibold text-foreground font-headline">Google Calendar Sync</CardTitle>
       </CardHeader>

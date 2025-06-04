@@ -4,7 +4,7 @@
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart"
-import { PieChart } from "react-feather"
+import { PieChart as PieChartIcon } from "react-feather" // Renamed to avoid conflict with Recharts' PieChart
 
 
 const chartData = [
@@ -43,10 +43,10 @@ const chartConfig = {
 
 export function CategoryBreakdown() {
   return (
-    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <Card className="shadow-lg hover:shadow-xl transition-shadow transition-transform duration-300 hover:-translate-y-1">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-lg font-semibold text-foreground font-headline">Bookings by Category</CardTitle>
-        <PieChart className="h-6 w-6 text-primary" />
+        <PieChartIcon className="h-6 w-6 text-primary" />
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
