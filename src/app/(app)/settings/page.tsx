@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, Settings as SettingsIcon, Link as LinkIconFeather, Unlink, Package, Calendar as CalendarIcon, Eye } from "react-feather";
+import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIcon, Eye } from "react-feather";
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 import { format } from 'date-fns';
@@ -116,7 +116,7 @@ export default function SettingsPage() {
                 id="email" 
                 type="email" 
                 value={user.email} 
-                onChange={(e) => setUser(prev => ({ ...prev, name: e.target.value }))} 
+                onChange={(e) => setUser(prev => ({ ...prev, email: e.target.value }))} 
               />
             </div>
           </div>
@@ -178,7 +178,7 @@ export default function SettingsPage() {
                 <p className="text-sm text-green-600 dark:text-green-400">Your bookings are syncing with Google Calendar.</p>
               </div>
               <Button variant="destructive" size="sm">
-                <Unlink className="mr-2 h-4 w-4" /> Disconnect
+                <Slash className="mr-2 h-4 w-4" /> Disconnect
               </Button>
             </div>
           ) : (
@@ -227,4 +227,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
