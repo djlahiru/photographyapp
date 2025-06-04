@@ -116,7 +116,7 @@ export default function SettingsPage() {
                 id="email" 
                 type="email" 
                 value={user.email} 
-                onChange={(e) => setUser(prev => ({ ...prev, email: e.target.value }))} 
+                onChange={(e) => setUser(prev => ({ ...prev, name: e.target.value }))} 
               />
             </div>
           </div>

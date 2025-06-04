@@ -3,7 +3,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIcon, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle } from "react-feather";
+import { Input } from "@/components/ui/input";
+import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIcon, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle, Search } from "react-feather";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { Booking, BookingStatus } from "@/types";
@@ -13,12 +14,12 @@ import { format } from 'date-fns';
 
 // Mock data for bookings
 const mockBookings: Booking[] = [
-  { 
-    id: "1", 
-    clientName: "Alice Wonderland", 
-    packageName: "Basic Portrait Session", 
-    bookingDate: "2024-08-15T14:00:00Z", 
-    category: "Portrait", 
+  {
+    id: "1",
+    clientName: "Alice Wonderland",
+    packageName: "Basic Portrait Session",
+    bookingDate: "2024-08-15T14:00:00Z",
+    category: "Portrait",
     status: "Confirmed" as BookingStatus,
     price: 150,
     activityLog: [
@@ -30,13 +31,16 @@ const mockBookings: Booking[] = [
   },
   { id: "2", clientName: "Bob The Builder", packageName: "Standard Wedding Package", bookingDate: "2024-09-20T10:30:00Z", category: "Wedding", status: "Completed" as BookingStatus, price: 2500 },
   { id: "3", clientName: "Charlie Chaplin", packageName: "Family Lifestyle Shoot", bookingDate: "2024-07-30T16:00:00Z", category: "Family", status: "Pending" as BookingStatus, price: 350 },
-  { id: "4", clientName: "Diana Prince", packageName: "Basic Portrait Session", bookingDate: "2024-08-05T09:00:00Z", category: "Portrait", status: "Cancelled" as BookingStatus, price: 150,
+  {
+    id: "4", clientName: "Diana Prince", packageName: "Basic Portrait Session", bookingDate: "2024-08-05T09:00:00Z", category: "Portrait", status: "Cancelled" as BookingStatus, price: 150,
     activityLog: [
        { id: "log4a", timestamp: "2024-07-20T10:00:00Z", action: "Booking requested.", actor: "Diana Prince", iconName: "FilePlus" },
        { id: "log4b", timestamp: "2024-07-28T16:00:00Z", action: "Booking cancelled by client.", actor: "Diana Prince", iconName: "XCircle" },
     ]
   },
 ];
+
+const ALL_STATUSES: BookingStatus[] = ["Pending", "Confirmed", "Completed", "Cancelled"];
 
 const statusVariantMap: Record<BookingStatus, "default" | "secondary" | "destructive" | "outline" | "success" | "warning"> = {
   Pending: "warning",
@@ -46,17 +50,27 @@ const statusVariantMap: Record<BookingStatus, "default" | "secondary" | "destruc
 };
 
 const statusIconMap: Record<BookingStatus, React.ElementType> = {
-  Pending: Clock, // Was History
+  Pending: Clock,
   Confirmed: CheckCircle,
   Completed: CheckCircle,
   Cancelled: Trash2,
 };
 
 export default function BookingsPage() {
-  // Placeholder for status filter state
-  // const [selectedStatuses, setSelectedStatuses] = React.useState<BookingStatus[]>([]);
-
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [selectedStatuses, setSelectedStatuses] = React.useState<BookingStatus[]>([]);
   const [selectedBookingForLog, setSelectedBookingForLog] = React.useState<Booking | null>(null);
+
+  const filteredBookings = React.useMemo(() => {
+    return mockBookings.filter(booking => {
+      const statusMatch = selectedStatuses.length === 0 || selectedStatuses.includes(booking.status);
+      const searchMatch = searchTerm.trim() === '' ||
+        booking.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        booking.packageName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (booking.category && booking.category.toLowerCase().includes(searchTerm.toLowerCase()));
+      return statusMatch && searchMatch;
+    });
+  }, [searchTerm, selectedStatuses]);
 
   return (
     <div className="space-y-6">
@@ -65,38 +79,51 @@ export default function BookingsPage() {
             <h1 className="text-3xl font-bold tracking-tight font-headline">Bookings Management</h1>
             <p className="text-muted-foreground">Schedule, view, and manage client bookings.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 w-full md:w-auto">
+           <div className="relative flex-grow md:flex-grow-0">
+             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+             <Input
+                type="search"
+                placeholder="Search bookings..."
+                className="pl-8 w-full md:w-[200px] lg:w-[250px]"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+           </div>
             <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline">
                 <Filter className="mr-2 h-4 w-4" /> Filter by Status
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-[200px]">
                 <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {(["Pending", "Confirmed", "Completed", "Cancelled"] as BookingStatus[]).map((status) => (
+                {ALL_STATUSES.map((status) => (
                 <DropdownMenuCheckboxItem
                     key={status}
-                    // checked={selectedStatuses.includes(status)}
-                    // onCheckedChange={(checked) => {
-                    //   setSelectedStatuses(prev => checked ? [...prev, status] : prev.filter(s => s !== status))
-                    // }}
+                    checked={selectedStatuses.includes(status)}
+                    onCheckedChange={(checked) => {
+                      setSelectedStatuses(prev => checked ? [...prev, status] : prev.filter(s => s !== status))
+                    }}
                 >
                     {status}
                 </DropdownMenuCheckboxItem>
                 ))}
             </DropdownMenuContent>
             </DropdownMenu>
-            <Button>
-            <PlusCircle className="mr-2 h-4 w-4" /> Schedule New Booking
+            <Button className="hidden sm:inline-flex">
+              <PlusCircle className="mr-2 h-4 w-4" /> Schedule New
+            </Button>
+             <Button size="icon" className="sm:hidden">
+              <PlusCircle className="h-4 w-4" />
             </Button>
         </div>
       </div>
 
-      {mockBookings.length > 0 ? (
+      {filteredBookings.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {mockBookings.map((booking) => {
+            {filteredBookings.map((booking) => {
                 const StatusIcon = statusIconMap[booking.status];
                 return (
                 <Card key={booking.id} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -157,8 +184,17 @@ export default function BookingsPage() {
       ) : (
         <div className="flex flex-col items-center justify-center py-20 text-center rounded-lg border border-dashed">
           <BookOpen className="h-20 w-20 text-muted-foreground mb-6" />
-          <h3 className="text-2xl font-semibold mb-3 font-headline">No Bookings Yet</h3>
-          <p className="text-muted-foreground mb-6 max-w-sm">You haven&apos;t scheduled any bookings. Click the button below to create your first one.</p>
+           {mockBookings.length === 0 ? (
+            <>
+              <h3 className="text-2xl font-semibold mb-3 font-headline">No Bookings Yet</h3>
+              <p className="text-muted-foreground mb-6 max-w-sm">You haven&apos;t scheduled any bookings. Click the button to create your first one.</p>
+            </>
+          ) : (
+            <>
+              <h3 className="text-2xl font-semibold mb-3 font-headline">No Bookings Found</h3>
+              <p className="text-muted-foreground mb-6 max-w-sm">No bookings match your current search or filter criteria. Try adjusting your search or filters.</p>
+            </>
+          )}
           <Button size="lg">
             <PlusCircle className="mr-2 h-5 w-5" /> Schedule New Booking
           </Button>
@@ -166,8 +202,8 @@ export default function BookingsPage() {
       )}
 
       {selectedBookingForLog && selectedBookingForLog.activityLog && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center" onClick={() => setSelectedBookingForLog(null)}>
-            <div className="max-w-2xl w-full mx-4" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center p-4" onClick={() => setSelectedBookingForLog(null)}>
+            <div className="bg-card rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
                 <BookingActivityLog 
                     logs={selectedBookingForLog.activityLog} 
                     title={`Activity Log for ${selectedBookingForLog.clientName}'s Booking`}
@@ -179,3 +215,4 @@ export default function BookingsPage() {
     </div>
   );
 }
+
