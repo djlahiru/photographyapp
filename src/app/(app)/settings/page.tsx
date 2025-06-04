@@ -1,28 +1,35 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, Settings as SettingsIcon, Link as LinkIconFeather, Unlink, Package } from "react-feather"; 
+import { User, Settings as SettingsIcon, Link as LinkIconFeather, Unlink, Package, Calendar as CalendarIcon, Eye } from "react-feather";
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
-
+import { format } from 'date-fns';
+import { useTheme } from 'next-themes';
 
 export default function SettingsPage() {
-  // Mock data, replace with actual user and connection status
+  const { theme } = useTheme();
   const [user, setUser] = useState({
     name: "Admin User",
     email: "admin@workflowzen.com",
     avatarUrl: "https://placehold.co/100x100.png",
   });
-  const isCalendarConnected = true; 
+  const isCalendarConnected = true;
 
   const [packageName, setPackageName] = useState('');
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentDateTime(new Date()), 1000 * 60); // Update every minute
+    return () => clearInterval(timer);
+  }, []);
 
   const handleRequestPackage = () => {
     if (!packageName.trim()) {
@@ -35,20 +42,17 @@ export default function SettingsPage() {
   const handleProfileImageChange = (file: File | null) => {
     setProfileImageFile(file);
     if (file) {
-      // Here you would typically initiate an upload to your backend/Firebase Storage
-      // For now, we can update the avatarUrl optimistically for preview
-      // In a real app, you'd get the new URL from the upload response
       const reader = new FileReader();
       reader.onloadend = () => {
         setUser(prevUser => ({ ...prevUser, avatarUrl: reader.result as string }));
       };
       reader.readAsDataURL(file);
-      toast.success("Profile picture selected. Click 'Save Profile Changes' to apply.");
+      // No toast here, only on save
     } else {
-      // If image is removed, revert to a default or clear (if applicable)
-      // For this demo, we'll keep the existing one if they clear a newly selected one before saving
-      // Or, if you want to allow removing an existing one and saving, handle that logic here.
-      // setUser(prevUser => ({ ...prevUser, avatarUrl: "https://placehold.co/100x100.png" })); // Example revert
+      // Revert to initial or placeholder if image is cleared before saving.
+      // For this demo, if user had "user.avatarUrl" and clears the *newly selected* file,
+      // the preview should revert to "user.avatarUrl" if it was previously set, or a placeholder.
+      // The current ImageUploadDropzone handles this by reverting to `initialImageUrl`.
     }
   };
   
@@ -57,14 +61,22 @@ export default function SettingsPage() {
     // 1. Upload profileImageFile if it exists and is new
     // 2. Update user.name and user.email in your database
     // 3. Update user.avatarUrl with the new URL from storage
-    toast.success("Profile changes saved (simulated).");
+    let changesMade = false;
     if (profileImageFile) {
         console.log("New profile image to upload:", profileImageFile.name);
-        // Reset file state after "saving"
-        setProfileImageFile(null);
+        // Simulate upload success and get a new URL
+        // For demo: setUser(prevUser => ({ ...prevUser, avatarUrl: "new_uploaded_url.png" }));
+        setProfileImageFile(null); // Reset file state after "saving"
+        changesMade = true;
+    }
+    // Add logic here if user.name or user.email changed and needs saving
+    // For now, we just check if a new image was "processed"
+    if(changesMade) {
+        toast.success("Profile changes saved (simulated).");
+    } else {
+        toast.info("No new changes to save in profile.");
     }
   };
-
 
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
@@ -84,7 +96,7 @@ export default function SettingsPage() {
             <ImageUploadDropzone
               initialImageUrl={user.avatarUrl}
               onFileChange={handleProfileImageChange}
-              className="h-40 w-40" // Adjust size as needed
+              className="h-40 w-40"
               imageClassName="rounded-full"
               label="Change picture"
             />
@@ -116,15 +128,54 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
+          <CardTitle className="flex items-center"><Eye className="mr-2 h-5 w-5" /> Appearance & Display</CardTitle>
+          <CardDescription>Customize how WorkFlowZen looks and displays information.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div>
+            <Label>Theme</Label>
+            <p className="text-sm text-muted-foreground">
+              Current theme: <span className="capitalize font-medium">{theme}</span>. 
+              Use the sun/moon icon in the header to toggle between light and dark modes.
+            </p>
+          </div>
+          <div>
+            <Label>Date & Time Format Preview</Label>
+            <div className="space-y-1 mt-1 text-sm">
+              <p>
+                <span className="font-medium text-muted-foreground w-28 inline-block">Style 1:</span> 
+                <span className="text-foreground">{format(currentDateTime, "MMMM d, yyyy 'at' h:mm a")}</span>
+              </p>
+              <p>
+                <span className="font-medium text-muted-foreground w-28 inline-block">Style 2:</span> 
+                <span className="text-foreground">{format(currentDateTime, "dd/MM/yyyy, HH:mm")}</span>
+              </p>
+              <p>
+                <span className="font-medium text-muted-foreground w-28 inline-block">Relative:</span> 
+                <span className="text-foreground">{format(new Date(Date.now() - 1000 * 60 * 5), "PPPp")} (5 minutes ago example)</span>
+              </p>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+                Actual date/time format selection will be available in a future update.
+            </p>
+          </div>
+          {/* Future: Add controls for selecting date/time format */}
+        </CardContent>
+      </Card>
+      
+      <Separator />
+
+      <Card>
+        <CardHeader>
           <CardTitle className="flex items-center"><SettingsIcon className="mr-2 h-5 w-5"/> Google Calendar Integration</CardTitle>
           <CardDescription>Connect your Google Calendar to sync bookings automatically.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {isCalendarConnected ? (
-            <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-md">
+            <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-md">
               <div>
-                <p className="font-medium text-green-700">Calendar Connected</p>
-                <p className="text-sm text-green-600">Your bookings are syncing with Google Calendar.</p>
+                <p className="font-medium text-green-700 dark:text-green-300">Calendar Connected</p>
+                <p className="text-sm text-green-600 dark:text-green-400">Your bookings are syncing with Google Calendar.</p>
               </div>
               <Button variant="destructive" size="sm">
                 <Unlink className="mr-2 h-4 w-4" /> Disconnect
@@ -176,3 +227,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+
