@@ -7,6 +7,10 @@ import Link from 'next/link';
 import { APP_NAME_KEY, SETTINGS_NAV_ITEM } from '@/lib/constants';
 import { Button } from '../ui/button';
 import { useTranslation } from 'react-i18next';
+import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
+
+type AvatarShape = 'circle' | 'square';
 
 interface UserProfileCardProps {
   user?: UserProfile;
@@ -15,6 +19,14 @@ interface UserProfileCardProps {
 export function UserProfileCard({ user }: UserProfileCardProps) {
   const { t } = useTranslation();
   const appNameTranslated = t(APP_NAME_KEY);
+  const [avatarShape, setAvatarShape] = useState<AvatarShape>('circle');
+
+  useEffect(() => {
+    const storedShape = localStorage.getItem('avatarShape') as AvatarShape | null;
+    if (storedShape) {
+      setAvatarShape(storedShape);
+    }
+  }, []);
 
   const getInitials = (name: string) => {
     return name
@@ -27,9 +39,21 @@ export function UserProfileCard({ user }: UserProfileCardProps) {
   return (
     <div className="flex flex-col items-start p-4 border-b border-sidebar-border">
       <div className="flex items-center w-full space-x-3 mb-3">
-        <Avatar className="h-12 w-12">
-          <AvatarImage src={user?.avatarUrl} alt={user?.name || appNameTranslated} data-ai-hint="user avatar" />
-          <AvatarFallback>{user ? getInitials(user.name) : appNameTranslated.substring(0,2).toUpperCase()}</AvatarFallback>
+        <Avatar className={cn(
+          "h-12 w-12",
+          avatarShape === 'circle' ? 'rounded-full' : 'rounded-md'
+        )}>
+          <AvatarImage 
+            src={user?.avatarUrl} 
+            alt={user?.name || appNameTranslated} 
+            data-ai-hint="user avatar" 
+            className={cn(avatarShape === 'circle' ? 'rounded-full' : 'rounded-md')}
+          />
+          <AvatarFallback className={cn(
+            avatarShape === 'circle' ? 'rounded-full' : 'rounded-md'
+          )}>
+            {user ? getInitials(user.name) : appNameTranslated.substring(0,2).toUpperCase()}
+          </AvatarFallback>
         </Avatar>
         <div className="flex flex-col">
           <span className="text-lg font-semibold text-sidebar-foreground font-headline">

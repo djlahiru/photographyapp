@@ -7,29 +7,59 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIcon, Eye } from "react-feather";
+import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIcon, Eye, Palette, Edit3, Square, Circle as CircleIcon } from "react-feather";
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 import { format } from 'date-fns';
 import { useTheme } from 'next-themes';
+import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+
+type AvatarShape = 'circle' | 'square';
+type AccentTheme = 'default' | 'oceanic' | 'forest' | 'sunset';
+
+const ACCENT_THEMES: { value: AccentTheme; label: string }[] = [
+  { value: 'default', label: 'Default Violet' },
+  { value: 'oceanic', label: 'Oceanic Blue' },
+  { value: 'forest', label: 'Forest Green' },
+  { value: 'sunset', label: 'Sunset Orange' },
+];
 
 export default function SettingsPage() {
-  const { theme } = useTheme();
+  const { theme: nextTheme } = useTheme(); // System theme from next-themes
   const [user, setUser] = useState({
     name: "Admin User",
     email: "admin@workflowzen.com",
     avatarUrl: "https://placehold.co/100x100.png",
+    bio: "Loves photography and efficient workflows!",
   });
-  const [isCalendarConnected, setIsCalendarConnected] = useState(true); // Simulate connection state
+  const [isCalendarConnected, setIsCalendarConnected] = useState(true);
 
   const [packageName, setPackageName] = useState('');
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
 
+  const [avatarShape, setAvatarShape] = useState<AvatarShape>('circle');
+  const [currentAccentTheme, setCurrentAccentTheme] = useState<AccentTheme>('default');
+
   useEffect(() => {
-    const timer = setInterval(() => setCurrentDateTime(new Date()), 1000 * 60); // Update every minute
+    const timer = setInterval(() => setCurrentDateTime(new Date()), 1000 * 60);
+    
+    // Load preferences from localStorage
+    const storedShape = localStorage.getItem('avatarShape') as AvatarShape | null;
+    if (storedShape) setAvatarShape(storedShape);
+
+    const storedAccentTheme = localStorage.getItem('accentTheme') as AccentTheme | null;
+    if (storedAccentTheme) {
+      setCurrentAccentTheme(storedAccentTheme);
+      document.documentElement.className = nextTheme || ''; // remove previous theme class
+      if (nextTheme) document.documentElement.classList.add(nextTheme); // re-apply next-themes class
+      if (storedAccentTheme !== 'default') {
+        document.documentElement.classList.add(`theme-accent-${storedAccentTheme}`);
+      }
+    }
     return () => clearInterval(timer);
-  }, []);
+  }, [nextTheme]);
 
   const handleRequestPackage = () => {
     if (!packageName.trim()) {
@@ -51,27 +81,12 @@ export default function SettingsPage() {
   };
   
   const handleSaveChanges = () => {
-    let changesMade = false; // Simplified check
+    // In a real app, persist user.name, user.email, user.bio
+    // For avatarShape and accentTheme, they are already saved to localStorage on change
+    toast.success("Profile changes saved (simulated).");
     if (profileImageFile) {
-        // Simulate upload success and update user.avatarUrl in a real app
         console.log("New profile image to 'upload':", profileImageFile.name);
-        // For demo, the preview is already updated. Reset file state after "saving".
         setProfileImageFile(null); 
-        changesMade = true;
-    }
-    // Add checks here if user.name or user.email was actually changed
-    // For this demo, any click on "Save Profile Changes" will show a toast if an image was staged.
-    // Or, you could compare current user state with an initial state.
-    
-    // Example: To make it more realistic, check if name/email changed:
-    // const initialUserName = "Admin User"; // Store initial state or fetch from a source
-    // const initialUserEmail = "admin@workflowzen.com";
-    // if (user.name !== initialUserName || user.email !== initialUserEmail) changesMade = true;
-    
-    if(changesMade) { // This condition could be more robust
-        toast.success("Profile changes saved (simulated).");
-    } else {
-        toast.info("No new changes to save in profile.");
     }
   };
 
@@ -79,6 +94,29 @@ export default function SettingsPage() {
     setIsCalendarConnected(!isCalendarConnected);
     toast.success(isCalendarConnected ? "Google Calendar disconnected (simulated)." : "Google Calendar connected (simulated).");
   }
+
+  const handleAvatarShapeChange = (shape: AvatarShape) => {
+    setAvatarShape(shape);
+    localStorage.setItem('avatarShape', shape);
+    // Force re-render of components reading from localStorage (e.g., UserProfileCard) might need a more robust solution
+    // For now, UserProfileCard reads on its mount/update.
+  };
+
+  const handleAccentThemeChange = (themeValue: AccentTheme) => {
+    setCurrentAccentTheme(themeValue);
+    localStorage.setItem('accentTheme', themeValue);
+    
+    // Remove old theme class
+    ACCENT_THEMES.forEach(t => {
+        if (t.value !== 'default') {
+            document.documentElement.classList.remove(`theme-accent-${t.value}`);
+        }
+    });
+    // Add new theme class if not default
+    if (themeValue !== 'default') {
+        document.documentElement.classList.add(`theme-accent-${themeValue}`);
+    }
+  };
 
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
@@ -90,7 +128,7 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center"><User className="mr-2 h-5 w-5"/> Profile Settings</CardTitle>
-          <CardDescription>Update your personal information and profile picture.</CardDescription>
+          <CardDescription>Update your personal information, bio, and profile picture.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
@@ -99,9 +137,22 @@ export default function SettingsPage() {
               initialImageUrl={user.avatarUrl}
               onFileChange={handleProfileImageChange}
               className="h-40 w-40"
-              imageClassName="rounded-full"
+              imageClassName={avatarShape === 'circle' ? 'rounded-full' : 'rounded-md'}
               label="Change picture"
             />
+          </div>
+          <div className="space-y-2">
+            <Label>Avatar Shape</Label>
+            <RadioGroup value={avatarShape} onValueChange={(value) => handleAvatarShapeChange(value as AvatarShape)} className="flex space-x-4">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="circle" id="shape-circle" />
+                <Label htmlFor="shape-circle" className="flex items-center"><CircleIcon className="mr-1 h-4 w-4"/> Circle</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="square" id="shape-square" />
+                <Label htmlFor="shape-square" className="flex items-center"><Square className="mr-1 h-4 w-4"/> Square</Label>
+              </div>
+            </RadioGroup>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -122,6 +173,16 @@ export default function SettingsPage() {
               />
             </div>
           </div>
+           <div>
+              <Label htmlFor="bio">Bio / Tagline</Label>
+              <Textarea
+                id="bio"
+                placeholder="Tell us a bit about yourself or your business..."
+                value={user.bio}
+                onChange={(e) => setUser(prev => ({ ...prev, bio: e.target.value }))}
+                rows={3}
+              />
+            </div>
           <Button onClick={handleSaveChanges}>Save Profile Changes</Button>
         </CardContent>
       </Card>
@@ -130,19 +191,57 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center"><Eye className="mr-2 h-5 w-5" /> Appearance & Display</CardTitle>
-          <CardDescription>Customize how WorkFlowZen looks and displays information.</CardDescription>
+          <CardTitle className="flex items-center"><Palette className="mr-2 h-5 w-5" /> Theme Customization</CardTitle>
+          <CardDescription>Personalize the look of WorkFlowZen.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <Label>Theme</Label>
+            <Label>Light/Dark Mode</Label>
             <p className="text-sm text-muted-foreground">
-              Current theme: <span className="capitalize font-medium">{theme}</span>. 
-              Use the sun/moon icon in the header to toggle between light and dark modes.
+              Current mode: <span className="capitalize font-medium">{nextTheme}</span>. 
+              Use the sun/moon icon in the header to toggle.
             </p>
           </div>
           <div>
-            <Label>Date & Time Format Preview</Label>
+            <Label>Accent Color</Label>
+            <RadioGroup value={currentAccentTheme} onValueChange={(value) => handleAccentThemeChange(value as AccentTheme)} className="grid grid-cols-2 gap-4 mt-2 sm:grid-cols-2">
+              {ACCENT_THEMES.map(item => (
+                <Label
+                  key={item.value}
+                  htmlFor={`accent-${item.value}`}
+                  className="flex items-center space-x-2 p-3 border rounded-md hover:bg-accent/10 cursor-pointer has-[:checked]:bg-accent/20 has-[:checked]:border-accent"
+                >
+                  <RadioGroupItem value={item.value} id={`accent-${item.value}`} />
+                  <span>{item.label}</span>
+                   {/* Dynamic color preview swatch */}
+                  <span className={`ml-auto h-4 w-4 rounded-full border theme-preview-${item.value}`}></span>
+                </Label>
+              ))}
+            </RadioGroup>
+            <style jsx>{`
+              .theme-preview-default { background-color: hsl(270 70% 65%); }
+              .dark .theme-preview-default { background-color: hsl(270 70% 70%); }
+              .theme-preview-oceanic { background-color: hsl(205 75% 50%); }
+              .dark .theme-preview-oceanic { background-color: hsl(205 70% 60%); }
+              .theme-preview-forest { background-color: hsl(140 60% 40%); }
+              .dark .theme-preview-forest { background-color: hsl(140 50% 50%); }
+              .theme-preview-sunset { background-color: hsl(25 90% 55%); }
+              .dark .theme-preview-sunset { background-color: hsl(25 80% 65%); }
+            `}</style>
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Separator />
+      
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center"><Eye className="mr-2 h-5 w-5" /> Display Previews</CardTitle>
+          <CardDescription>See how certain information will be displayed.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div>
+            <Label>Date &amp; Time Format Preview</Label>
             <div className="space-y-1 mt-1 text-sm">
               <p>
                 <span className="font-medium text-muted-foreground w-28 inline-block">Style 1:</span> 
@@ -228,4 +327,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
