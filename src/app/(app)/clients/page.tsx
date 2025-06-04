@@ -3,19 +3,24 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Users, Edit, Trash2, Phone, Mail, MessageCircle, Briefcase, TrendingUp, TrendingDown } from "react-feather";
+import { PlusCircle, Users, Edit, Trash2, Phone, Mail, MessageCircle, Briefcase, TrendingUp, TrendingDown, FileText, Edit2 } from "react-feather";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 
 // Mock data for clients
 const mockClients = [
-  { id: "1", name: "Alice Wonderland", contactDetails: { email: "alice@example.com", phone: "555-1234" }, address: "123 Storybook Lane", totalPayments: 1200, outstandingBalance: 300, totalBookings: 5, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "female person" },
-  { id: "2", name: "Bob The Builder", contactDetails: { email: "bob@example.com", phone: "555-5678" }, address: "456 Construction Rd", totalPayments: 5000, outstandingBalance: 0, totalBookings: 10, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "male person" },
+  { id: "1", name: "Alice Wonderland", contactDetails: { email: "alice@example.com", phone: "555-1234" }, address: "123 Storybook Lane", totalPayments: 1200, outstandingBalance: 300, totalBookings: 5, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "female person", notes: "Prefers morning shoots. Allergic to cats." },
+  { id: "2", name: "Bob The Builder", contactDetails: { email: "bob@example.com", phone: "555-5678" }, address: "456 Construction Rd", totalPayments: 5000, outstandingBalance: 0, totalBookings: 10, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "male person", notes: "Needs invoices sent to accounting@bobcorp.com." },
   { id: "3", name: "Charlie Chaplin", contactDetails: { email: "charlie@example.com" }, totalPayments: 800, outstandingBalance: 50, totalBookings: 2, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "classic actor" },
 ];
 
 export default function ClientsPage() {
   const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase();
+
+  const handleEditNote = (clientName: string) => {
+    console.log(`Edit note for ${clientName} clicked.`);
+    // Placeholder for actual modal/edit functionality
+  };
 
   return (
     <div className="space-y-6">
@@ -74,6 +79,18 @@ export default function ClientsPage() {
                     </div>
                 </div>
 
+                {client.notes && (
+                  <div className="pt-2 border-t border-border">
+                    <div className="flex items-start text-sm mt-2">
+                      <FileText className="h-4 w-4 mr-2 mt-0.5 text-muted-foreground flex-shrink-0" />
+                      <div>
+                        <span className="font-medium text-foreground">Notes:</span>
+                        <p className="text-muted-foreground whitespace-pre-wrap">{client.notes}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex gap-2 pt-2 border-t border-border">
                   {client.contactDetails.phone && (
                     <Button variant="outline" size="sm" asChild>
@@ -99,6 +116,9 @@ export default function ClientsPage() {
                 </div>
               </CardContent>
               <CardFooter className="p-4 border-t flex justify-end gap-2">
+                <Button variant="ghost" size="icon" title="Edit Note" onClick={() => handleEditNote(client.name)}>
+                    <Edit2 className="h-4 w-4" />
+                </Button>
                 <Button variant="ghost" size="sm"><Edit className="mr-1.5 h-4 w-4" />Edit</Button>
                 <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10"><Trash2 className="mr-1.5 h-4 w-4" />Delete</Button>
               </CardFooter>
