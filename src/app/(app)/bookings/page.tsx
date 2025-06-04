@@ -12,8 +12,8 @@ import { BookingActivityLog } from "@/components/bookings/booking-activity-log";
 import React from "react";
 import { format } from 'date-fns';
 
-// Mock data for bookings
-const mockBookings: Booking[] = [
+// Mock data for bookings - Exported to be used by calendar page
+export const mockBookings: Booking[] = [
   {
     id: "1",
     clientName: "Alice Wonderland",
@@ -215,4 +215,3 @@ export default function BookingsPage() {
     </div>
   );
 }
-
