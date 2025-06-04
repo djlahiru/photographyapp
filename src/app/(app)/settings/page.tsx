@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIcon, Eye, Palette, Edit3, Square, Circle as CircleIcon } from "react-feather";
+import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIcon, Eye, Droplet, Edit3, Square, Circle as CircleIcon } from "react-feather";
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 import { format } from 'date-fns';
@@ -191,7 +191,7 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center"><Palette className="mr-2 h-5 w-5" /> Theme Customization</CardTitle>
+          <CardTitle className="flex items-center"><Droplet className="mr-2 h-5 w-5" /> Theme Customization</CardTitle>
           <CardDescription>Personalize the look of WorkFlowZen.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -327,3 +327,5 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+    
