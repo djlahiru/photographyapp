@@ -3,25 +3,26 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, Settings as SettingsIcon, Link as LinkIconFeather, Unlink, Package } from "react-feather"; // Was UserCircle, CalendarCog, LinkIcon, UnlinkIcon, PackagePlus
+import { User, Settings as SettingsIcon, Link as LinkIconFeather, Unlink, Package } from "react-feather"; 
 import { toast } from 'react-toastify';
+import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 
 
 export default function SettingsPage() {
   // Mock data, replace with actual user and connection status
-  const user = {
+  const [user, setUser] = useState({
     name: "Admin User",
     email: "admin@workflowzen.com",
     avatarUrl: "https://placehold.co/100x100.png",
-  };
-  const isCalendarConnected = true; // Math.random() > 0.5;
+  });
+  const isCalendarConnected = true; 
 
   const [packageName, setPackageName] = useState('');
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
 
   const handleRequestPackage = () => {
     if (!packageName.trim()) {
@@ -30,6 +31,40 @@ export default function SettingsPage() {
     }
     toast.info(`To install "${packageName}", please tell the AI assistant: "Add package: ${packageName}"`, { autoClose: 9000 });
   };
+
+  const handleProfileImageChange = (file: File | null) => {
+    setProfileImageFile(file);
+    if (file) {
+      // Here you would typically initiate an upload to your backend/Firebase Storage
+      // For now, we can update the avatarUrl optimistically for preview
+      // In a real app, you'd get the new URL from the upload response
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUser(prevUser => ({ ...prevUser, avatarUrl: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+      toast.success("Profile picture selected. Click 'Save Profile Changes' to apply.");
+    } else {
+      // If image is removed, revert to a default or clear (if applicable)
+      // For this demo, we'll keep the existing one if they clear a newly selected one before saving
+      // Or, if you want to allow removing an existing one and saving, handle that logic here.
+      // setUser(prevUser => ({ ...prevUser, avatarUrl: "https://placehold.co/100x100.png" })); // Example revert
+    }
+  };
+  
+  const handleSaveChanges = () => {
+    // In a real app, you would:
+    // 1. Upload profileImageFile if it exists and is new
+    // 2. Update user.name and user.email in your database
+    // 3. Update user.avatarUrl with the new URL from storage
+    toast.success("Profile changes saved (simulated).");
+    if (profileImageFile) {
+        console.log("New profile image to upload:", profileImageFile.name);
+        // Reset file state after "saving"
+        setProfileImageFile(null);
+    }
+  };
+
 
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
@@ -44,24 +79,36 @@ export default function SettingsPage() {
           <CardDescription>Update your personal information and profile picture.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center space-x-4">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="user avatar" />
-              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <Button variant="outline">Change Picture</Button>
+          <div className="space-y-2">
+            <Label htmlFor="profilePicture">Profile Picture</Label>
+            <ImageUploadDropzone
+              initialImageUrl={user.avatarUrl}
+              onFileChange={handleProfileImageChange}
+              className="h-40 w-40" // Adjust size as needed
+              imageClassName="rounded-full"
+              label="Change picture"
+            />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="name">Full Name</Label>
-              <Input id="name" defaultValue={user.name} />
+              <Input 
+                id="name" 
+                value={user.name} 
+                onChange={(e) => setUser(prev => ({ ...prev, name: e.target.value }))} 
+              />
             </div>
             <div>
               <Label htmlFor="email">Email Address</Label>
-              <Input id="email" type="email" defaultValue={user.email} />
+              <Input 
+                id="email" 
+                type="email" 
+                value={user.email} 
+                onChange={(e) => setUser(prev => ({ ...prev, email: e.target.value }))} 
+              />
             </div>
           </div>
-          <Button>Save Profile Changes</Button>
+          <Button onClick={handleSaveChanges}>Save Profile Changes</Button>
         </CardContent>
       </Card>
 
