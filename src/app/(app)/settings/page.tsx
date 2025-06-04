@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { UserCircle, CalendarCog, LinkIcon, UnlinkIcon, PackagePlus } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'react-toastify';
 
 
 export default function SettingsPage() {
@@ -22,22 +22,13 @@ export default function SettingsPage() {
   const isCalendarConnected = true; // Math.random() > 0.5;
 
   const [packageName, setPackageName] = useState('');
-  const { toast } = useToast();
 
   const handleRequestPackage = () => {
     if (!packageName.trim()) {
-      toast({
-        title: "Package Name Required",
-        description: "Please enter a package name first.",
-        variant: "destructive",
-      });
+      toast.error("Package Name Required: Please enter a package name first.");
       return;
     }
-    toast({
-      title: "Request Package Installation",
-      description: `To install "${packageName}", please tell the AI assistant: "Add package: ${packageName}"`,
-      duration: 9000, // Keep toast longer for copying
-    });
+    toast.info(`To install "${packageName}", please tell the AI assistant: "Add package: ${packageName}"`, { autoClose: 9000 });
   };
 
   return (

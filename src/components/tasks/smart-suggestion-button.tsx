@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -15,7 +16,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'react-toastify';
 import { suggestTaskDetails, type SuggestTaskDetailsInput, type SuggestTaskDetailsOutput } from '@/ai/flows/suggest-task-details';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 
@@ -25,15 +26,10 @@ export function SmartSuggestionButton() {
   const [taskDescription, setTaskDescription] = useState('');
   const [projectHistory, setProjectHistory] = useState('');
   const [suggestion, setSuggestion] = useState<SuggestTaskDetailsOutput | null>(null);
-  const { toast } = useToast();
-
+  
   const handleSubmit = async () => {
     if (!taskDescription.trim()) {
-      toast({
-        title: 'Error',
-        description: 'Task description cannot be empty.',
-        variant: 'destructive',
-      });
+      toast.error('Task description cannot be empty.');
       return;
     }
 
@@ -46,17 +42,10 @@ export function SmartSuggestionButton() {
       };
       const result = await suggestTaskDetails(input);
       setSuggestion(result);
-      toast({
-        title: 'Suggestions Ready!',
-        description: 'AI has generated task details.',
-      });
+      toast.success('Suggestions Ready! AI has generated task details.');
     } catch (error) {
       console.error('Error getting suggestions:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to get suggestions. Please try again.',
-        variant: 'destructive',
-      });
+      toast.error('Failed to get suggestions. Please try again.');
     } finally {
       setIsLoading(false);
     }
