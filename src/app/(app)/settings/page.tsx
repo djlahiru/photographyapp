@@ -49,6 +49,10 @@ import {
   CLOCK_FORMATS,
   DEFAULT_CLOCK_FORMAT_VALUE,
   type ClockFormatValue,
+  ACCENT_THEME_LS_KEY,
+  ACCENT_THEMES,
+  DEFAULT_ACCENT_THEME_VALUE,
+  type AccentThemeValue,
 } from '@/lib/constants';
 
 
@@ -96,6 +100,7 @@ export default function SettingsPage() {
 
   const [avatarShape, setAvatarShape] = useState<AvatarShape>('circle');
   const [currentFontTheme, setCurrentFontTheme] = useState<FontTheme>('default-sans');
+  const [currentAccentTheme, setCurrentAccentTheme] = useState<AccentThemeValue>(DEFAULT_ACCENT_THEME_VALUE);
 
   const [dashboardCoverPhotoFile, setDashboardCoverPhotoFile] = useState<File | null>(null);
   const [dashboardCoverPhotoPreview, setDashboardCoverPhotoPreview] = useState<string | null>(null);
@@ -112,6 +117,25 @@ export default function SettingsPage() {
   const [mounted, setMounted] = useState(false);
   const [currentSelectedDateFormat, setCurrentSelectedDateFormat] = useState<DateFormatValue>(DEFAULT_DATE_FORMAT);
   const [currentSelectedClockFormat, setCurrentSelectedClockFormat] = useState<ClockFormatValue>(DEFAULT_CLOCK_FORMAT_VALUE);
+
+
+  const applyThemeClass = (themeType: 'font' | 'accent', themeValue: FontTheme | AccentThemeValue) => {
+    const classPrefix = themeType === 'font' ? 'font-theme-' : 'theme-accent-';
+    const themesToIterate = themeType === 'font' ? FONT_THEMES.map(f => f.value) : ACCENT_THEMES.map(a => a.value);
+
+    document.documentElement.classList.forEach(cls => {
+        if (cls.startsWith(classPrefix)) {
+            document.documentElement.classList.remove(cls);
+        }
+    });
+    
+    // For fonts, default-sans means no specific class. For accents, default-blue is the class.
+    if (themeType === 'font' && themeValue !== 'default-sans') {
+      document.documentElement.classList.add(`${classPrefix}${themeValue}`);
+    } else if (themeType === 'accent') {
+      document.documentElement.classList.add(`${classPrefix}${themeValue}`);
+    }
+  };
 
 
   useEffect(() => {
@@ -150,7 +174,19 @@ export default function SettingsPage() {
     if (storedShape) setAvatarShape(storedShape);
 
     const storedFontTheme = localStorage.getItem(FONT_THEME_LS_KEY) as FontTheme | null;
-    if (storedFontTheme) setCurrentFontTheme(storedFontTheme);
+    if (storedFontTheme) {
+        setCurrentFontTheme(storedFontTheme);
+        applyThemeClass('font', storedFontTheme);
+    }
+
+    const storedAccentTheme = localStorage.getItem(ACCENT_THEME_LS_KEY) as AccentThemeValue | null;
+    if (storedAccentTheme) {
+        setCurrentAccentTheme(storedAccentTheme);
+        applyThemeClass('accent', storedAccentTheme);
+    } else {
+        applyThemeClass('accent', DEFAULT_ACCENT_THEME_VALUE); // Apply default if nothing stored
+    }
+
 
     const storedCalendarConnection = localStorage.getItem(GOOGLE_CALENDAR_CONNECTED_LS_KEY);
     if (storedCalendarConnection) setIsCalendarConnected(JSON.parse(storedCalendarConnection));
@@ -244,25 +280,18 @@ export default function SettingsPage() {
     window.dispatchEvent(new CustomEvent('avatarShapeChange', { detail: shape }));
   };
 
-  const applyThemeClass = (themeType: 'font', themeValue: FontTheme) => {
-    const classPrefix = themeType === 'font' ? 'font-theme-' : '';
-
-    document.documentElement.classList.forEach(cls => {
-        if (cls.startsWith(classPrefix)) {
-            document.documentElement.classList.remove(cls);
-        }
-    });
-
-    if (themeValue !== 'default-sans') {
-      document.documentElement.classList.add(`${classPrefix}${themeValue}`);
-    }
-  };
-
   const handleFontThemeChange = (themeValue: FontTheme) => {
     setCurrentFontTheme(themeValue);
     localStorage.setItem(FONT_THEME_LS_KEY, themeValue);
     applyThemeClass('font', themeValue);
     window.dispatchEvent(new CustomEvent('fontThemeChanged'));
+  };
+  
+  const handleAccentThemeChange = (themeValue: AccentThemeValue) => {
+    setCurrentAccentTheme(themeValue);
+    localStorage.setItem(ACCENT_THEME_LS_KEY, themeValue);
+    applyThemeClass('accent', themeValue);
+    window.dispatchEvent(new CustomEvent('accentThemeChanged'));
   };
 
   const handleDashboardCoverPhotoSelected = (file: File | null) => {
@@ -379,10 +408,13 @@ export default function SettingsPage() {
     });
 
     document.documentElement.classList.forEach(cls => {
-      if (cls.startsWith('font-theme-')) {
+      if (cls.startsWith('font-theme-') || cls.startsWith('theme-accent-')) {
         document.documentElement.classList.remove(cls);
       }
     });
+    // Re-apply default accent theme after clearing
+    document.documentElement.classList.add(`theme-accent-${DEFAULT_ACCENT_THEME_VALUE}`);
+
 
     toast.success("Application data has been reset. Logging out...");
 
@@ -484,9 +516,6 @@ export default function SettingsPage() {
               ))}
             </RadioGroup>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Note: Changing currency here updates the setting. Displaying this currency across all financial figures in the app requires further updates.
-          </p>
         </CardContent>
       </Card>
 
@@ -538,6 +567,33 @@ export default function SettingsPage() {
               ))}
             </RadioGroup>
           </div>
+
+          <div>
+            <Label className="flex items-center"><Droplet className="mr-1.5 h-4 w-4" /> Accent Gradient</Label>
+            <RadioGroup value={currentAccentTheme} onValueChange={(value) => handleAccentThemeChange(value as AccentThemeValue)} className="grid grid-cols-1 gap-4 mt-2 sm:grid-cols-2">
+              {ACCENT_THEMES.map(themeOption => (
+                <Label
+                  key={themeOption.value}
+                  htmlFor={`accent-${themeOption.value}`}
+                  className="flex items-center space-x-2 p-3 border rounded-md hover:bg-accent/10 cursor-pointer has-[:checked]:bg-accent/20 has-[:checked]:border-accent"
+                >
+                  <RadioGroupItem
+                    value={themeOption.value}
+                    id={`accent-${themeOption.value}`}
+                    className={cn(
+                      'border-border data-[state=checked]:border-ring',
+                      `data-[state=checked]:bg-[${themeOption.lightColors.accent}]` // This might need specific class for HSL
+                    )}
+                  />
+                  <div className="flex items-center gap-2">
+                     <span className="h-4 w-4 rounded-sm border" style={{ background: themeOption.gradientPreview }}></span>
+                     <span>{themeOption.label}</span>
+                  </div>
+                </Label>
+              ))}
+            </RadioGroup>
+          </div>
+
         </CardContent>
       </Card>
 

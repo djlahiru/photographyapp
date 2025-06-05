@@ -8,9 +8,8 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { I18nProviderClient } from '@/components/i18n-provider-client';
-// Removed useTheme import as it's not directly used here for class manipulation
+import { ACCENT_THEME_LS_KEY, DEFAULT_ACCENT_THEME_VALUE, FONT_THEME_LS_KEY, type AccentThemeValue, type FontTheme } from '@/lib/constants';
 
-type FontTheme = 'default-sans' | 'classic-serif' | 'modern-mono';
 
 export default function RootLayout({
   children,
@@ -19,19 +18,9 @@ export default function RootLayout({
 }>) {
 
   useEffect(() => {
-    const applyCustomThemes = () => {
-      // Ensure default accent theme is applied if no other is specified (though others are removed now)
-      document.documentElement.classList.forEach(cls => {
-        if (cls.startsWith('theme-accent-') && cls !== 'theme-accent-default') {
-          document.documentElement.classList.remove(cls);
-        }
-      });
-      if (!document.documentElement.classList.contains('theme-accent-default')) {
-        document.documentElement.classList.add('theme-accent-default');
-      }
-
+    const applyPersistedThemes = () => {
       // Apply persisted font theme
-      const storedFontTheme = localStorage.getItem('fontTheme') as FontTheme | null;
+      const storedFontTheme = localStorage.getItem(FONT_THEME_LS_KEY) as FontTheme | null;
       document.documentElement.classList.forEach(cls => {
         if (cls.startsWith('font-theme-')) {
           document.documentElement.classList.remove(cls);
@@ -40,13 +29,25 @@ export default function RootLayout({
       if (storedFontTheme && storedFontTheme !== 'default-sans') {
         document.documentElement.classList.add(`font-theme-${storedFontTheme}`);
       }
-      // Default font is applied via body tag in globals.css, so no explicit add for default-sans needed here
+
+      // Apply persisted accent theme
+      const storedAccentTheme = localStorage.getItem(ACCENT_THEME_LS_KEY) as AccentThemeValue | null;
+      const themeToApply = storedAccentTheme || DEFAULT_ACCENT_THEME_VALUE;
+      document.documentElement.classList.forEach(cls => {
+        if (cls.startsWith('theme-accent-')) {
+          document.documentElement.classList.remove(cls);
+        }
+      });
+      document.documentElement.classList.add(`theme-accent-${themeToApply}`);
     };
 
-    applyCustomThemes(); // Apply on initial mount
+    applyPersistedThemes(); // Apply on initial mount
 
     // Listen for theme changes dispatched from the settings page
-    window.addEventListener('fontThemeChanged', applyCustomThemes);
+    const handleThemeChangeEvent = () => applyPersistedThemes();
+    window.addEventListener('fontThemeChanged', handleThemeChangeEvent);
+    window.addEventListener('accentThemeChanged', handleThemeChangeEvent);
+
 
     // App Name logic
     if (typeof window !== 'undefined' && I18nProviderClient && (I18nProviderClient as any).i18n) {
@@ -63,9 +64,10 @@ export default function RootLayout({
     }
 
     return () => {
-      window.removeEventListener('fontThemeChanged', applyCustomThemes);
+      window.removeEventListener('fontThemeChanged', handleThemeChangeEvent);
+      window.removeEventListener('accentThemeChanged', handleThemeChangeEvent);
     };
-  }, []); // Empty dependency array means this runs once on mount and cleans up on unmount
+  }, []); 
 
 
   return (
