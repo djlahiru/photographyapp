@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect } from 'react';
@@ -12,7 +13,7 @@ export default function HomePage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-24 bg-background">
-      <h1 className="text-2xl font-headline text-primary">Loading WorkFlowZen...</h1>
+      <h1 className="text-2xl font-headline text-primary">Loading Rubo...</h1>
     </div>
   );
 }

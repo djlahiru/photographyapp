@@ -1,21 +1,16 @@
 
 {
-  "appName": "WorkFlowZen",
+  "appName": "Rubo",
   "english": "English",
   "sinhala": "Sinhala",
   "tamil": "Tamil",
   "language": "Language",
   "toggleTheme": "Toggle Theme",
   "toggleNotifications": "Toggle Notifications",
-  "greeting": {
-    "morning": "Good Morning",
-    "afternoon": "Good Afternoon",
-    "evening": "Good Evening",
-    "night": "Good Night"
-  },
+  "logout": "Logout",
   "nav": {
     "dashboard": "Dashboard",
-    "tasks": "Tasks",
+    "tasks": "Task Board",
     "bookings": "Bookings",
     "calendar": "Calendar",
     "clients": "Clients",
@@ -23,5 +18,10 @@
     "payments": "Payments",
     "settings": "Settings"
   },
-  "logout": "Logout"
+  "greeting": {
+    "morning": "Good Morning",
+    "afternoon": "Good Afternoon",
+    "evening": "Good Evening",
+    "night": "Good Night"
+  }
 }

@@ -1,21 +1,16 @@
 
 {
-  "appName": "වර්ක්ෆ්ලෝසෙන්",
+  "appName": "Rubo",
   "english": "ඉංග්‍රීසි",
   "sinhala": "සිංහල",
   "tamil": "දෙමළ",
   "language": "භාෂාව",
   "toggleTheme": "තේමාව මාරු කරන්න",
   "toggleNotifications": "දැනුම්දීම් මාරු කරන්න",
-  "greeting": {
-    "morning": "සුබ උදෑසනක්",
-    "afternoon": "සුබ සන්ධ්‍යාවක්",
-    "evening": "සුබ සැන්දෑවක්",
-    "night": "සුබ රාත්‍රියක්"
-  },
+  "logout": "ඉවත් වන්න",
   "nav": {
     "dashboard": "පාලන පුවරුව",
-    "tasks": "කාර්යයන්",
+    "tasks": "කාර්ය පුවරුව",
     "bookings": "වෙන් කිරීම්",
     "calendar": "දින දර්ශනය",
     "clients": "සේවාලාභීන්",
@@ -23,5 +18,10 @@
     "payments": "ගෙවීම්",
     "settings": "සැකසුම්"
   },
-  "logout": "ඉවත් වන්න"
+  "greeting": {
+    "morning": "සුබ උදෑසනක්",
+    "afternoon": "සුබ සන්ධ්‍යාවක්",
+    "evening": "සුබ සැන්දෑවක්",
+    "night": "සුබ රාත්‍රියක්"
+  }
 }

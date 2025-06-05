@@ -46,7 +46,7 @@ const FONT_THEMES: { value: FontTheme; label: string }[] = [
 const defaultUser: UserProfile = {
   id: 'default-user-settings',
   name: "Admin User",
-  email: "admin@workflowzen.com",
+  email: "admin@rubo.com",
   avatarUrl: "https://placehold.co/100x100.png",
   bio: "Loves photography and efficient workflows!",
 };
@@ -303,7 +303,7 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center"><Droplet className="mr-2 h-5 w-5" /> Theme & Appearance</CardTitle>
-          <CardDescription>Personalize the look and feel of WorkFlowZen.</CardDescription>
+          <CardDescription>Personalize the look and feel of Rubo.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
@@ -467,7 +467,7 @@ export default function SettingsPage() {
             </div>
           )}
            <p className="text-xs text-muted-foreground">
-            Authorizing WorkFlowZen will allow it to (simulated) create, update, and delete events in your connected Google Calendar.
+            Authorizing Rubo will allow it to (simulated) create, update, and delete events in your connected Google Calendar.
           </p>
         </CardContent>
       </Card>

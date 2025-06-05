@@ -65,7 +65,7 @@ export default function RootLayout({
          });
        }
     } else {
-        document.title = "WorkFlowZen"; // Fallback
+        document.title = "Rubo"; // Fallback
     }
 
     return () => {
