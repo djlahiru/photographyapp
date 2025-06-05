@@ -30,9 +30,10 @@ export default function RootLayout({
         document.documentElement.classList.add(`font-theme-${storedFontTheme}`);
       }
 
-      // Apply persisted accent theme
+      // Apply persisted accent theme, defaulting to Oceanic Blue if none is set
       const storedAccentTheme = localStorage.getItem(ACCENT_THEME_LS_KEY) as AccentThemeValue | null;
-      const themeToApply = storedAccentTheme || DEFAULT_ACCENT_THEME_VALUE;
+      const themeToApply = storedAccentTheme || DEFAULT_ACCENT_THEME_VALUE; // Default to Oceanic Blue
+      
       document.documentElement.classList.forEach(cls => {
         if (cls.startsWith('theme-accent-')) {
           document.documentElement.classList.remove(cls);
