@@ -117,6 +117,9 @@ export default function LoginPage() {
           </form>
         </CardContent>
       </Card>
+      <p className="mt-8 text-sm text-center text-muted-foreground/70 italic max-w-xs sm:max-w-sm">
+        The blue gradient color shimmers and swirls across the page.
+      </p>
     </div>
   );
 }
