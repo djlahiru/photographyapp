@@ -8,7 +8,7 @@ import { PlusCircle, Users, Edit, Trash2, Phone, Mail, MessageCircle, Briefcase,
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { mockBookings } from '@/app/(app)/bookings/page';
+import { initialMockBookings } from '@/app/(app)/bookings/page'; // Changed from mockBookings
 import type { Payment, PaymentStatus, Client } from '@/types';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
@@ -77,7 +77,7 @@ export default function ClientsPage() {
   };
 
   const getClientPayments = (clientName: string): Payment[] => {
-    const clientBookings = mockBookings.filter(b => b.clientName === clientName);
+    const clientBookings = initialMockBookings.filter(b => b.clientName === clientName); // Changed from mockBookings
     const allPayments: Payment[] = [];
     clientBookings.forEach(booking => {
       if (booking.payments) {
@@ -634,3 +634,4 @@ export default function ClientsPage() {
     
 
       
+
