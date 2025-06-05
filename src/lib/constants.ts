@@ -84,7 +84,7 @@ export interface AccentTheme {
   label: string;
   lightColors: AccentThemeColors;
   darkColors: AccentThemeColors;
-  gradientPreview: string; 
+  gradientPreview: string;
   lightGradientStartHsl: string; // HSL string e.g. "205 75% 50%"
   lightGradientEndHsl: string;   // HSL string e.g. "195 85% 45%"
   darkGradientStartHsl: string;  // HSL string e.g. "205 70% 60%"
@@ -158,5 +158,3 @@ export const ALL_LOCAL_STORAGE_KEYS: string[] = [
   DATE_FORMAT_LS_KEY,
   CLOCK_FORMAT_LS_KEY,
 ];
-
-```
