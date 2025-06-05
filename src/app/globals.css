@@ -284,13 +284,14 @@
 @layer components {
   /* Active sidebar menu items */
   .sidebar-menu-button--active {
+    @apply shadow-md; /* Add shadow for consistency */
     background-image: linear-gradient(to right, hsl(var(--gradient-start-hsl)), hsl(var(--gradient-end-hsl)));
     color: hsl(var(--sidebar-accent-foreground));
-    filter: brightness(100%); /* Ensure it's not too dark if a global filter exists */
+    /* filter: brightness(100%); Removed default filter */
     transition: filter 0.2s ease-in-out;
   }
   .sidebar-menu-button--active:hover {
-    filter: brightness(90%); /* Slight dim on hover for the active gradient button */
+    filter: brightness(95%); /* Slight dim on hover for the active gradient button */
   }
 
   /* Hover for non-active sidebar items */
@@ -310,5 +311,3 @@
     background-color: hsl(var(--sidebar-gradient-bg-start-hsl));
   }
 }
-
-    
