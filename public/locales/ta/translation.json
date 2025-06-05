@@ -1,23 +1,28 @@
 
 {
-  "appName": "வொர்க்ப்ளோஜென்",
-  "nav.dashboard": " டாஷ்போர்டு",
-  "nav.tasks": "பணிகள்",
-  "nav.bookings": "முன்பதிவுகள்",
-  "nav.calendar": "நாட்காட்டி",
-  "nav.clients": "வாடிக்கையாளர்கள்",
-  "nav.packages": "தொகுப்புகள்",
-  "nav.settings": "அமைப்புகள்",
-  "greeting.morning": "காலை வணக்கம்",
-  "greeting.afternoon": "மதிய வணக்கம்",
-  "greeting.evening": "மாலை வணக்கம்",
-  "greeting.night": "நல்லிரவு வணக்கம்",
+  "appName": "வொர்க்ப்ளோசென்",
   "searchPlaceholder": "தேடு...",
   "language": "மொழி",
   "english": "ஆங்கிலம்",
   "sinhala": "சிங்களம்",
   "tamil": "தமிழ்",
   "toggleTheme": "தீம் மாற்றவும்",
-  "toggleNotifications": "அறிவிப்புகள் பேனலை மாற்றவும்",
+  "toggleNotifications": "அறிவிப்புகளை மாற்றவும்",
+  "greeting": {
+    "morning": "காலை வணக்கம்",
+    "afternoon": "மதிய வணக்கம்",
+    "evening": "மாலை வணக்கம்",
+    "night": "இரவு வணக்கம்"
+  },
+  "nav": {
+    "dashboard": " டாஷ்போர்டு",
+    "tasks": "பணிகள்",
+    "bookings": " முன்பதிவுகள்",
+    "calendar": "நாட்காட்டி",
+    "clients": "வாடிக்கையாளர்கள்",
+    "packages": "தொகுப்புகள்",
+    "payments": "கொடுப்பனவுகள்",
+    "settings": "அமைப்புகள்"
+  },
   "logout": "வெளியேறு"
 }

@@ -1,23 +1,28 @@
 
 {
   "appName": "වර්ක්ෆ්ලෝසෙන්",
-  "nav.dashboard": "උපකරණ පුවරුව",
-  "nav.tasks": "කාර්යයන්",
-  "nav.bookings": "වෙන් කිරීම්",
-  "nav.calendar": "දින දර්ශනය",
-  "nav.clients": "සේවාදායකයින්",
-  "nav.packages": "පැකේජ",
-  "nav.settings": "සැකසුම්",
-  "greeting.morning": "සුබ උදෑසනක්",
-  "greeting.afternoon": "සුබ සන්ධ්‍යාවක්",
-  "greeting.evening": "සුභ සැන්දෑවක්",
-  "greeting.night": "සුභ රාත්‍රියක්",
   "searchPlaceholder": "සොයන්න...",
   "language": "භාෂාව",
-  "english": "ඉංග්රීසි",
+  "english": "ඉංග්‍රීසි",
   "sinhala": "සිංහල",
   "tamil": "දෙමළ",
   "toggleTheme": "තේමාව මාරු කරන්න",
-  "toggleNotifications": "දැනුම්දීම් පැනලය මාරු කරන්න",
-  "logout": "ලොග් අවුට්"
+  "toggleNotifications": "දැනුම්දීම් මාරු කරන්න",
+  "greeting": {
+    "morning": "සුබ උදෑසනක්",
+    "afternoon": "සුබ සන්ධ්‍යාවක්",
+    "evening": "සුබ සැන්දෑවක්",
+    "night": "සුබ රාත්‍රියක්"
+  },
+  "nav": {
+    "dashboard": "පාලන පුවරුව",
+    "tasks": "කාර්යයන්",
+    "bookings": "වෙන් කිරීම්",
+    "calendar": "දින දර්ශනය",
+    "clients": "සේවාලාභීන්",
+    "packages": "පැකේජ",
+    "payments": "ගෙවීම්",
+    "settings": "සැකසුම්"
+  },
+  "logout": "පිටවීම"
 }

@@ -1,6 +1,6 @@
 
 import type { ElementType } from 'react';
-import { Layout, List, Package, Users, BookOpen, Calendar, Settings as SettingsIcon } from 'react-feather';
+import { Layout, List, Package, Users, BookOpen, Calendar, Settings as SettingsIcon, CreditCard } from 'react-feather';
 
 export interface NavItem {
   href: string;
@@ -16,6 +16,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/calendar', labelKey: 'nav.calendar', icon: Calendar },
   { href: '/clients', labelKey: 'nav.clients', icon: Users },
   { href: '/packages', labelKey: 'nav.packages', icon: Package },
+  { href: '/payments', labelKey: 'nav.payments', icon: CreditCard },
 ];
 
 export const SETTINGS_NAV_ITEM: NavItem = {
@@ -25,3 +26,4 @@ export const SETTINGS_NAV_ITEM: NavItem = {
 };
 
 export const APP_NAME_KEY = "appName"; // Key for app name translation
+
