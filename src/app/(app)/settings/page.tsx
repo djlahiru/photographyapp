@@ -38,13 +38,12 @@ import {
 } from '@/lib/constants';
 
 
-type AccentTheme = 'default' | 'violet' | 'oceanic' | 'forest' | 'sunset'; // Added 'violet', oceanic is now effectively the default via CSS
+type AccentTheme = 'default' | 'violet' | 'oceanic' | 'forest' | 'sunset'; 
 type FontTheme = 'default-sans' | 'classic-serif' | 'modern-mono';
 
 const ACCENT_THEMES: { value: AccentTheme; label: string }[] = [
-  { value: 'default', label: 'Default Blue' }, // 'default' now points to Oceanic Blue styles in globals.css
-  { value: 'violet', label: 'Vibrant Violet' }, // New option for original violet
-  // { value: 'oceanic', label: 'Oceanic Blue' }, // Removed, as 'default' is now Oceanic Blue
+  { value: 'default', label: 'Default Blue' }, 
+  { value: 'violet', label: 'Vibrant Violet' }, 
   { value: 'forest', label: 'Forest Green' },
   { value: 'sunset', label: 'Sunset Orange' },
 ];
@@ -78,7 +77,7 @@ const defaultUser: UserProfile = {
 };
 
 export default function SettingsPage() {
-  const { theme: nextTheme, setTheme, resolvedTheme } = useTheme(); // Added setTheme and resolvedTheme
+  const { theme: nextTheme, setTheme, resolvedTheme } = useTheme(); 
   const [user, setUser] = useState<UserProfile>(defaultUser);
   
   const [isCalendarConnected, setIsCalendarConnected] = useState(false);
@@ -90,7 +89,7 @@ export default function SettingsPage() {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
 
   const [avatarShape, setAvatarShape] = useState<AvatarShape>('circle');
-  const [currentAccentTheme, setCurrentAccentTheme] = useState<AccentTheme>('default'); // 'default' is now Oceanic Blue
+  const [currentAccentTheme, setCurrentAccentTheme] = useState<AccentTheme>('default'); 
   const [currentFontTheme, setCurrentFontTheme] = useState<FontTheme>('default-sans');
 
   const [dashboardCoverPhotoFile, setDashboardCoverPhotoFile] = useState<File | null>(null);
@@ -105,7 +104,7 @@ export default function SettingsPage() {
   const [categoryDialogTextColor, setCategoryDialogTextColor] = useState(PREDEFINED_GRADIENTS[0].textColor);
 
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>('USD');
-  const [mounted, setMounted] = useState(false); // For theme toggle button
+  const [mounted, setMounted] = useState(false); 
 
   useEffect(() => {
     setMounted(true);
@@ -142,7 +141,7 @@ export default function SettingsPage() {
 
     const storedAccentTheme = localStorage.getItem(ACCENT_THEME_LS_KEY) as AccentTheme | null;
     if (storedAccentTheme) setCurrentAccentTheme(storedAccentTheme);
-    else setCurrentAccentTheme('default'); // Ensure 'default' (now Oceanic Blue) is set if nothing stored
+    else setCurrentAccentTheme('default'); 
 
     const storedFontTheme = localStorage.getItem(FONT_THEME_LS_KEY) as FontTheme | null;
     if (storedFontTheme) setCurrentFontTheme(storedFontTheme);
@@ -198,7 +197,7 @@ export default function SettingsPage() {
     localStorage.setItem(USER_PROFILE_LS_KEY, JSON.stringify(updatedUser)); 
     toast.success(`Currency changed to ${AVAILABLE_CURRENCIES.find(c=>c.code === newCurrency)?.label || newCurrency}.`);
     window.dispatchEvent(new CustomEvent('profileUpdated')); 
-    window.dispatchEvent(new CustomEvent('currencyChanged')); // Dispatch event for other components
+    window.dispatchEvent(new CustomEvent('currencyChanged')); 
   };
 
   const toggleCalendarConnection = () => {
@@ -225,9 +224,6 @@ export default function SettingsPage() {
 
   const applyThemeClass = (themeType: 'accent' | 'font', themeValue: AccentTheme | FontTheme) => {
     const classPrefix = themeType === 'accent' ? 'theme-accent-' : 'font-theme-';
-    // For accent themes, 'default' is now Oceanic Blue, so it needs a class.
-    // For font themes, 'default-sans' means no extra class (font is set on body).
-    const defaultThemeValue = themeType === 'accent' ? 'oceanic' : 'default-sans'; // 'oceanic' isn't used this way
     
     document.documentElement.classList.forEach(cls => {
         if (cls.startsWith(classPrefix)) {
@@ -236,8 +232,6 @@ export default function SettingsPage() {
     });
 
     if (themeType === 'accent') {
-      // 'default' value corresponds to .theme-accent-default class (which is now Oceanic Blue)
-      // Other values correspond to .theme-accent-violet, .theme-accent-forest, etc.
       document.documentElement.classList.add(`${classPrefix}${themeValue}`);
     } else if (themeType === 'font' && themeValue !== 'default-sans') {
       document.documentElement.classList.add(`${classPrefix}${themeValue}`);
@@ -503,18 +497,22 @@ export default function SettingsPage() {
                   htmlFor={`accent-${item.value}`}
                   className="flex items-center space-x-2 p-3 border rounded-md hover:bg-accent/10 cursor-pointer has-[:checked]:bg-accent/20 has-[:checked]:border-accent"
                 >
-                  <RadioGroupItem value={item.value} id={`accent-${item.value}`} />
+                  <RadioGroupItem 
+                    value={item.value} 
+                    id={`accent-${item.value}`} 
+                    className="border-accent text-accent data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground"
+                  />
                   <span>{item.label}</span>
                   <span className={`ml-auto h-4 w-4 rounded-full border theme-preview-${item.value}`}></span>
                 </Label>
               ))}
             </RadioGroup>
             <style jsx>{`
-              .theme-preview-default { background-image: linear-gradient(to right, hsl(205 75% 50%), hsl(205 65% 40%)); } /* Oceanic Blue Light */
-              .dark .theme-preview-default { background-image: linear-gradient(to right, hsl(205 70% 60%), hsl(205 60% 50%)); } /* Oceanic Blue Dark */
+              .theme-preview-default { background-image: linear-gradient(to right, hsl(205 75% 50%), hsl(205 65% 40%)); } 
+              .dark .theme-preview-default { background-image: linear-gradient(to right, hsl(205 70% 60%), hsl(205 60% 50%)); } 
               
-              .theme-preview-violet { background-image: linear-gradient(to right, hsl(270 70% 65%), hsl(270 60% 55%)); } /* Violet Light */
-              .dark .theme-preview-violet { background-image: linear-gradient(to right, hsl(270 70% 70%), hsl(270 60% 60%)); } /* Violet Dark */
+              .theme-preview-violet { background-image: linear-gradient(to right, hsl(270 70% 65%), hsl(270 60% 55%)); } 
+              .dark .theme-preview-violet { background-image: linear-gradient(to right, hsl(270 70% 70%), hsl(270 60% 60%)); } 
 
               .theme-preview-oceanic { background-image: linear-gradient(to right, hsl(205 75% 50%), hsl(205 65% 40%)); }
               .dark .theme-preview-oceanic { background-image: linear-gradient(to right, hsl(205 70% 60%), hsl(205 60% 50%)); }
