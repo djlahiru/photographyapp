@@ -12,8 +12,8 @@ import { mockBookings } from '@/app/(app)/bookings/page'; // Assuming mockBookin
 import type { BookingStatus } from '@/types';
 
 // Import FullCalendar styles
-import '@fullcalendar/core/main.css';
-import '@fullcalendar/daygrid/main.css';
+// import '@fullcalendar/core/main.css'; // This line was causing the "Module not found" error
+// import '@fullcalendar/daygrid/main.css'; // This line was also causing a "Module not found" error
 
 
 const getEventClassNames = (status: BookingStatus): string[] => {
