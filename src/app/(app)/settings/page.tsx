@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIcon, Eye, Droplet, Edit3, Square, Circle as CircleIcon, Image as ImageIconFeather, Save, Trash2 } from "react-feather";
+import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIcon, Eye, Droplet, Edit3, Square, Circle as CircleIcon, Image as ImageIconFeather, Save, Trash2, AlertTriangle } from "react-feather";
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 import { format } from 'date-fns';
@@ -15,14 +15,18 @@ import { useTheme } from 'next-themes';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
-import type { UserProfile, AvatarShape } from '@/types'; // Import UserProfile and AvatarShape
-import { 
-  USER_PROFILE_LS_KEY, 
-  AVATAR_SHAPE_LS_KEY, 
-  ACCENT_THEME_LS_KEY, 
+import type { UserProfile, AvatarShape } from '@/types';
+import { Switch } from '@/components/ui/switch';
+import {
+  USER_PROFILE_LS_KEY,
+  AVATAR_SHAPE_LS_KEY,
+  ACCENT_THEME_LS_KEY,
   FONT_THEME_LS_KEY,
   DASHBOARD_COVER_PHOTO_LS_KEY,
-  DASHBOARD_COVER_PHOTO_BLUR_LS_KEY
+  DASHBOARD_COVER_PHOTO_BLUR_LS_KEY,
+  GOOGLE_CALENDAR_CONNECTED_LS_KEY,
+  GOOGLE_CALENDAR_ID_LS_KEY,
+  GOOGLE_CALENDAR_AUTO_SYNC_LS_KEY,
 } from '@/lib/constants';
 
 
@@ -54,7 +58,10 @@ const defaultUser: UserProfile = {
 export default function SettingsPage() {
   const { theme: nextTheme } = useTheme();
   const [user, setUser] = useState<UserProfile>(defaultUser);
+  
   const [isCalendarConnected, setIsCalendarConnected] = useState(false);
+  const [calendarIdToSync, setCalendarIdToSync] = useState('');
+  const [enableAutoSync, setEnableAutoSync] = useState(false);
 
   const [packageName, setPackageName] = useState('');
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
@@ -76,10 +83,10 @@ export default function SettingsPage() {
       try {
         setUser(JSON.parse(storedProfile));
       } catch (e) {
-        setUser(defaultUser); // Fallback if parsing fails
+        setUser(defaultUser); 
       }
     } else {
-      setUser(defaultUser); // Fallback if no profile stored
+      setUser(defaultUser); 
     }
 
     const storedShape = localStorage.getItem(AVATAR_SHAPE_LS_KEY) as AvatarShape | null;
@@ -95,10 +102,16 @@ export default function SettingsPage() {
       setCurrentFontTheme(storedFontTheme);
     }
     
-    const storedCalendarConnection = localStorage.getItem('googleCalendarConnected');
+    const storedCalendarConnection = localStorage.getItem(GOOGLE_CALENDAR_CONNECTED_LS_KEY);
     if (storedCalendarConnection) {
         setIsCalendarConnected(JSON.parse(storedCalendarConnection));
     }
+    const storedCalendarId = localStorage.getItem(GOOGLE_CALENDAR_ID_LS_KEY);
+    if (storedCalendarId) setCalendarIdToSync(storedCalendarId);
+
+    const storedAutoSync = localStorage.getItem(GOOGLE_CALENDAR_AUTO_SYNC_LS_KEY);
+    if (storedAutoSync) setEnableAutoSync(JSON.parse(storedAutoSync));
+
 
     const storedCoverPhotoUrl = localStorage.getItem(DASHBOARD_COVER_PHOTO_LS_KEY);
     if (storedCoverPhotoUrl) {
@@ -145,9 +158,18 @@ export default function SettingsPage() {
   const toggleCalendarConnection = () => {
     const newConnectionState = !isCalendarConnected;
     setIsCalendarConnected(newConnectionState);
-    localStorage.setItem('googleCalendarConnected', JSON.stringify(newConnectionState));
+    localStorage.setItem(GOOGLE_CALENDAR_CONNECTED_LS_KEY, JSON.stringify(newConnectionState));
     toast.success(newConnectionState ? "Google Calendar connected (simulated)." : "Google Calendar disconnected (simulated).");
   }
+
+  const handleSaveCalendarPreferences = () => {
+    if (!calendarIdToSync.trim() && enableAutoSync) {
+        toast.warn("Please provide a Calendar ID if enabling automatic sync.", { autoClose: 4000 });
+    }
+    localStorage.setItem(GOOGLE_CALENDAR_ID_LS_KEY, calendarIdToSync.trim());
+    localStorage.setItem(GOOGLE_CALENDAR_AUTO_SYNC_LS_KEY, JSON.stringify(enableAutoSync));
+    toast.success("Calendar sync preferences saved.");
+  };
 
   const handleAvatarShapeChange = (shape: AvatarShape) => {
     setAvatarShape(shape);
@@ -167,7 +189,7 @@ export default function SettingsPage() {
     if (themeValue !== defaultThemeValue) {
         document.documentElement.classList.add(`${classPrefix}${themeValue}`);
     } else if (themeType === 'accent' && themeValue === 'default') {
-         document.documentElement.classList.add('theme-accent-default'); // Ensure default is explicitly set
+         document.documentElement.classList.add('theme-accent-default'); 
     }
   };
 
@@ -233,7 +255,7 @@ export default function SettingsPage() {
     <div className="space-y-8 max-w-3xl mx-auto">
       <div>
         <h1 className="text-3xl font-bold tracking-tight font-headline">Settings</h1>
-        <p className="text-muted-foreground">Manage your profile and application settings.</p>
+        <p className="text-muted-foreground">Manage your profile and application settings for Rubo.</p>
       </div>
 
       <Card>
@@ -294,7 +316,7 @@ export default function SettingsPage() {
                 rows={3}
               />
             </div>
-          <Button onClick={handleSaveChanges}>Save Profile Changes</Button>
+          <Button onClick={handleSaveChanges}><Save className="mr-2 h-4 w-4" />Save Profile Changes</Button>
         </CardContent>
       </Card>
 
@@ -442,33 +464,70 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center"><LinkIconFeather className="mr-2 h-5 w-5"/> Google Calendar Integration</CardTitle>
-          <CardDescription>Connect your Google Calendar to sync bookings automatically.</CardDescription>
+          <CardDescription>Connect your Google Calendar to sync bookings automatically (actual connection to be implemented).</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           {isCalendarConnected ? (
             <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-md">
               <div>
-                <p className="font-medium text-green-700 dark:text-green-300">Calendar Connected</p>
-                <p className="text-sm text-green-600 dark:text-green-400">Your bookings are syncing with Google Calendar.</p>
+                <p className="font-medium text-green-700 dark:text-green-300">Calendar Connection Active (Simulated)</p>
+                <p className="text-sm text-green-600 dark:text-green-400">Rubo is set to interact with Google Calendar.</p>
               </div>
               <Button variant="destructive" size="sm" onClick={toggleCalendarConnection}>
-                <Slash className="mr-2 h-4 w-4" /> Disconnect
+                <Slash className="mr-2 h-4 w-4" /> Deactivate Connection
               </Button>
             </div>
           ) : (
              <div className="flex items-center justify-between p-4 bg-muted/50 border rounded-md">
               <div>
-                <p className="font-medium">Calendar Not Connected</p>
-                <p className="text-sm text-muted-foreground">Connect to sync your bookings.</p>
+                <p className="font-medium">Calendar Connection Inactive</p>
+                <p className="text-sm text-muted-foreground">Activate to allow Rubo to interact with Google Calendar.</p>
               </div>
               <Button onClick={toggleCalendarConnection}>
-                <LinkIconFeather className="mr-2 h-4 w-4" /> Connect Google Calendar
+                <LinkIconFeather className="mr-2 h-4 w-4" /> Activate Connection (Simulated)
               </Button>
             </div>
           )}
+          
+          <div className="space-y-2">
+            <Label htmlFor="calendarId">Google Calendar ID to Sync</Label>
+            <Input 
+              id="calendarId" 
+              placeholder="e.g., your_email@gmail.com or a specific calendar ID" 
+              value={calendarIdToSync}
+              onChange={(e) => setCalendarIdToSync(e.target.value)}
+              disabled={!isCalendarConnected}
+            />
+            <p className="text-xs text-muted-foreground">
+              Enter the ID of the Google Calendar you want Rubo to use (usually your primary email, or a custom ID).
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Switch 
+                id="enableAutoSync" 
+                checked={enableAutoSync} 
+                onCheckedChange={setEnableAutoSync}
+                disabled={!isCalendarConnected}
+            />
+            <Label htmlFor="enableAutoSync" className="cursor-pointer">Enable Automatic Sync</Label>
+          </div>
            <p className="text-xs text-muted-foreground">
-            Authorizing Rubo will allow it to (simulated) create, update, and delete events in your connected Google Calendar.
+            When enabled and connected, Rubo will attempt to sync events automatically.
           </p>
+          
+          <Button onClick={handleSaveCalendarPreferences} disabled={!isCalendarConnected}>
+            <Save className="mr-2 h-4 w-4" /> Save Calendar Preferences
+          </Button>
+           <div className="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-md text-yellow-700 dark:text-yellow-300 text-xs">
+                <div className="flex items-start">
+                    <AlertTriangle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
+                    <span>
+                    The actual Google Calendar connection and sync functionality will be implemented when publishing the app. 
+                    These settings allow you to pre-configure how it should behave.
+                    </span>
+                </div>
+            </div>
         </CardContent>
       </Card>
 
@@ -502,3 +561,4 @@ export default function SettingsPage() {
   );
 }
     
+
