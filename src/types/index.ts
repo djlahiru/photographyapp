@@ -1,54 +1,55 @@
 
 import type { Icon as FeatherIcon } from 'react-feather';
 
+export type CurrencyCode = 'LKR' | 'USD' | 'EUR';
+
 export interface UserProfile {
   id: string;
   name: string;
   email?: string;
   avatarUrl?: string;
-  bio?: string; // Added bio to UserProfile
+  bio?: string; 
+  selectedCurrency?: CurrencyCode; // Added selectedCurrency
 }
 
-export type AvatarShape = 'circle' | 'square'; // Moved AvatarShape here
+export type AvatarShape = 'circle' | 'square'; 
 
 export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
-export type TaskStatus = 'To Do' | 'In Progress' | 'Waiting' | 'Completed' | 'Cancelled'; // For form and data
-export type KanbanBoardStatus = 'To Do' | 'In Progress' | 'Done'; // For actual board columns
+export type TaskStatus = 'To Do' | 'In Progress' | 'Waiting' | 'Completed' | 'Cancelled'; 
+export type KanbanBoardStatus = 'To Do' | 'In Progress' | 'Done'; 
 
 export interface TaskFileAttachment {
   id: string;
   name: string;
-  url: string; // Could be a data URI for mock, or a path
-  type: string; // e.g., 'image/png', 'application/pdf'
-  size: number; // in bytes
+  url: string; 
+  type: string; 
+  size: number; 
 }
 
-// Updated Task interface
 export interface Task {
   id: string;
   title: string;
   description?: string;
-  assignee?: string; // Text input for now
-  dueDate?: string; // ISO date string
-  startDate?: string; // ISO date string
+  assignee?: string; 
+  dueDate?: string; 
+  startDate?: string; 
   priority: TaskPriority;
-  status: TaskStatus; // Use the richer status for data
+  status: TaskStatus; 
   relatedClientId?: string;
   relatedBookingId?: string;
-  category?: string; // Comma-separated string for tags
+  category?: string; 
   attachments?: TaskFileAttachment[];
-  reminderDate?: string; // ISO date string
-  subtasks?: string; // Textarea for now
-  colorTag?: string; // e.g., 'red-500', 'blue-500', or a semantic name like 'project-alpha'
-  createdBy: string; // e.g., 'Admin User'
-  createdAt: string; // ISO date string
-  // columnId: string; // Retained if still planning direct Kanban column mapping, or derived from status
+  reminderDate?: string; 
+  subtasks?: string; 
+  colorTag?: string; 
+  createdBy: string; 
+  createdAt: string; 
 }
 
 
 export interface KanbanColumn {
   id: string;
-  title: KanbanBoardStatus; // Columns on board represent a subset of task statuses
+  title: KanbanBoardStatus; 
   taskIds: string[];
 }
 
@@ -119,7 +120,7 @@ export interface Booking {
   packageId: string;
   packageName: string;
   bookingDates: BookingDateTime[];
-  categoryId?: string; // Changed from category: string to categoryId: string
+  categoryId?: string; 
   status: BookingStatus;
   price: number;
   notes?: string;
@@ -133,8 +134,8 @@ export interface SpecialNote {
   id: string;
   content: string;
   color: SpecialNoteColor;
-  createdAt: string; // ISO date string
-  updatedAt?: string; // ISO date string
+  createdAt: string; 
+  updatedAt?: string; 
 }
 
 export type InvoiceStatus = 'Draft' | 'Sent' | 'Paid' | 'Overdue' | 'Recorded';
@@ -144,7 +145,8 @@ export interface Invoice {
   invoiceNumber: string;
   clientName: string;
   amount: number;
-  issueDate: string; // ISO string
-  dueDate?: string; // ISO string
+  issueDate: string; 
+  dueDate?: string; 
   status: InvoiceStatus;
 }
+

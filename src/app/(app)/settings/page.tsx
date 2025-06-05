@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIcon, Eye, Droplet, Edit3, Square, Circle as CircleIcon, Image as ImageIconFeather, Save, Trash2, AlertTriangle, Tag, Plus } from "react-feather";
+import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIcon, Eye, Droplet, Edit3, Square, Circle as CircleIcon, Image as ImageIconFeather, Save, Trash2, AlertTriangle, Tag, Plus, DollarSign as DollarSignIcon } from "react-feather";
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 import { format } from 'date-fns';
@@ -15,13 +15,13 @@ import { useTheme } from 'next-themes';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
-import type { UserProfile, AvatarShape, BookingCategory, Booking } from '@/types';
+import type { UserProfile, AvatarShape, BookingCategory, Booking, CurrencyCode } from '@/types';
 import { Switch } from '@/components/ui/switch';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogDesc, DialogFooter, DialogClose } from "@/components/ui/dialog"; // Aliased DialogDescription
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogDesc, DialogFooter, DialogClose } from "@/components/ui/dialog"; 
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { mockBookingCategoriesData, mockBookingsData } from '@/lib/mock-data'; // Import booking data for checking usage
+import { mockBookingCategoriesData, mockBookingsData } from '@/lib/mock-data'; 
 import {
   USER_PROFILE_LS_KEY,
   AVATAR_SHAPE_LS_KEY,
@@ -32,6 +32,9 @@ import {
   GOOGLE_CALENDAR_CONNECTED_LS_KEY,
   GOOGLE_CALENDAR_ID_LS_KEY,
   GOOGLE_CALENDAR_AUTO_SYNC_LS_KEY,
+  SELECTED_CURRENCY_LS_KEY, // Import new constant
+  AVAILABLE_CURRENCIES, // Import new constant
+  type CurrencyDefinition, // Import new type
 } from '@/lib/constants';
 
 
@@ -69,6 +72,7 @@ const defaultUser: UserProfile = {
   email: "admin@rubo.com",
   avatarUrl: "https://placehold.co/100x100.png",
   bio: "Loves photography and efficient workflows!",
+  selectedCurrency: 'USD', // Default currency
 };
 
 export default function SettingsPage() {
@@ -91,7 +95,6 @@ export default function SettingsPage() {
   const [dashboardCoverPhotoPreview, setDashboardCoverPhotoPreview] = useState<string | null>(null);
   const [dashboardBlurIntensity, setDashboardBlurIntensity] = useState<number>(8);
 
-  // Booking Category Management State
   const [bookingCategories, setBookingCategories] = useState<BookingCategory[]>(mockBookingCategoriesData);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<BookingCategory | null>(null);
@@ -99,14 +102,19 @@ export default function SettingsPage() {
   const [categoryDialogGradient, setCategoryDialogGradient] = useState(PREDEFINED_GRADIENTS[0].value);
   const [categoryDialogTextColor, setCategoryDialogTextColor] = useState(PREDEFINED_GRADIENTS[0].textColor);
 
+  const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>('USD');
+
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentDateTime(new Date()), 1000 * 60);
     
     const storedProfile = localStorage.getItem(USER_PROFILE_LS_KEY);
+    let profileToUse = defaultUser;
     if (storedProfile) {
       try {
-        setUser(JSON.parse(storedProfile));
+        const parsedProfile: UserProfile = JSON.parse(storedProfile);
+        profileToUse = { ...defaultUser, ...parsedProfile };
+        setUser(profileToUse);
       } catch (e) {
         setUser(defaultUser); 
       }
@@ -118,35 +126,31 @@ export default function SettingsPage() {
     if (storedShape) setAvatarShape(storedShape);
 
     const storedAccentTheme = localStorage.getItem(ACCENT_THEME_LS_KEY) as AccentTheme | null;
-    if (storedAccentTheme) {
-      setCurrentAccentTheme(storedAccentTheme);
-    }
+    if (storedAccentTheme) setCurrentAccentTheme(storedAccentTheme);
 
     const storedFontTheme = localStorage.getItem(FONT_THEME_LS_KEY) as FontTheme | null;
-    if (storedFontTheme) {
-      setCurrentFontTheme(storedFontTheme);
-    }
+    if (storedFontTheme) setCurrentFontTheme(storedFontTheme);
     
     const storedCalendarConnection = localStorage.getItem(GOOGLE_CALENDAR_CONNECTED_LS_KEY);
-    if (storedCalendarConnection) {
-        setIsCalendarConnected(JSON.parse(storedCalendarConnection));
-    }
+    if (storedCalendarConnection) setIsCalendarConnected(JSON.parse(storedCalendarConnection));
     const storedCalendarId = localStorage.getItem(GOOGLE_CALENDAR_ID_LS_KEY);
     if (storedCalendarId) setCalendarIdToSync(storedCalendarId);
-
     const storedAutoSync = localStorage.getItem(GOOGLE_CALENDAR_AUTO_SYNC_LS_KEY);
     if (storedAutoSync) setEnableAutoSync(JSON.parse(storedAutoSync));
 
-
     const storedCoverPhotoUrl = localStorage.getItem(DASHBOARD_COVER_PHOTO_LS_KEY);
-    if (storedCoverPhotoUrl) {
-        setDashboardCoverPhotoPreview(storedCoverPhotoUrl);
+    if (storedCoverPhotoUrl) setDashboardCoverPhotoPreview(storedCoverPhotoUrl);
+    const storedBlurIntensity = localStorage.getItem(DASHBOARD_COVER_PHOTO_BLUR_LS_KEY);
+    if (storedBlurIntensity) setDashboardBlurIntensity(parseInt(storedBlurIntensity, 10));
+
+    const storedCurrency = localStorage.getItem(SELECTED_CURRENCY_LS_KEY) as CurrencyCode | null;
+    if (storedCurrency && AVAILABLE_CURRENCIES.some(c => c.code === storedCurrency)) {
+      setSelectedCurrency(storedCurrency);
+      setUser(prev => ({...prev, selectedCurrency: storedCurrency}));
+    } else {
+      setSelectedCurrency(profileToUse.selectedCurrency || 'USD');
     }
 
-    const storedBlurIntensity = localStorage.getItem(DASHBOARD_COVER_PHOTO_BLUR_LS_KEY);
-    if (storedBlurIntensity) {
-        setDashboardBlurIntensity(parseInt(storedBlurIntensity, 10));
-    }
 
     return () => clearInterval(timer);
   }, []);
@@ -171,12 +175,24 @@ export default function SettingsPage() {
   };
   
   const handleSaveChanges = () => {
-    localStorage.setItem(USER_PROFILE_LS_KEY, JSON.stringify(user));
+    const userToSave = { ...user, selectedCurrency }; // Ensure selectedCurrency is part of the saved user object
+    localStorage.setItem(USER_PROFILE_LS_KEY, JSON.stringify(userToSave));
     toast.success("Profile changes saved.");
     window.dispatchEvent(new CustomEvent('profileUpdated'));
     if (profileImageFile) {
         setProfileImageFile(null); 
     }
+  };
+
+  const handleCurrencyChange = (newCurrency: CurrencyCode) => {
+    setSelectedCurrency(newCurrency);
+    const updatedUser = { ...user, selectedCurrency: newCurrency };
+    setUser(updatedUser);
+    localStorage.setItem(SELECTED_CURRENCY_LS_KEY, newCurrency);
+    localStorage.setItem(USER_PROFILE_LS_KEY, JSON.stringify(updatedUser)); // Also save to main profile
+    toast.success(`Currency changed to ${AVAILABLE_CURRENCIES.find(c=>c.code === newCurrency)?.label || newCurrency}.`);
+    // Dispatch event if other components need to react immediately
+    // window.dispatchEvent(new CustomEvent('currencyChanged', { detail: newCurrency }));
   };
 
   const toggleCalendarConnection = () => {
@@ -274,7 +290,6 @@ export default function SettingsPage() {
     window.dispatchEvent(new CustomEvent('dashboardCoverPhotoStyleChange'));
   };
 
-  // Booking Category Management Functions
   const handleOpenCategoryDialog = (category?: BookingCategory) => {
     if (category) {
       setEditingCategory(category);
@@ -406,6 +421,35 @@ export default function SettingsPage() {
               />
             </div>
           <Button onClick={handleSaveChanges}><Save className="mr-2 h-4 w-4" />Save Profile Changes</Button>
+        </CardContent>
+      </Card>
+
+      <Separator />
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center"><DollarSignIcon className="mr-2 h-5 w-5" /> Currency Settings</CardTitle>
+          <CardDescription>Choose the default currency for the application.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label>Select Currency</Label>
+            <RadioGroup value={selectedCurrency} onValueChange={(value) => handleCurrencyChange(value as CurrencyCode)} className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+              {AVAILABLE_CURRENCIES.map((currency: CurrencyDefinition) => (
+                <Label
+                  key={currency.code}
+                  htmlFor={`currency-${currency.code}`}
+                  className="flex items-center space-x-2 p-3 border rounded-md hover:bg-accent/10 cursor-pointer has-[:checked]:bg-accent/20 has-[:checked]:border-accent"
+                >
+                  <RadioGroupItem value={currency.code} id={`currency-${currency.code}`} />
+                  <span>{currency.label} ({currency.symbol})</span>
+                </Label>
+              ))}
+            </RadioGroup>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Note: Changing currency here updates the setting. Displaying this currency across all financial figures in the app requires further updates.
+          </p>
         </CardContent>
       </Card>
 
