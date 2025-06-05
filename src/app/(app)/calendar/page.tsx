@@ -11,7 +11,7 @@ import interactionPlugin from '@fullcalendar/interaction'; // for eventClick
 import listPlugin from '@fullcalendar/list'; 
 import timeGridPlugin from '@fullcalendar/timegrid'; // for timeGrid views
 import type { EventClickArg, EventSourceInput, EventInput } from '@fullcalendar/core';
-import { mockBookings } from '@/app/(app)/bookings/page'; 
+import { initialMockBookings } from '@/app/(app)/bookings/page'; 
 import type { BookingStatus } from '@/types';
 
 // Removed direct CSS imports as they were causing module resolution issues.
@@ -206,7 +206,7 @@ const sriLankanHolidays: EventInput[] = [
 export default function CalendarPage() {
   const [weekendsVisible, setWeekendsVisible] = React.useState(true);
 
-  const bookingEvents: EventSourceInput = mockBookings.map(booking => ({
+  const bookingEvents: EventSourceInput = initialMockBookings.map(booking => ({
     id: booking.id,
     title: `${booking.packageName} (${booking.clientName})`,
     start: booking.bookingDate,
