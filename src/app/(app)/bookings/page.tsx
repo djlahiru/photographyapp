@@ -7,17 +7,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup, SelectLabel } from "@/components/ui/select";
-import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIconFeather, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle, Search, TrendingUp, TrendingDown, CreditCard, Save } from "react-feather";
+import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIconFeather, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle, Search, TrendingUp, TrendingDown, CreditCard, Save, UserPlus } from "react-feather";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
-import type { Booking, BookingStatus, Payment, PaymentStatus, BookingActivityLogEntry } from "@/types";
+import type { Booking, BookingStatus, Payment, PaymentStatus, BookingActivityLogEntry, Client } from "@/types"; // Added Client
 import { BookingActivityLog } from "@/components/bookings/booking-activity-log";
 import React from "react";
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { toast } from 'react-toastify';
-import { initialMockPackages } from '@/app/(app)/packages/page'; // Import packages
+import { initialMockPackages } from '@/app/(app)/packages/page'; 
+// Assuming initialMockClients is exported from clients/page.tsx for populating client selection if needed in future
+// import { initialMockClients } from '@/app/(app)/clients/page.tsx';
 
-// Mock data for bookings - Renamed to initialMockBookings and exported
+
 export const initialMockBookings: Booking[] = [
   {
     id: "1",
@@ -81,7 +83,7 @@ export const initialMockBookings: Booking[] = [
     id: "4", 
     clientName: "Diana Prince", 
     packageName: "Basic Portrait Session", 
-    packageId: "1", // Assuming it's the same basic portrait session
+    packageId: "1",
     bookingDate: "2024-08-05T09:00:00Z", 
     category: "Portrait", 
     status: "Cancelled" as BookingStatus, 
@@ -109,7 +111,6 @@ const statusIconMap: Record<BookingStatus, React.ElementType> = {
   Cancelled: XCircle, 
 };
 
-export const mockBookings = initialMockBookings;
 
 export default function BookingsPage() {
   const [bookings, setBookings] = React.useState<Booking[]>(initialMockBookings);
@@ -117,12 +118,22 @@ export default function BookingsPage() {
   const [selectedStatuses, setSelectedStatuses] = React.useState<BookingStatus[]>([]);
   const [selectedBookingForLog, setSelectedBookingForLog] = React.useState<Booking | null>(null);
 
-  // State for Add Booking Dialog
+  // State for Add/Edit Booking Dialogs
   const [isAddBookingDialogOpen, setIsAddBookingDialogOpen] = React.useState(false);
-  const [newBookingClientName, setNewBookingClientName] = React.useState('');
-  const [newBookingPackageId, setNewBookingPackageId] = React.useState<string | undefined>(undefined);
-  const [newBookingDate, setNewBookingDate] = React.useState(''); // Using string for datetime-local
-  const [newBookingCategory, setNewBookingCategory] = React.useState('');
+  const [isEditBookingDialogOpen, setIsEditBookingDialogOpen] = React.useState(false);
+  const [editingBookingId, setEditingBookingId] = React.useState<string | null>(null);
+
+  const [bookingClientName, setBookingClientName] = React.useState('');
+  const [bookingPackageId, setBookingPackageId] = React.useState<string | undefined>(undefined);
+  const [bookingDate, setBookingDate] = React.useState(''); 
+  const [bookingCategory, setBookingCategory] = React.useState('');
+
+  // State for "Add New Client" sub-dialog
+  const [isAddNewClientDialogForBookingOpen, setIsAddNewClientDialogForBookingOpen] = React.useState(false);
+  const [newClientForBookingName, setNewClientForBookingName] = React.useState('');
+  const [newClientForBookingEmail, setNewClientForBookingEmail] = React.useState('');
+  const [newClientForBookingPhone, setNewClientForBookingPhone] = React.useState('');
+
 
   const filteredBookings = React.useMemo(() => {
     return bookings.filter(booking => {
@@ -160,55 +171,125 @@ export default function BookingsPage() {
     toast.success(`Booking status updated to ${newStatus}.`);
   };
 
-  const resetNewBookingForm = () => {
-    setNewBookingClientName('');
-    setNewBookingPackageId(undefined);
-    setNewBookingDate('');
-    setNewBookingCategory('');
+  const resetBookingForm = () => {
+    setBookingClientName('');
+    setBookingPackageId(undefined);
+    setBookingDate('');
+    setBookingCategory('');
+    setEditingBookingId(null);
+  };
+  
+  const resetNewClientForBookingForm = () => {
+    setNewClientForBookingName('');
+    setNewClientForBookingEmail('');
+    setNewClientForBookingPhone('');
   };
 
   const handleOpenAddBookingDialog = () => {
-    resetNewBookingForm();
+    resetBookingForm();
     setIsAddBookingDialogOpen(true);
   };
 
-  const handleSaveNewBooking = () => {
-    if (!newBookingClientName.trim() || !newBookingPackageId || !newBookingDate) {
+  const handleOpenEditBookingDialog = (booking: Booking) => {
+    resetBookingForm();
+    setEditingBookingId(booking.id);
+    setBookingClientName(booking.clientName);
+    setBookingPackageId(booking.packageId);
+    // Format date for datetime-local input: YYYY-MM-DDTHH:mm
+    try {
+        setBookingDate(booking.bookingDate ? format(parseISO(booking.bookingDate), "yyyy-MM-dd'T'HH:mm") : '');
+    } catch (error) {
+        console.error("Error formatting booking date for edit:", error);
+        setBookingDate(''); // Fallback to empty if date is invalid
+    }
+    setBookingCategory(booking.category || '');
+    setIsEditBookingDialogOpen(true);
+  };
+  
+  const handleSaveNewClientForBooking = () => {
+    if (!newClientForBookingName.trim()) {
+      toast.error("Client Name is required for the new client.");
+      return;
+    }
+    // Here, we are just capturing the name for the current booking operation.
+    // A real app would add this client to a central store.
+    if (isEditBookingDialogOpen && editingBookingId) {
+        setBookingClientName(newClientForBookingName.trim());
+    } else {
+        setBookingClientName(newClientForBookingName.trim());
+    }
+    toast.success(`Client "${newClientForBookingName.trim()}" details captured for this booking.`);
+    setIsAddNewClientDialogForBookingOpen(false);
+    resetNewClientForBookingForm();
+  };
+
+
+  const handleSaveBooking = () => {
+    if (!bookingClientName.trim() || !bookingPackageId || !bookingDate) {
       toast.error("Client Name, Package, and Booking Date are required.");
       return;
     }
 
-    const selectedPackage = initialMockPackages.find(p => p.id === newBookingPackageId);
+    const selectedPackage = initialMockPackages.find(p => p.id === bookingPackageId);
     if (!selectedPackage) {
       toast.error("Selected package not found.");
       return;
     }
 
-    const newBooking: Booking = {
-      id: `booking-${Date.now()}`,
-      clientName: newBookingClientName.trim(),
+    const bookingData = {
+      clientName: bookingClientName.trim(),
       packageId: selectedPackage.id,
       packageName: selectedPackage.name,
-      bookingDate: new Date(newBookingDate).toISOString(),
-      category: newBookingCategory.trim() || undefined,
-      status: "Pending" as BookingStatus, // Default status
+      bookingDate: new Date(bookingDate).toISOString(),
+      category: bookingCategory.trim() || undefined,
       price: selectedPackage.price,
-      payments: [],
-      activityLog: [
-        {
-          id: `log-new-${Date.now()}`,
-          timestamp: new Date().toISOString(),
-          action: `Booking created for ${selectedPackage.name}.`,
-          actor: "Admin",
-          iconName: "PlusCircle",
-        },
-      ],
     };
 
-    setBookings(prevBookings => [newBooking, ...prevBookings]);
-    toast.success(`Booking for ${newBooking.clientName} with ${newBooking.packageName} scheduled!`);
-    setIsAddBookingDialogOpen(false);
-    resetNewBookingForm();
+    if (isEditBookingDialogOpen && editingBookingId) {
+      // Update existing booking
+      setBookings(prevBookings =>
+        prevBookings.map(b => {
+          if (b.id === editingBookingId) {
+            const newLogEntry: BookingActivityLogEntry = {
+              id: `log-edit-${editingBookingId}-${Date.now()}`,
+              timestamp: new Date().toISOString(),
+              action: `Booking details updated.`,
+              actor: "Admin",
+              iconName: "Edit",
+            };
+            return {
+              ...b,
+              ...bookingData,
+              activityLog: b.activityLog ? [newLogEntry, ...b.activityLog] : [newLogEntry],
+            };
+          }
+          return b;
+        })
+      );
+      toast.success(`Booking for ${bookingData.clientName} updated!`);
+      setIsEditBookingDialogOpen(false);
+    } else {
+      // Add new booking
+      const newBooking: Booking = {
+        id: `booking-${Date.now()}`,
+        ...bookingData,
+        status: "Pending" as BookingStatus,
+        payments: [],
+        activityLog: [
+          {
+            id: `log-new-${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            action: `Booking created for ${selectedPackage.name}.`,
+            actor: "Admin",
+            iconName: "PlusCircle",
+          },
+        ],
+      };
+      setBookings(prevBookings => [newBooking, ...prevBookings]);
+      toast.success(`Booking for ${newBooking.clientName} with ${newBooking.packageName} scheduled!`);
+      setIsAddBookingDialogOpen(false);
+    }
+    resetBookingForm();
   };
 
 
@@ -283,7 +364,7 @@ export default function BookingsPage() {
                                 </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => toast.info(`Edit booking ${booking.id} - coming soon!`)}>
+                                    <DropdownMenuItem onClick={() => handleOpenEditBookingDialog(booking)}>
                                         <Edit className="mr-2 h-4 w-4" />Edit Booking
                                     </DropdownMenuItem>
                                     
@@ -395,29 +476,41 @@ export default function BookingsPage() {
         </div>
       )}
 
-      {/* Add New Booking Dialog */}
-      <Dialog open={isAddBookingDialogOpen} onOpenChange={setIsAddBookingDialogOpen}>
+      {/* Add/Edit Booking Dialog */}
+      <Dialog open={isAddBookingDialogOpen || isEditBookingDialogOpen} onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          setIsAddBookingDialogOpen(false);
+          setIsEditBookingDialogOpen(false);
+          resetBookingForm();
+        }
+      }}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="font-headline">Schedule Booking</DialogTitle>
+            <DialogTitle className="font-headline">{isEditBookingDialogOpen ? "Edit Booking" : "Schedule Booking"}</DialogTitle>
             <DialogDescription>
-              Fill in the details below to create a new booking.
+              {isEditBookingDialogOpen ? "Update the booking details below." : "Fill in the details below to create a new booking."}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="new-booking-client-name">Client Name</Label>
-              <Input
-                id="new-booking-client-name"
-                placeholder="e.g., John Doe"
-                value={newBookingClientName}
-                onChange={(e) => setNewBookingClientName(e.target.value)}
-              />
+              <Label htmlFor="booking-client-name">Client Name</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="booking-client-name"
+                  placeholder="e.g., John Doe"
+                  value={bookingClientName}
+                  onChange={(e) => setBookingClientName(e.target.value)}
+                  className="flex-grow"
+                />
+                <Button variant="outline" size="sm" onClick={() => { resetNewClientForBookingForm(); setIsAddNewClientDialogForBookingOpen(true); }}>
+                    <UserPlus className="mr-1 h-4 w-4" /> Add New
+                </Button>
+              </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="new-booking-package">Photography Package</Label>
-              <Select value={newBookingPackageId} onValueChange={setNewBookingPackageId}>
-                <SelectTrigger id="new-booking-package">
+              <Label htmlFor="booking-package">Photography Package</Label>
+              <Select value={bookingPackageId} onValueChange={setBookingPackageId}>
+                <SelectTrigger id="booking-package">
                   <SelectValue placeholder="Select a package" />
                 </SelectTrigger>
                 <SelectContent>
@@ -433,34 +526,87 @@ export default function BookingsPage() {
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="new-booking-date">Booking Date & Time</Label>
+              <Label htmlFor="booking-date">Booking Date & Time</Label>
               <Input
-                id="new-booking-date"
+                id="booking-date"
                 type="datetime-local"
-                value={newBookingDate}
-                onChange={(e) => setNewBookingDate(e.target.value)}
+                value={bookingDate}
+                onChange={(e) => setBookingDate(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="new-booking-category">Category (Optional)</Label>
+              <Label htmlFor="booking-category">Category (Optional)</Label>
               <Input
-                id="new-booking-category"
+                id="booking-category"
                 placeholder="e.g., Wedding, Portrait, Event"
-                value={newBookingCategory}
-                onChange={(e) => setNewBookingCategory(e.target.value)}
+                value={bookingCategory}
+                onChange={(e) => setBookingCategory(e.target.value)}
               />
             </div>
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="outline" onClick={resetNewBookingForm}>
+              <Button type="button" variant="outline" onClick={resetBookingForm}>
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="button" onClick={handleSaveNewBooking}>
-              <Save className="mr-2 h-4 w-4" /> Save Booking
+            <Button type="button" onClick={handleSaveBooking}>
+              <Save className="mr-2 h-4 w-4" /> {isEditBookingDialogOpen ? "Save Changes" : "Save Booking"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add New Client Sub-Dialog (for bookings) */}
+      <Dialog open={isAddNewClientDialogForBookingOpen} onOpenChange={setIsAddNewClientDialogForBookingOpen}>
+        <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle className="font-headline">Add New Client for Booking</DialogTitle>
+                <DialogDescription>
+                    Enter the new client's details. This client will be associated with the current booking.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                    <Label htmlFor="new-client-booking-name">Full Name</Label>
+                    <Input
+                        id="new-client-booking-name"
+                        placeholder="e.g., Jane Smith"
+                        value={newClientForBookingName}
+                        onChange={(e) => setNewClientForBookingName(e.target.value)}
+                    />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="new-client-booking-email">Email (Optional)</Label>
+                    <Input
+                        id="new-client-booking-email"
+                        type="email"
+                        placeholder="e.g., jane.smith@example.com"
+                        value={newClientForBookingEmail}
+                        onChange={(e) => setNewClientForBookingEmail(e.target.value)}
+                    />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="new-client-booking-phone">Phone (Optional)</Label>
+                    <Input
+                        id="new-client-booking-phone"
+                        type="tel"
+                        placeholder="e.g., 555-0202"
+                        value={newClientForBookingPhone}
+                        onChange={(e) => setNewClientForBookingPhone(e.target.value)}
+                    />
+                </div>
+            </div>
+            <DialogFooter>
+                <DialogClose asChild>
+                    <Button type="button" variant="outline" onClick={() => { setIsAddNewClientDialogForBookingOpen(false); resetNewClientForBookingForm();}}>
+                        Cancel
+                    </Button>
+                </DialogClose>
+                <Button type="button" onClick={handleSaveNewClientForBooking}>
+                    <UserPlus className="mr-2 h-4 w-4" /> Add Client to Booking
+                </Button>
+            </DialogFooter>
         </DialogContent>
       </Dialog>
 

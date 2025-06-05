@@ -19,7 +19,8 @@ import { toast } from 'react-toastify';
 import { cn } from '@/lib/utils';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 
-const initialMockClients: Client[] = [
+// Export initialMockClients so it can be imported elsewhere if needed
+export const initialMockClients: Client[] = [
   { id: "1", name: "Alice Wonderland", contactDetails: { email: "alice@example.com", phone: "555-1234", whatsapp: "555-1234" }, address: "123 Storybook Lane", totalPayments: 150, outstandingBalance: 0, totalBookings: 1, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "female person", notes: "Prefers morning shoots. Allergic to cats." },
   { id: "2", name: "Bob The Builder", contactDetails: { email: "bob@example.com", phone: "555-5678" }, address: "456 Construction Rd", totalPayments: 2500, outstandingBalance: 0, totalBookings: 1, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "male person", notes: "Needs invoices sent to accounting@bobcorp.com." },
   { id: "3", name: "Charlie Chaplin", contactDetails: { email: "charlie@example.com" }, totalPayments: 0, outstandingBalance: 100, totalBookings: 1, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "classic actor", notes: "" },
