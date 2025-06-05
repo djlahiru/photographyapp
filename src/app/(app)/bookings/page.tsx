@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup, SelectLabel } from "@/components/ui/select";
-import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIconFeather, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle, Search, TrendingUp, TrendingDown, CreditCard, Save, UserPlus, Plus, Trash, FileText as FileTextIcon, Info } from "react-feather";
+import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIconFeather, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle, Search, TrendingUp, TrendingDown, CreditCard, Save, UserPlus, Plus, Trash, FileText as FileTextIcon, Info, Grid, List as ListIcon } from "react-feather";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
 import type { Booking, BookingStatus, Payment, PaymentStatus, BookingActivityLogEntry, Client, BookingDateTime } from "@/types";
@@ -20,6 +20,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { mockBookingsData, mockClientsData, mockPackagesData } from '@/lib/mock-data';
+import { cn } from "@/lib/utils";
 
 
 const ALL_STATUSES: BookingStatus[] = ["Pending", "Confirmed", "Completed", "Cancelled"];
@@ -45,6 +46,7 @@ const paymentStatusVariantMap: Record<PaymentStatus, "default" | "secondary" | "
   Refunded: "outline",
 };
 
+type LayoutMode = 'grid' | 'list';
 
 export default function BookingsPage() {
   const [bookings, setBookings] = React.useState<Booking[]>(mockBookingsData);
@@ -79,6 +81,8 @@ export default function BookingsPage() {
   // State for "View Booking Details" Dialog
   const [selectedBookingForDetailsView, setSelectedBookingForDetailsView] = React.useState<Booking | null>(null);
   const [isViewDetailsDialogOpen, setIsViewDetailsDialogOpen] = React.useState(false);
+
+  const [layoutMode, setLayoutMode] = React.useState<LayoutMode>('grid');
 
 
   const filteredBookings = React.useMemo(() => {
@@ -331,20 +335,40 @@ export default function BookingsPage() {
             <h1 className="text-3xl font-bold tracking-tight font-headline">Bookings Management</h1>
             <p className="text-muted-foreground">Schedule, view, and manage client bookings.</p>
         </div>
-        <div className="flex items-center gap-2 w-full md:w-auto">
-           <div className="relative flex-grow md:flex-grow-0">
+        <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto justify-end flex-wrap">
+           <div className="relative w-full sm:w-auto flex-grow sm:flex-grow-0">
              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
              <Input
                 type="search"
                 placeholder="Search bookings..."
-                className="pl-8 w-full md:w-[200px] lg:w-[250px]"
+                className="pl-8 w-full sm:w-[200px] lg:w-[250px]"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
            </div>
+           <div className="flex items-center gap-2">
+              <Button 
+                variant={layoutMode === 'grid' ? 'default' : 'outline'} 
+                size="icon" 
+                onClick={() => setLayoutMode('grid')}
+                aria-label="Grid View"
+                title="Grid View"
+              >
+                <Grid className="h-5 w-5" />
+              </Button>
+              <Button 
+                variant={layoutMode === 'list' ? 'default' : 'outline'} 
+                size="icon" 
+                onClick={() => setLayoutMode('list')}
+                aria-label="List View"
+                title="List View"
+              >
+                <ListIcon className="h-5 w-5" />
+              </Button>
+            </div>
             <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline">
+                <Button variant="outline" className="w-full sm:w-auto">
                 <Filter className="mr-2 h-4 w-4" /> Filter by Status
                 </Button>
             </DropdownMenuTrigger>
@@ -374,7 +398,11 @@ export default function BookingsPage() {
       </div>
 
       {filteredBookings.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+         <div className={cn(
+          layoutMode === 'grid'
+            ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+            : "flex flex-col gap-4" 
+        )}>
             {filteredBookings.map((booking) => {
                 const StatusIcon = statusIconMap[booking.status];
                 const totalPaid = booking.payments?.filter(p => p.status === 'Paid').reduce((sum, p) => sum + p.amount, 0) || 0;
@@ -871,7 +899,7 @@ export default function BookingsPage() {
                                     <Label className="font-semibold text-muted-foreground mb-2 block">Recent Activity (Last 3)</Label>
                                     <div className="space-y-3">
                                         {selectedBookingForDetailsView.activityLog.slice(0, 3).map(log => {
-                                            const LogIcon = log.iconName ? (Info[log.iconName as keyof typeof Info] || Clock) : Clock;
+                                            const LogIcon = log.iconName ? (FeatherIcons[log.iconName as keyof typeof FeatherIcons] || Clock) : Clock;
                                             return (
                                                 <div key={log.id} className="flex items-start text-xs">
                                                     <LogIcon className="h-4 w-4 mr-2 mt-0.5 text-muted-foreground flex-shrink-0" />
@@ -909,3 +937,5 @@ export default function BookingsPage() {
   );
 }
 
+
+    
