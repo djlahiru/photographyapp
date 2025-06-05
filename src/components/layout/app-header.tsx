@@ -193,7 +193,7 @@ export function AppHeader() {
       <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
         <Link href="/dashboard" aria-label={`${t(APP_NAME_KEY)} Dashboard`}>
             <Image
-              src="/images/rubo-logo.png"
+              src="/images/new-company-logo.png"
               alt={`${t(APP_NAME_KEY)} Logo`}
               width={160}
               height={27}
@@ -201,7 +201,7 @@ export function AppHeader() {
               className="hidden sm:block"
             />
              <Image
-              src="/images/rubo-logo.png"
+              src="/images/new-company-logo.png"
               alt={`${t(APP_NAME_KEY)} Logo`}
               width={80}
               height={14}
