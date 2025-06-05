@@ -1,4 +1,3 @@
-
 import { SummaryStats } from "@/components/dashboard/summary-stats";
 import { OverviewList } from "@/components/dashboard/overview-list";
 // import { CalendarStatus } from "@/components/dashboard/calendar-status"; // Removed import
@@ -7,6 +6,7 @@ import { MonthlyBookingsByCategoryChart } from "@/components/dashboard/monthly-b
 import { ProjectStatusProgress } from "@/components/dashboard/project-status-progress";
 import { WorkProgressTracker } from "@/components/dashboard/work-progress-tracker";
 import { DashboardCoverPhotoDisplay } from "@/components/dashboard/dashboard-cover-photo-display";
+import { MonthlyRevenueLineChart } from "@/components/dashboard/monthly-revenue-line-chart";
 import { BookOpen, Clock, UserPlus, MoreHorizontal, Activity } from "react-feather";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -52,24 +52,25 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <DashboardCoverPhotoDisplay />
       <SummaryStats />
-      
+
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        <OverviewList 
-            title="Upcoming Bookings" 
-            items={upcomingBookings} 
-            icon={Clock} 
-            emptyMessage="No upcoming bookings."
-            itemAction={itemActionMenu}
+        <OverviewList
+          title="Upcoming Bookings"
+          items={upcomingBookings}
+          icon={Clock}
+          emptyMessage="No upcoming bookings."
+          itemAction={itemActionMenu}
         />
-        <OverviewList 
-            title="Recently Added Clients" 
-            items={recentClients} 
-            icon={UserPlus}
-            emptyMessage="No new clients recently."
-            itemAction={itemActionMenu}
+        <OverviewList
+          title="Recently Added Clients"
+          items={recentClients}
+          icon={UserPlus}
+          emptyMessage="No new clients recently."
+          itemAction={itemActionMenu}
         />
-         <div className="lg:col-span-1 space-y-8">
+        <div className="lg:col-span-1 space-y-8">
           <MonthlyBookingsByCategoryChart />
+          <MonthlyRevenueLineChart />
           <WorkProgressTracker stages={projectStages} currentStageName={currentProjectStage} />
           <CategoryBreakdown />
           <ProjectStatusProgress />
@@ -77,11 +78,11 @@ export default function DashboardPage() {
         </div>
       </div>
 
-       {/* Placeholder for more recent activity if needed */}
-       {/* <OverviewList title="Recent Activity" items={[]} icon={Activity} /> */}
+      {/* Placeholder for more recent activity if needed */}
+      {/* <OverviewList title="Recent Activity" items={[]} icon={Activity} /> */}
 
     </div>
   );
 }
 
-    
+
