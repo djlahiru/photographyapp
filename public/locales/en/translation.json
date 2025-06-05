@@ -1,13 +1,6 @@
 
 {
   "appName": "Rubo",
-  "english": "English",
-  "sinhala": "Sinhala",
-  "tamil": "Tamil",
-  "language": "Language",
-  "toggleTheme": "Toggle Theme",
-  "toggleNotifications": "Toggle Notifications",
-  "logout": "Logout",
   "nav": {
     "dashboard": "Dashboard",
     "tasks": "Task Board",
@@ -16,6 +9,7 @@
     "clients": "Clients",
     "packages": "Packages",
     "payments": "Payments",
+    "invoices": "Invoices",
     "settings": "Settings"
   },
   "greeting": {
@@ -23,5 +17,33 @@
     "afternoon": "Good Afternoon",
     "evening": "Good Evening",
     "night": "Good Night"
-  }
+  },
+  "language": "Language",
+  "english": "English",
+  "sinhala": "Sinhala",
+  "tamil": "Tamil",
+  "toggleTheme": "Toggle theme",
+  "toggleNotifications": "Toggle notifications",
+  "logout": "Logout",
+  "invoices.title": "Invoice Processing",
+  "invoices.description": "Manage invoice templates and issue new invoices to clients.",
+  "invoices.templateSetup.title": "Invoice Template Setup",
+  "invoices.templateSetup.description": "Design or paste your invoice template here. Use placeholders like {{clientName}}, {{invoiceNumber}}, {{issueDate}}, {{dueDate}}, {{amount}}, {{itemName}}, {{itemPrice}}, {{itemQuantity}}, {{subtotal}}, {{taxAmount}}, {{totalAmount}}.",
+  "invoices.templateSetup.label": "Invoice HTML Template",
+  "invoices.templateSetup.placeholder": "Paste your HTML template here...",
+  "invoices.templateSetup.saveButton": "Save Template",
+  "invoices.templateSetup.saveSuccess": "Invoice template saved successfully!",
+  "invoices.templateSetup.saveError": "Failed to save invoice template.",
+  "invoices.issueNew.title": "Issue New Invoice",
+  "invoices.issueNew.description": "Fill in the details to generate and send a new invoice (Sending functionality is a placeholder).",
+  "invoices.issueNew.clientNameLabel": "Client Name",
+  "invoices.issueNew.clientNamePlaceholder": "Select or enter client name",
+  "invoices.issueNew.invoiceNumberLabel": "Invoice Number",
+  "invoices.issueNew.invoiceNumberPlaceholder": "e.g., INV-2024-001",
+  "invoices.issueNew.amountLabel": "Total Amount",
+  "invoices.issueNew.amountPlaceholder": "e.g., 250.00",
+  "invoices.issueNew.issueDateLabel": "Issue Date",
+  "invoices.issueNew.dueDateLabel": "Due Date",
+  "invoices.issueNew.generateButton": "Generate & Send Invoice",
+  "invoices.issueNew.generateSuccess": "Invoice generated (simulated). Sending is not yet implemented."
 }

@@ -1,6 +1,6 @@
 
 import type { ElementType } from 'react';
-import { Layout, List, Package, Users, BookOpen, Calendar, Settings as SettingsIcon, CreditCard } from 'react-feather';
+import { Layout, List, Package, Users, BookOpen, Calendar, Settings as SettingsIcon, CreditCard, FileText } from 'react-feather';
 
 export interface NavItem {
   href: string;
@@ -17,6 +17,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/clients', labelKey: 'nav.clients', icon: Users },
   { href: '/packages', labelKey: 'nav.packages', icon: Package },
   { href: '/payments', labelKey: 'nav.payments', icon: CreditCard },
+  { href: '/invoices', labelKey: 'nav.invoices', icon: FileText },
 ];
 
 export const SETTINGS_NAV_ITEM: NavItem = {
@@ -35,4 +36,5 @@ export const FONT_THEME_LS_KEY = 'fontTheme';
 export const GOOGLE_CALENDAR_CONNECTED_LS_KEY = 'googleCalendarConnected';
 export const GOOGLE_CALENDAR_ID_LS_KEY = 'googleCalendarIdToSync';
 export const GOOGLE_CALENDAR_AUTO_SYNC_LS_KEY = 'googleCalendarAutoSync';
+export const INVOICE_TEMPLATE_LS_KEY = 'invoiceTemplateHtml';
 
