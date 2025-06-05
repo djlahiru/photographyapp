@@ -1,12 +1,20 @@
 
+'use client';
+
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Package as PackageIcon, Edit, Trash2, MoreVertical, DollarSign, CheckSquare } from "react-feather";
+import { PlusCircle, Package as PackageIcon, Edit, Trash2, MoreVertical, DollarSign, CheckSquare, Save } from "react-feather";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input';
+import { Label } from "@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'react-toastify';
 
 // Mock data for packages
-const mockPackages = [
+const initialMockPackages = [
   { id: "1", name: "Basic Portrait Session", description: "A quick session for individual portraits, perfect for headshots or a small update.", price: 150, services: ["30 min session", "5 edited photos", "Online gallery access"] },
   { id: "2", name: "Standard Wedding Package", description: "Comprehensive wedding day coverage from getting ready to the first dance.", price: 2500, services: ["8 hours coverage", "2 photographers", "Online gallery", "300+ edited photos", "Engagement session discount"] },
   { id: "3", name: "Family Lifestyle Shoot", description: "Capture natural family moments in a relaxed outdoor or in-home setting.", price: 350, services: ["1 hour session", "Outdoor or in-home", "50 edited photos", "Print release"] },
@@ -15,6 +23,49 @@ const mockPackages = [
 
 
 export default function PackagesPage() {
+  const [mockPackages, setMockPackages] = useState(initialMockPackages); // Use state for dynamic updates
+  const [isAddPackageDialogOpen, setIsAddPackageDialogOpen] = useState(false);
+  const [newPackageName, setNewPackageName] = useState('');
+  const [newPackageDescription, setNewPackageDescription] = useState('');
+  const [newPackagePrice, setNewPackagePrice] = useState('');
+  const [newPackageServices, setNewPackageServices] = useState('');
+
+  const handleSaveNewPackage = () => {
+    if (!newPackageName.trim() || !newPackagePrice.trim()) {
+      toast.error("Package Name and Price are required.");
+      return;
+    }
+
+    const price = parseFloat(newPackagePrice);
+    if (isNaN(price) || price < 0) {
+      toast.error("Please enter a valid price.");
+      return;
+    }
+
+    const servicesArray = newPackageServices.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+
+    const newPackage = {
+      id: (mockPackages.length + 1).toString(), // Simple ID generation for mock data
+      name: newPackageName,
+      description: newPackageDescription,
+      price: price,
+      services: servicesArray,
+    };
+
+    console.log("New Package Submitted:", newPackage);
+    // For demo purposes, add to the local state. In a real app, you'd send this to a backend.
+    setMockPackages(prevPackages => [...prevPackages, newPackage]); 
+
+    toast.success(`Package "${newPackage.name}" added successfully!`);
+
+    // Reset form and close dialog
+    setNewPackageName('');
+    setNewPackageDescription('');
+    setNewPackagePrice('');
+    setNewPackageServices('');
+    setIsAddPackageDialogOpen(false);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -22,7 +73,7 @@ export default function PackagesPage() {
           <h1 className="text-3xl font-bold tracking-tight font-headline">Photography Packages</h1>
           <p className="text-muted-foreground">Create, view, edit, and manage your service packages.</p>
         </div>
-        <Button>
+        <Button onClick={() => setIsAddPackageDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" /> Add New Package
         </Button>
       </div>
@@ -44,8 +95,17 @@ export default function PackagesPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem><Edit className="mr-2 h-4 w-4" />Edit Package</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                      <DropdownMenuItem>
+                        <Edit className="mr-2 h-4 w-4" />Edit Package
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                        onClick={() => {
+                           // Mock delete: filter out the package
+                           setMockPackages(prev => prev.filter(p => p.id !== pkg.id));
+                           toast.info(`Package "${pkg.name}" deleted (mock).`);
+                        }}
+                      >
                         <Trash2 className="mr-2 h-4 w-4" />Delete Package
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -72,8 +132,6 @@ export default function PackagesPage() {
                   </ul>
                 </div>
               </CardContent>
-              {/* CardFooter can be used for a primary action if needed, like "View Details" or "Book Now" */}
-              {/* For now, actions are in the DropdownMenu */}
             </Card>
           ))}
         </div>
@@ -82,11 +140,74 @@ export default function PackagesPage() {
           <PackageIcon className="h-20 w-20 text-muted-foreground mb-6" />
           <h3 className="text-2xl font-semibold mb-3 font-headline">No Packages Defined Yet</h3>
           <p className="text-muted-foreground mb-6 max-w-sm">You haven&apos;t created any photography packages. Click the button to add your first one.</p>
-          <Button size="lg">
+          <Button size="lg" onClick={() => setIsAddPackageDialogOpen(true)}>
             <PlusCircle className="mr-2 h-5 w-5" /> Add New Package
           </Button>
         </div>
       )}
+
+      {/* Add New Package Dialog */}
+      <Dialog open={isAddPackageDialogOpen} onOpenChange={setIsAddPackageDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-headline">Add New Photography Package</DialogTitle>
+            <DialogDescription>
+              Fill in the details below to create a new package.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="new-package-name">Package Name</Label>
+              <Input
+                id="new-package-name"
+                placeholder="e.g., Premium Wedding Collection"
+                value={newPackageName}
+                onChange={(e) => setNewPackageName(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="new-package-description">Description</Label>
+              <Textarea
+                id="new-package-description"
+                placeholder="Briefly describe what this package includes."
+                value={newPackageDescription}
+                onChange={(e) => setNewPackageDescription(e.target.value)}
+                rows={3}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="new-package-price">Price ($)</Label>
+              <Input
+                id="new-package-price"
+                type="number"
+                placeholder="e.g., 1500"
+                value={newPackagePrice}
+                onChange={(e) => setNewPackagePrice(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="new-package-services">Included Services (one per line)</Label>
+              <Textarea
+                id="new-package-services"
+                placeholder="e.g., Full day coverage&#10;100 edited photos&#10;Online gallery"
+                value={newPackageServices}
+                onChange={(e) => setNewPackageServices(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button type="button" onClick={handleSaveNewPackage}>
+              <Save className="mr-2 h-4 w-4" /> Save Package
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
