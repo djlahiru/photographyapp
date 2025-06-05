@@ -1,38 +1,50 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Users, Edit, Trash2, Phone, Mail, MessageCircle, Briefcase, TrendingUp, TrendingDown, FileText, Edit2, DollarSign, Calendar as CalendarIconFeather, Package } from "react-feather";
+import { PlusCircle, Users, Edit, Trash2, Phone, Mail, MessageCircle, Briefcase, TrendingUp, TrendingDown, FileText, Edit2, DollarSign, Calendar as CalendarIconFeather, Package, Save } from "react-feather";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { mockBookings } from '@/app/(app)/bookings/page'; // Import mock bookings
+import { mockBookings } from '@/app/(app)/bookings/page';
 import type { Payment, PaymentStatus } from '@/types';
 import { format } from 'date-fns';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'react-toastify';
 
 // Mock data for clients
-const mockClients = [
+const initialMockClients = [
   { id: "1", name: "Alice Wonderland", contactDetails: { email: "alice@example.com", phone: "555-1234" }, address: "123 Storybook Lane", totalPayments: 150, outstandingBalance: 0, totalBookings: 1, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "female person", notes: "Prefers morning shoots. Allergic to cats." },
   { id: "2", name: "Bob The Builder", contactDetails: { email: "bob@example.com", phone: "555-5678" }, address: "456 Construction Rd", totalPayments: 2500, outstandingBalance: 0, totalBookings: 1, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "male person", notes: "Needs invoices sent to accounting@bobcorp.com." },
-  { id: "3", name: "Charlie Chaplin", contactDetails: { email: "charlie@example.com" }, totalPayments: 0, outstandingBalance: 100, totalBookings: 1, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "classic actor" },
-  { id: "4", name: "Diana Prince", contactDetails: { email: "diana@example.com" }, totalPayments: 0, outstandingBalance: 0, totalBookings: 1, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "heroine woman" },
+  { id: "3", name: "Charlie Chaplin", contactDetails: { email: "charlie@example.com" }, totalPayments: 0, outstandingBalance: 100, totalBookings: 1, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "classic actor", notes: "" },
+  { id: "4", name: "Diana Prince", contactDetails: { email: "diana@example.com" }, totalPayments: 0, outstandingBalance: 0, totalBookings: 1, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "heroine woman", notes: "" },
 ];
 
 const paymentStatusVariantMap: Record<PaymentStatus, "default" | "secondary" | "destructive" | "outline" | "success" | "warning"> = {
   Paid: "success",
   Pending: "warning",
   Failed: "destructive",
-  Refunded: "outline", // Or use a specific color like blue/purple if available
+  Refunded: "outline",
 };
 
 export default function ClientsPage() {
+  const [mockClients, setMockClients] = useState(initialMockClients);
+  const [isAddClientDialogOpen, setIsAddClientDialogOpen] = useState(false);
+  const [newClientName, setNewClientName] = useState('');
+  const [newClientEmail, setNewClientEmail] = useState('');
+  const [newClientPhone, setNewClientPhone] = useState('');
+  const [newClientAddress, setNewClientAddress] = useState('');
+  const [newClientNotes, setNewClientNotes] = useState('');
+
   const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase();
 
   const handleEditNote = (clientName: string) => {
     console.log(`Edit note for ${clientName} clicked.`);
-    // Placeholder for actual modal/edit functionality
   };
 
   const getClientPayments = (clientName: string): Payment[] => {
@@ -40,10 +52,48 @@ export default function ClientsPage() {
     const allPayments: Payment[] = [];
     clientBookings.forEach(booking => {
       if (booking.payments) {
-        allPayments.push(...booking.payments.map(p => ({...p, bookingPackageName: booking.packageName}))); // Add package name for context
+        allPayments.push(...booking.payments.map(p => ({...p, bookingPackageName: booking.packageName})));
       }
     });
     return allPayments.sort((a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime());
+  };
+
+  const resetNewClientForm = () => {
+    setNewClientName('');
+    setNewClientEmail('');
+    setNewClientPhone('');
+    setNewClientAddress('');
+    setNewClientNotes('');
+  };
+
+  const handleSaveNewClient = () => {
+    if (!newClientName.trim()) {
+      toast.error("Client Name is required.");
+      return;
+    }
+
+    const newClient = {
+      id: (mockClients.length + 1).toString(),
+      name: newClientName,
+      contactDetails: {
+        email: newClientEmail.trim() || undefined,
+        phone: newClientPhone.trim() || undefined,
+      },
+      address: newClientAddress.trim() || undefined,
+      notes: newClientNotes.trim() || undefined,
+      totalPayments: 0,
+      outstandingBalance: 0,
+      totalBookings: 0,
+      avatarUrl: `https://placehold.co/80x80.png?text=${getInitials(newClientName)}`,
+      dataAiHint: "person", // Generic hint for new clients
+    };
+
+    setMockClients(prevClients => [...prevClients, newClient]);
+    toast.success(`Client "${newClient.name}" added successfully!`);
+    console.log("New Client Saved:", newClient);
+
+    resetNewClientForm();
+    setIsAddClientDialogOpen(false);
   };
 
   return (
@@ -53,7 +103,7 @@ export default function ClientsPage() {
             <h1 className="text-3xl font-bold tracking-tight font-headline">Client Management</h1>
             <p className="text-muted-foreground">Add, view, edit, and manage client information.</p>
         </div>
-        <Button>
+        <Button onClick={() => setIsAddClientDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" /> Add New Client
         </Button>
       </div>
@@ -105,7 +155,6 @@ export default function ClientsPage() {
                     </div>
                 </div>
 
-                {/* Recent Payments Section */}
                 <div className="pt-3 border-t border-border">
                   <h4 className="text-sm font-medium text-foreground mb-2">Recent Payments</h4>
                   {recentPayments.length > 0 ? (
@@ -184,7 +233,17 @@ export default function ClientsPage() {
                     <Edit2 className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="sm"><Edit className="mr-1.5 h-4 w-4" />Edit</Button>
-                <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10"><Trash2 className="mr-1.5 h-4 w-4" />Delete</Button>
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => {
+                        setMockClients(prev => prev.filter(c => c.id !== client.id));
+                        toast.info(`Client "${client.name}" deleted.`);
+                    }}
+                >
+                    <Trash2 className="mr-1.5 h-4 w-4" />Delete
+                </Button>
               </CardFooter>
             </Card>
           )})}
@@ -194,11 +253,88 @@ export default function ClientsPage() {
           <Users className="h-20 w-20 text-muted-foreground mb-6" />
           <h3 className="text-2xl font-semibold mb-3 font-headline">No Clients Yet</h3>
           <p className="text-muted-foreground mb-6 max-w-sm">You haven&apos;t added any clients. Click the button below to add your first client and start managing their bookings.</p>
-          <Button size="lg">
+          <Button size="lg" onClick={() => setIsAddClientDialogOpen(true)}>
             <PlusCircle className="mr-2 h-5 w-5" /> Add New Client
           </Button>
         </div>
       )}
+
+      <Dialog open={isAddClientDialogOpen} onOpenChange={setIsAddClientDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-headline">Add New Client</DialogTitle>
+            <DialogDescription>
+              Fill in the details below to create a new client profile.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="new-client-name">Full Name</Label>
+              <Input
+                id="new-client-name"
+                placeholder="e.g., John Doe"
+                value={newClientName}
+                onChange={(e) => setNewClientName(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                <Label htmlFor="new-client-email">Email Address</Label>
+                <Input
+                    id="new-client-email"
+                    type="email"
+                    placeholder="e.g., john.doe@example.com"
+                    value={newClientEmail}
+                    onChange={(e) => setNewClientEmail(e.target.value)}
+                />
+                </div>
+                <div className="grid gap-2">
+                <Label htmlFor="new-client-phone">Phone Number</Label>
+                <Input
+                    id="new-client-phone"
+                    type="tel"
+                    placeholder="e.g., 555-0101"
+                    value={newClientPhone}
+                    onChange={(e) => setNewClientPhone(e.target.value)}
+                />
+                </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="new-client-address">Address (Optional)</Label>
+              <Textarea
+                id="new-client-address"
+                placeholder="e.g., 123 Main St, Anytown, USA"
+                value={newClientAddress}
+                onChange={(e) => setNewClientAddress(e.target.value)}
+                rows={2}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="new-client-notes">Notes (Optional)</Label>
+              <Textarea
+                id="new-client-notes"
+                placeholder="e.g., Prefers evening calls, interested in family portraits."
+                value={newClientNotes}
+                onChange={(e) => setNewClientNotes(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="outline" onClick={resetNewClientForm}>
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button type="button" onClick={handleSaveNewClient}>
+              <Save className="mr-2 h-4 w-4" /> Save Client
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
+
+    
