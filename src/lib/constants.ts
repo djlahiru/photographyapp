@@ -73,10 +73,10 @@ export const AVAILABLE_CURRENCIES: CurrencyDefinition[] = [
 ];
 
 export interface AccentThemeColors {
-  accent: string;
-  accentForeground: string;
-  ring: string;
-  chart2: string;
+  accent: string; // HSL string e.g. "205 75% 50%"
+  accentForeground: string; // HSL string
+  ring: string; // HSL string
+  chart2: string; // HSL string
 }
 
 export interface AccentTheme {
@@ -84,16 +84,24 @@ export interface AccentTheme {
   label: string;
   lightColors: AccentThemeColors;
   darkColors: AccentThemeColors;
-  gradientPreview: string; // CSS for preview swatch
+  gradientPreview: string; 
+  lightGradientStartHsl: string; // HSL string e.g. "205 75% 50%"
+  lightGradientEndHsl: string;   // HSL string e.g. "195 85% 45%"
+  darkGradientStartHsl: string;  // HSL string e.g. "205 70% 60%"
+  darkGradientEndHsl: string;    // HSL string e.g. "195 80% 55%"
 }
 
 export const ACCENT_THEMES: AccentTheme[] = [
   {
-    value: 'default-blue', // Was theme-accent-default
+    value: 'default-blue',
     label: 'Oceanic Blue Gradient',
     lightColors: { accent: '205 75% 50%', accentForeground: '210 60% 98%', ring: '205 75% 45%', chart2: '205 75% 50%' },
     darkColors: { accent: '205 70% 60%', accentForeground: '210 30% 15%', ring: '205 70% 55%', chart2: '205 70% 60%' },
     gradientPreview: 'linear-gradient(to right, hsl(205, 75%, 50%), hsl(195, 85%, 45%))',
+    lightGradientStartHsl: '205 75% 50%',
+    lightGradientEndHsl: '195 85% 45%',
+    darkGradientStartHsl: '205 70% 60%',
+    darkGradientEndHsl: '195 80% 55%',
   },
   {
     value: 'violet-gradient',
@@ -101,6 +109,10 @@ export const ACCENT_THEMES: AccentTheme[] = [
     lightColors: { accent: '260 75% 60%', accentForeground: '260 60% 98%', ring: '260 75% 55%', chart2: '260 75% 60%' },
     darkColors: { accent: '260 70% 70%', accentForeground: '260 30% 15%', ring: '260 70% 65%', chart2: '260 70% 70%' },
     gradientPreview: 'linear-gradient(to right, hsl(260, 75%, 60%), hsl(270, 80%, 55%))',
+    lightGradientStartHsl: '260 75% 60%',
+    lightGradientEndHsl: '270 80% 55%',
+    darkGradientStartHsl: '260 70% 70%',
+    darkGradientEndHsl: '270 75% 65%',
   },
   {
     value: 'green-gradient',
@@ -108,13 +120,21 @@ export const ACCENT_THEMES: AccentTheme[] = [
     lightColors: { accent: '140 60% 40%', accentForeground: '140 60% 95%', ring: '140 60% 35%', chart2: '140 60% 40%' },
     darkColors: { accent: '140 55% 50%', accentForeground: '140 30% 10%', ring: '140 55% 45%', chart2: '140 55% 50%' },
     gradientPreview: 'linear-gradient(to right, hsl(140, 60%, 40%), hsl(150, 65%, 35%))',
+    lightGradientStartHsl: '140 60% 40%',
+    lightGradientEndHsl: '150 65% 35%',
+    darkGradientStartHsl: '140 55% 50%',
+    darkGradientEndHsl: '150 60% 45%',
   },
   {
     value: 'orange-gradient',
     label: 'Sunset Orange Gradient',
-    lightColors: { accent: '30 90% 55%', accentForeground: '20 60% 98%', ring: '30 90% 50%', chart2: '30 90% 55%' }, // Adjusted foreground for better contrast
-    darkColors: { accent: '30 80% 65%', accentForeground: '20 30% 10%', ring: '30 80% 60%', chart2: '30 80% 65%' }, // Adjusted foreground
+    lightColors: { accent: '30 90% 55%', accentForeground: '20 60% 98%', ring: '30 90% 50%', chart2: '30 90% 55%' },
+    darkColors: { accent: '30 80% 65%', accentForeground: '20 30% 10%', ring: '30 80% 60%', chart2: '30 80% 65%' },
     gradientPreview: 'linear-gradient(to right, hsl(30, 90%, 55%), hsl(40, 95%, 50%))',
+    lightGradientStartHsl: '30 90% 55%',
+    lightGradientEndHsl: '40 95% 50%',
+    darkGradientStartHsl: '30 80% 65%',
+    darkGradientEndHsl: '40 85% 60%',
   },
 ];
 export type AccentThemeValue = typeof ACCENT_THEMES[number]['value'];
@@ -127,6 +147,7 @@ export const ALL_LOCAL_STORAGE_KEYS: string[] = [
   DASHBOARD_COVER_PHOTO_BLUR_LS_KEY,
   AVATAR_SHAPE_LS_KEY,
   FONT_THEME_LS_KEY,
+  ACCENT_THEME_LS_KEY,
   GOOGLE_CALENDAR_CONNECTED_LS_KEY,
   GOOGLE_CALENDAR_ID_LS_KEY,
   GOOGLE_CALENDAR_AUTO_SYNC_LS_KEY,
@@ -136,5 +157,6 @@ export const ALL_LOCAL_STORAGE_KEYS: string[] = [
   AUTH_STATUS_LS_KEY,
   DATE_FORMAT_LS_KEY,
   CLOCK_FORMAT_LS_KEY,
-  ACCENT_THEME_LS_KEY, // Added new key
 ];
+
+```

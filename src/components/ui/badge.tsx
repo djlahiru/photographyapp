@@ -9,8 +9,8 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: // For 'Confirmed' status
-          "border-transparent bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white shadow-sm hover:from-blue-600 hover:to-blue-800",
+        default: // For 'Confirmed' status or general default badge
+          "border-transparent bg-gradient-to-r from-[hsl(var(--gradient-start-hsl))] to-[hsl(var(--gradient-end-hsl))] text-primary-foreground shadow-sm filter hover:brightness-95",
         secondary:
           "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
         destructive: // For 'Cancelled' status
@@ -39,3 +39,5 @@ function Badge({ className, variant, ...props }: BadgeProps) {
 }
 
 export { Badge, badgeVariants }
+
+```

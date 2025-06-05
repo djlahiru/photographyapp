@@ -15,7 +15,7 @@
     --sidebar-gradient-bg-start-hsl: 220 30% 94%; /* Cooler, lighter gray-blue */
     --sidebar-gradient-bg-end-hsl: 220 35% 88%;   /* Slightly deeper cool gray-blue */
 
-    /* Core Colors */
+    /* Core Colors - some will be overridden by themes */
     --background: 215 30% 97%;             /* Fallback/Solid BG - Very Light Blue-Gray */
     --foreground: 220 25% 20%;             /* Dark Slate Blue */
 
@@ -25,8 +25,9 @@
     --popover: 220 40% 99%;
     --popover-foreground: 220 25% 20%;
 
-    --primary: 195 85% 45%;                /* Azure Blue (Base primary, less affected by accent theme for core structure) */
-    --primary-foreground: 210 60% 98%;      /* White/Very Light Blue for text on primary */
+    /* --primary and --primary-foreground will be set by themes */
+    --primary: 205 75% 50%;                /* Fallback Blue */
+    --primary-foreground: 210 60% 98%;      /* Fallback White */
 
     --secondary: 210 25% 90%;              /* Light Gray-Blue */
     --secondary-foreground: 220 15% 35%;    /* Medium-Dark Gray-Blue */
@@ -34,15 +35,21 @@
     --muted: 210 30% 94%;                  /* Lighter Gray-Blue */
     --muted-foreground: 210 20% 55%;       /* Medium Gray-Blue */
 
-    /* Accent variables will be set by theme classes below */
-    --accent: 205 75% 50%; /* Fallback / initial before theme applies */
+    /* --accent, --accent-foreground, --ring will be set by themes */
+    --accent: 205 75% 50%; /* Fallback Blue */
     --accent-foreground: 210 60% 98%;
     --ring: 205 75% 45%;
 
-    /* Sidebar accent variables will also be set by theme classes */
+    /* Gradient stops - will be set by themes */
+    --gradient-start-hsl: 205 75% 50%; /* Fallback */
+    --gradient-end-hsl: 195 85% 45%; /* Fallback */
+
+    /* Sidebar colors - will be set by themes */
     --sidebar-accent: 205 70% 48%;
     --sidebar-accent-foreground: 210 60% 98%;
     --sidebar-ring: 205 70% 48%;
+    --sidebar-primary: 205 70% 48%;
+    --sidebar-primary-foreground: 210 60% 98%;
 
 
     --destructive: 0 75% 55%;
@@ -53,19 +60,16 @@
     
     --radius: 0.5rem;
 
-    /* Sidebar specific theme (base, can be overridden by accent themes) */
-    --sidebar-background: hsl(var(--sidebar-gradient-bg-start-hsl)); /* Fallback from sidebar-gradient-bg-start-hsl */
+    --sidebar-background: hsl(var(--sidebar-gradient-bg-start-hsl)); 
     --sidebar-foreground: 220 20% 25%;
-    --sidebar-primary: 195 80% 42%;         /* Slightly deeper primary for sidebar */
-    --sidebar-primary-foreground: 210 60% 98%;
     --sidebar-border: 210 25% 80%;
     
     /* Chart Colors (Chart 2 will be set by accent theme) */
-    --chart-1: 195 85% 45%; /* Primary Azure Blue */
+    --chart-1: 195 85% 45%; 
     --chart-2: 205 75% 50%; /* Fallback, will be overridden by accent theme */
-    --chart-3: 150 60% 50%; /* Sea Green */
-    --chart-4: 30 90% 60%;  /* Warm Orange */
-    --chart-5: 240 60% 70%; /* Royal Blue */
+    --chart-3: 150 60% 50%; 
+    --chart-4: 30 90% 60%;  
+    --chart-5: 240 60% 70%; 
   }
 
   .dark {
@@ -74,8 +78,8 @@
     --gradient-bg-end-hsl: 240 30% 18%;  
 
     /* Updated Sidebar Gradient */
-    --sidebar-gradient-bg-start-hsl: 225 20% 16%; /* Slightly darker, more purplish-blue */
-    --sidebar-gradient-bg-end-hsl: 230 25% 20%;   /* A bit more contrast */
+    --sidebar-gradient-bg-start-hsl: 225 20% 16%; 
+    --sidebar-gradient-bg-end-hsl: 230 25% 20%;   
 
     /* Core Colors */
     --background: 225 20% 15%;             
@@ -87,8 +91,9 @@
     --popover: 220 25% 18%;
     --popover-foreground: 210 30% 90%;
 
-    --primary: 195 75% 55%;                
-    --primary-foreground: 210 40% 10%;     
+    /* --primary and --primary-foreground will be set by themes for dark mode */
+    --primary: 205 70% 60%; /* Fallback Blue */
+    --primary-foreground: 210 30% 15%; /* Fallback Dark */
 
     --secondary: 220 20% 25%;              
     --secondary-foreground: 210 25% 75%;    
@@ -96,15 +101,21 @@
     --muted: 220 15% 30%;
     --muted-foreground: 210 20% 60%;
 
-    /* Accent variables will be set by theme classes below for dark mode */
-    --accent: 205 70% 60%; /* Fallback */
+    /* --accent, --accent-foreground, --ring will be set by themes for dark mode */
+    --accent: 205 70% 60%; 
     --accent-foreground: 210 30% 15%;
     --ring: 205 70% 55%;
 
-    /* Sidebar accent variables will also be set by theme classes for dark mode */
+    /* Gradient stops - will be set by themes for dark mode */
+    --gradient-start-hsl: 205 70% 60%; /* Fallback */
+    --gradient-end-hsl: 195 80% 55%; /* Fallback */
+    
+    /* Sidebar colors - will be set by themes for dark mode */
     --sidebar-accent: 205 65% 58%;
     --sidebar-accent-foreground: 210 30% 15%;
     --sidebar-ring: 205 65% 58%;
+    --sidebar-primary: 205 65% 58%;
+    --sidebar-primary-foreground: 210 30% 15%;
 
     --destructive: 0 65% 50%;
     --destructive-foreground: 0 0% 98%;
@@ -112,16 +123,13 @@
     --border: 220 20% 35%;
     --input: 220 20% 22%;
         
-    /* Sidebar specific theme */
     --sidebar-background: hsl(var(--sidebar-gradient-bg-start-hsl));      
     --sidebar-foreground: 210 25% 85%;
-    --sidebar-primary: 195 70% 52%;
-    --sidebar-primary-foreground: 210 40% 10%;
     --sidebar-border: 220 15% 30%;
 
     /* Chart Colors */
     --chart-1: 195 75% 55%;
-    --chart-2: 205 70% 60%; /* Fallback, will be overridden by accent theme */
+    --chart-2: 205 70% 60%; 
     --chart-3: 150 50% 45%;
     --chart-4: 30 80% 55%;
     --chart-5: 240 50% 65%;
@@ -133,19 +141,31 @@
     --accent: 205 75% 50%;                 
     --accent-foreground: 210 60% 98%;       
     --ring: 205 75% 45%; 
-    --sidebar-accent: 205 70% 48%;          
-    --sidebar-accent-foreground: 210 60% 98%;
-    --sidebar-ring: 205 70% 48%;
     --chart-2: 205 75% 50%;
+    --primary: hsl(var(--accent));
+    --primary-foreground: hsl(var(--accent-foreground));
+    --gradient-start-hsl: 205 75% 50%;
+    --gradient-end-hsl: 195 85% 45%;
+    --sidebar-accent: hsl(var(--accent));
+    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-ring: hsl(var(--ring));
+    --sidebar-primary: hsl(var(--accent));
+    --sidebar-primary-foreground: hsl(var(--accent-foreground));
   }
   .dark .theme-accent-default-blue {
     --accent: 205 70% 60%;                 
     --accent-foreground: 210 30% 15%;      
     --ring: 205 70% 55%;
-    --sidebar-accent: 205 65% 58%;         
-    --sidebar-accent-foreground: 210 30% 15%;
-    --sidebar-ring: 205 65% 58%;
     --chart-2: 205 70% 60%;
+    --primary: hsl(var(--accent));
+    --primary-foreground: hsl(var(--accent-foreground));
+    --gradient-start-hsl: 205 70% 60%;
+    --gradient-end-hsl: 195 80% 55%;
+    --sidebar-accent: hsl(var(--accent));
+    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-ring: hsl(var(--ring));
+    --sidebar-primary: hsl(var(--accent));
+    --sidebar-primary-foreground: hsl(var(--accent-foreground));
   }
 
   /* Vibrant Violet Gradient */
@@ -153,19 +173,31 @@
     --accent: 260 75% 60%;
     --accent-foreground: 260 60% 98%;
     --ring: 260 75% 55%;
-    --sidebar-accent: 260 70% 58%;
-    --sidebar-accent-foreground: 260 60% 98%;
-    --sidebar-ring: 260 70% 55%;
     --chart-2: 260 75% 60%;
+    --primary: hsl(var(--accent));
+    --primary-foreground: hsl(var(--accent-foreground));
+    --gradient-start-hsl: 260 75% 60%;
+    --gradient-end-hsl: 270 80% 55%;
+    --sidebar-accent: hsl(var(--accent));
+    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-ring: hsl(var(--ring));
+    --sidebar-primary: hsl(var(--accent));
+    --sidebar-primary-foreground: hsl(var(--accent-foreground));
   }
   .dark .theme-accent-violet-gradient {
     --accent: 260 70% 70%;
     --accent-foreground: 260 30% 15%;
     --ring: 260 70% 65%;
-    --sidebar-accent: 260 65% 68%;
-    --sidebar-accent-foreground: 260 30% 15%;
-    --sidebar-ring: 260 65% 65%;
     --chart-2: 260 70% 70%;
+    --primary: hsl(var(--accent));
+    --primary-foreground: hsl(var(--accent-foreground));
+    --gradient-start-hsl: 260 70% 70%;
+    --gradient-end-hsl: 270 75% 65%;
+    --sidebar-accent: hsl(var(--accent));
+    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-ring: hsl(var(--ring));
+    --sidebar-primary: hsl(var(--accent));
+    --sidebar-primary-foreground: hsl(var(--accent-foreground));
   }
 
   /* Forest Green Gradient */
@@ -173,39 +205,63 @@
     --accent: 140 60% 40%;
     --accent-foreground: 140 60% 95%;
     --ring: 140 60% 35%;
-    --sidebar-accent: 140 55% 38%;
-    --sidebar-accent-foreground: 140 60% 95%;
-    --sidebar-ring: 140 55% 35%;
     --chart-2: 140 60% 40%;
+    --primary: hsl(var(--accent));
+    --primary-foreground: hsl(var(--accent-foreground));
+    --gradient-start-hsl: 140 60% 40%;
+    --gradient-end-hsl: 150 65% 35%;
+    --sidebar-accent: hsl(var(--accent));
+    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-ring: hsl(var(--ring));
+    --sidebar-primary: hsl(var(--accent));
+    --sidebar-primary-foreground: hsl(var(--accent-foreground));
   }
   .dark .theme-accent-green-gradient {
     --accent: 140 55% 50%;
     --accent-foreground: 140 30% 10%;
     --ring: 140 55% 45%;
-    --sidebar-accent: 140 50% 48%;
-    --sidebar-accent-foreground: 140 30% 10%;
-    --sidebar-ring: 140 50% 45%;
     --chart-2: 140 55% 50%;
+    --primary: hsl(var(--accent));
+    --primary-foreground: hsl(var(--accent-foreground));
+    --gradient-start-hsl: 140 55% 50%;
+    --gradient-end-hsl: 150 60% 45%;
+    --sidebar-accent: hsl(var(--accent));
+    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-ring: hsl(var(--ring));
+    --sidebar-primary: hsl(var(--accent));
+    --sidebar-primary-foreground: hsl(var(--accent-foreground));
   }
 
   /* Sunset Orange Gradient */
   .theme-accent-orange-gradient {
     --accent: 30 90% 55%;
-    --accent-foreground: 20 60% 98%; /* Adjusted from original for contrast */
+    --accent-foreground: 20 60% 98%; 
     --ring: 30 90% 50%;
-    --sidebar-accent: 30 85% 53%;
-    --sidebar-accent-foreground: 20 60% 98%;
-    --sidebar-ring: 30 85% 50%;
     --chart-2: 30 90% 55%;
+    --primary: hsl(var(--accent));
+    --primary-foreground: hsl(var(--accent-foreground));
+    --gradient-start-hsl: 30 90% 55%;
+    --gradient-end-hsl: 40 95% 50%;
+    --sidebar-accent: hsl(var(--accent));
+    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-ring: hsl(var(--ring));
+    --sidebar-primary: hsl(var(--accent));
+    --sidebar-primary-foreground: hsl(var(--accent-foreground));
   }
   .dark .theme-accent-orange-gradient {
     --accent: 30 80% 65%;
-    --accent-foreground: 20 30% 10%; /* Adjusted from original for contrast */
+    --accent-foreground: 20 30% 10%; 
     --ring: 30 80% 60%;
-    --sidebar-accent: 30 75% 63%;
-    --sidebar-accent-foreground: 20 30% 10%;
-    --sidebar-ring: 30 75% 60%;
     --chart-2: 30 80% 65%;
+    --primary: hsl(var(--accent));
+    --primary-foreground: hsl(var(--accent-foreground));
+    --gradient-start-hsl: 30 80% 65%;
+    --gradient-end-hsl: 40 85% 60%;
+    --sidebar-accent: hsl(var(--accent));
+    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-ring: hsl(var(--ring));
+    --sidebar-primary: hsl(var(--accent));
+    --sidebar-primary-foreground: hsl(var(--accent-foreground));
   }
   
   /* --- Font Themes --- */
@@ -223,9 +279,8 @@
   .font-theme-modern-mono .font-headline {
     font-family: 'Courier New', Courier, monospace;
   }
-}
 
-@layer base {
+  /* Global Styles (moved from second @layer base) */
   * {
     @apply border-border;
   }
@@ -240,8 +295,8 @@
 @layer components {
   /* Active sidebar menu items */
   .sidebar-menu-button--active {
-    background-color: hsl(var(--sidebar-accent)); /* Use sidebar-accent for background */
-    color: hsl(var(--sidebar-accent-foreground)); /* Use sidebar-accent-foreground for text */
+    background-color: hsl(var(--sidebar-accent)); 
+    color: hsl(var(--sidebar-accent-foreground)); 
   }
   /* Hover for non-active sidebar items */
   .sidebar-menu-button--inactive:hover {
