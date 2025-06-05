@@ -160,7 +160,7 @@ export function AppHeader() {
         )}
          <div className="flex items-center">
             {GreetingIconComponent && <GreetingIconComponent className="h-6 w-6 text-primary mr-2" />}
-            <h1 className="text-base sm:text-lg font-semibold text-foreground font-headline truncate max-w-[70px] xs:max-w-[80px] sm:max-w-[100px] md:max-w-[120px]">
+            <h1 className="text-base sm:text-lg font-semibold text-foreground font-headline truncate max-w-[100px] xs:max-w-[120px] sm:max-w-[180px] md:max-w-[220px] lg:max-w-sm">
             {greeting}
             </h1>
         </div>
@@ -235,4 +235,6 @@ export function AppHeader() {
     </header>
   );
 }
+    
+
     
