@@ -1,9 +1,9 @@
 
 import { SummaryStats } from "@/components/dashboard/summary-stats";
 import { OverviewList } from "@/components/dashboard/overview-list";
-import { CalendarStatus } from "@/components/dashboard/calendar-status";
+// import { CalendarStatus } from "@/components/dashboard/calendar-status"; // Removed import
 import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
-import { MonthlyBookingsByCategoryChart } from "@/components/dashboard/monthly-bookings-by-category-chart"; // Changed import
+import { MonthlyBookingsByCategoryChart } from "@/components/dashboard/monthly-bookings-by-category-chart";
 import { ProjectStatusProgress } from "@/components/dashboard/project-status-progress";
 import { WorkProgressTracker } from "@/components/dashboard/work-progress-tracker";
 import { DashboardCoverPhotoDisplay } from "@/components/dashboard/dashboard-cover-photo-display";
@@ -69,11 +69,11 @@ export default function DashboardPage() {
             itemAction={itemActionMenu}
         />
          <div className="lg:col-span-1 space-y-8">
-          <MonthlyBookingsByCategoryChart /> {/* Changed component */}
+          <MonthlyBookingsByCategoryChart />
           <WorkProgressTracker stages={projectStages} currentStageName={currentProjectStage} />
           <CategoryBreakdown />
           <ProjectStatusProgress />
-          <CalendarStatus />
+          {/* <CalendarStatus /> */} {/* Removed CalendarStatus component */}
         </div>
       </div>
 
