@@ -76,6 +76,7 @@ export interface Booking {
   id: string;
   // client: Client; // Ideal state, for now use clientName
   clientName: string; 
+  packageId: string; // ID of the selected PhotographyPackage
   packageName: string;
   bookingDate: string; // ISO date string
   category?: string;

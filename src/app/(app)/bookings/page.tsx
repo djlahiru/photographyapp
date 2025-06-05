@@ -4,7 +4,10 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIcon, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle, Search, TrendingUp, TrendingDown, CreditCard } from "react-feather";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup, SelectLabel } from "@/components/ui/select";
+import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIconFeather, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle, Search, TrendingUp, TrendingDown, CreditCard, Save } from "react-feather";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
 import type { Booking, BookingStatus, Payment, PaymentStatus, BookingActivityLogEntry } from "@/types";
@@ -12,6 +15,7 @@ import { BookingActivityLog } from "@/components/bookings/booking-activity-log";
 import React from "react";
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
+import { initialMockPackages } from '@/app/(app)/packages/page'; // Import packages
 
 // Mock data for bookings - Renamed to initialMockBookings and exported
 export const initialMockBookings: Booking[] = [
@@ -19,6 +23,7 @@ export const initialMockBookings: Booking[] = [
     id: "1",
     clientName: "Alice Wonderland",
     packageName: "Basic Portrait Session",
+    packageId: "1",
     bookingDate: "2024-08-15T14:00:00Z",
     category: "Portrait",
     status: "Confirmed" as BookingStatus,
@@ -39,6 +44,7 @@ export const initialMockBookings: Booking[] = [
     id: "2", 
     clientName: "Bob The Builder", 
     packageName: "Standard Wedding Package", 
+    packageId: "2",
     bookingDate: "2024-09-20T10:30:00Z", 
     category: "Wedding", 
     status: "Completed" as BookingStatus, 
@@ -58,6 +64,7 @@ export const initialMockBookings: Booking[] = [
     id: "3", 
     clientName: "Charlie Chaplin", 
     packageName: "Family Lifestyle Shoot", 
+    packageId: "3",
     bookingDate: "2024-07-30T16:00:00Z", 
     category: "Family", 
     status: "Pending" as BookingStatus, 
@@ -74,6 +81,7 @@ export const initialMockBookings: Booking[] = [
     id: "4", 
     clientName: "Diana Prince", 
     packageName: "Basic Portrait Session", 
+    packageId: "1", // Assuming it's the same basic portrait session
     bookingDate: "2024-08-05T09:00:00Z", 
     category: "Portrait", 
     status: "Cancelled" as BookingStatus, 
@@ -109,6 +117,13 @@ export default function BookingsPage() {
   const [selectedStatuses, setSelectedStatuses] = React.useState<BookingStatus[]>([]);
   const [selectedBookingForLog, setSelectedBookingForLog] = React.useState<Booking | null>(null);
 
+  // State for Add Booking Dialog
+  const [isAddBookingDialogOpen, setIsAddBookingDialogOpen] = React.useState(false);
+  const [newBookingClientName, setNewBookingClientName] = React.useState('');
+  const [newBookingPackageId, setNewBookingPackageId] = React.useState<string | undefined>(undefined);
+  const [newBookingDate, setNewBookingDate] = React.useState(''); // Using string for datetime-local
+  const [newBookingCategory, setNewBookingCategory] = React.useState('');
+
   const filteredBookings = React.useMemo(() => {
     return bookings.filter(booking => {
       const statusMatch = selectedStatuses.length === 0 || selectedStatuses.includes(booking.status);
@@ -143,6 +158,57 @@ export default function BookingsPage() {
       })
     );
     toast.success(`Booking status updated to ${newStatus}.`);
+  };
+
+  const resetNewBookingForm = () => {
+    setNewBookingClientName('');
+    setNewBookingPackageId(undefined);
+    setNewBookingDate('');
+    setNewBookingCategory('');
+  };
+
+  const handleOpenAddBookingDialog = () => {
+    resetNewBookingForm();
+    setIsAddBookingDialogOpen(true);
+  };
+
+  const handleSaveNewBooking = () => {
+    if (!newBookingClientName.trim() || !newBookingPackageId || !newBookingDate) {
+      toast.error("Client Name, Package, and Booking Date are required.");
+      return;
+    }
+
+    const selectedPackage = initialMockPackages.find(p => p.id === newBookingPackageId);
+    if (!selectedPackage) {
+      toast.error("Selected package not found.");
+      return;
+    }
+
+    const newBooking: Booking = {
+      id: `booking-${Date.now()}`,
+      clientName: newBookingClientName.trim(),
+      packageId: selectedPackage.id,
+      packageName: selectedPackage.name,
+      bookingDate: new Date(newBookingDate).toISOString(),
+      category: newBookingCategory.trim() || undefined,
+      status: "Pending" as BookingStatus, // Default status
+      price: selectedPackage.price,
+      payments: [],
+      activityLog: [
+        {
+          id: `log-new-${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          action: `Booking created for ${selectedPackage.name}.`,
+          actor: "Admin",
+          iconName: "PlusCircle",
+        },
+      ],
+    };
+
+    setBookings(prevBookings => [newBooking, ...prevBookings]);
+    toast.success(`Booking for ${newBooking.clientName} with ${newBooking.packageName} scheduled!`);
+    setIsAddBookingDialogOpen(false);
+    resetNewBookingForm();
   };
 
 
@@ -186,10 +252,10 @@ export default function BookingsPage() {
                 ))}
             </DropdownMenuContent>
             </DropdownMenu>
-            <Button className="hidden sm:inline-flex">
+            <Button className="hidden sm:inline-flex" onClick={handleOpenAddBookingDialog}>
               <PlusCircle className="mr-2 h-4 w-4" /> Schedule New
             </Button>
-             <Button size="icon" className="sm:hidden">
+             <Button size="icon" className="sm:hidden" onClick={handleOpenAddBookingDialog}>
               <PlusCircle className="h-4 w-4" />
             </Button>
         </div>
@@ -264,7 +330,7 @@ export default function BookingsPage() {
                     </CardHeader>
                     <CardContent className="p-4 flex-grow space-y-3 text-sm">
                         <div className="flex items-center">
-                            <CalendarIcon className="h-4 w-4 mr-2 text-muted-foreground" />
+                            <CalendarIconFeather className="h-4 w-4 mr-2 text-muted-foreground" />
                             <span>{format(new Date(booking.bookingDate), "eee, MMM d, yyyy 'at' h:mm a")}</span>
                         </div>
                         {booking.category && (
@@ -311,7 +377,7 @@ export default function BookingsPage() {
               <p className="text-muted-foreground mb-6 max-w-sm">No bookings match your current search or filter criteria. Try adjusting your search or filters.</p>
             </>
           )}
-          <Button size="lg">
+          <Button size="lg" onClick={handleOpenAddBookingDialog}>
             <PlusCircle className="mr-2 h-5 w-5" /> Schedule New Booking
           </Button>
         </div>
@@ -328,7 +394,76 @@ export default function BookingsPage() {
             </div>
         </div>
       )}
+
+      {/* Add New Booking Dialog */}
+      <Dialog open={isAddBookingDialogOpen} onOpenChange={setIsAddBookingDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-headline">Schedule New Booking</DialogTitle>
+            <DialogDescription>
+              Fill in the details below to create a new booking.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="new-booking-client-name">Client Name</Label>
+              <Input
+                id="new-booking-client-name"
+                placeholder="e.g., John Doe"
+                value={newBookingClientName}
+                onChange={(e) => setNewBookingClientName(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="new-booking-package">Photography Package</Label>
+              <Select value={newBookingPackageId} onValueChange={setNewBookingPackageId}>
+                <SelectTrigger id="new-booking-package">
+                  <SelectValue placeholder="Select a package" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Available Packages</SelectLabel>
+                    {initialMockPackages.map((pkg) => (
+                      <SelectItem key={pkg.id} value={pkg.id}>
+                        {pkg.name} (${pkg.price.toFixed(2)})
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="new-booking-date">Booking Date & Time</Label>
+              <Input
+                id="new-booking-date"
+                type="datetime-local"
+                value={newBookingDate}
+                onChange={(e) => setNewBookingDate(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="new-booking-category">Category (Optional)</Label>
+              <Input
+                id="new-booking-category"
+                placeholder="e.g., Wedding, Portrait, Event"
+                value={newBookingCategory}
+                onChange={(e) => setNewBookingCategory(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="outline" onClick={resetNewBookingForm}>
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button type="button" onClick={handleSaveNewBooking}>
+              <Save className="mr-2 h-4 w-4" /> Save Booking
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
-
