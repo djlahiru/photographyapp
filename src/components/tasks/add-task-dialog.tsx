@@ -56,6 +56,9 @@ interface AddTaskDialogProps {
   initialTask?: Task;
 }
 
+const NO_CLIENT_VALUE = "NO_CLIENT_SELECTED_PLACEHOLDER";
+const NO_BOOKING_VALUE = "NO_BOOKING_SELECTED_PLACEHOLDER";
+
 export function AddTaskDialog({ isOpen, onOpenChange, onTaskSave, initialTask }: AddTaskDialogProps) {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [filePreviews, setFilePreviews] = useState<TaskFileAttachment[]>([]);
@@ -68,6 +71,8 @@ export function AddTaskDialog({ isOpen, onOpenChange, onTaskSave, initialTask }:
       startDate: initialTask.startDate ? parseISO(initialTask.startDate) : undefined,
       reminderDate: initialTask.reminderDate ? parseISO(initialTask.reminderDate) : undefined,
       attachments: initialTask.attachments || [],
+      relatedClientId: initialTask.relatedClientId === NO_CLIENT_VALUE ? undefined : initialTask.relatedClientId,
+      relatedBookingId: initialTask.relatedBookingId === NO_BOOKING_VALUE ? undefined : initialTask.relatedBookingId,
     } : {
       title: '',
       description: '',
@@ -81,12 +86,12 @@ export function AddTaskDialog({ isOpen, onOpenChange, onTaskSave, initialTask }:
     },
   });
 
-  const selectedClientId = form.watch('relatedClientId');
+  const selectedClientIdWatch = form.watch('relatedClientId');
   const [availableBookings, setAvailableBookings] = useState<Booking[]>([]);
 
   useEffect(() => {
-    if (selectedClientId) {
-      const client = mockClientsData.find(c => c.id === selectedClientId);
+    if (selectedClientIdWatch && selectedClientIdWatch !== NO_CLIENT_VALUE) {
+      const client = mockClientsData.find(c => c.id === selectedClientIdWatch);
       if (client) {
         setAvailableBookings(mockBookingsData.filter(b => b.clientName === client.name));
       } else {
@@ -95,29 +100,38 @@ export function AddTaskDialog({ isOpen, onOpenChange, onTaskSave, initialTask }:
     } else {
       setAvailableBookings([]);
     }
-    form.setValue('relatedBookingId', undefined);
-  }, [selectedClientId, form]);
+    // Reset booking if client changes or is cleared, but only if it's not already set to the placeholder
+    if (form.getValues('relatedBookingId') !== NO_BOOKING_VALUE) {
+        form.setValue('relatedBookingId', undefined);
+    }
+  }, [selectedClientIdWatch, form]);
   
   useEffect(() => {
-    if (initialTask) {
-        form.reset({
-            ...initialTask,
-            dueDate: initialTask.dueDate ? parseISO(initialTask.dueDate) : undefined,
-            startDate: initialTask.startDate ? parseISO(initialTask.startDate) : undefined,
-            reminderDate: initialTask.reminderDate ? parseISO(initialTask.reminderDate) : undefined,
-            attachments: initialTask.attachments || [],
-        });
-        setFilePreviews(initialTask.attachments || []);
-        setSelectedFiles([]);
-    } else {
-        form.reset({
-            title: '', description: '', assignee: '', priority: 'Medium', status: 'To Do',
-            category: '', subtasks: '', colorTag: 'None', attachments: []
-        });
-        setFilePreviews([]);
-        setSelectedFiles([]);
+    if (isOpen) {
+        if (initialTask) {
+            form.reset({
+                ...initialTask,
+                dueDate: initialTask.dueDate ? parseISO(initialTask.dueDate) : undefined,
+                startDate: initialTask.startDate ? parseISO(initialTask.startDate) : undefined,
+                reminderDate: initialTask.reminderDate ? parseISO(initialTask.reminderDate) : undefined,
+                attachments: initialTask.attachments || [],
+                relatedClientId: initialTask.relatedClientId === NO_CLIENT_VALUE ? undefined : initialTask.relatedClientId,
+                relatedBookingId: initialTask.relatedBookingId === NO_BOOKING_VALUE ? undefined : initialTask.relatedBookingId,
+            });
+            setFilePreviews(initialTask.attachments || []);
+            setSelectedFiles([]);
+        } else {
+            form.reset({
+                title: '', description: '', assignee: '', priority: 'Medium', status: 'To Do',
+                category: '', subtasks: '', colorTag: 'None', attachments: [],
+                dueDate: undefined, startDate: undefined, reminderDate: undefined,
+                relatedClientId: undefined, relatedBookingId: undefined
+            });
+            setFilePreviews([]);
+            setSelectedFiles([]);
+        }
     }
-  }, [initialTask, form, isOpen]); // Added form and isOpen to dependencies
+  }, [initialTask, form, isOpen]);
 
 
   const handleFileChange = (newFiles: File[] | null) => {
@@ -132,12 +146,29 @@ export function AddTaskDialog({ isOpen, onOpenChange, onTaskSave, initialTask }:
       size: file.size,
     }));
 
-    const existingPreviews = initialTask?.attachments?.filter(att => !currentLiveFiles.find(f => f.name === att.name)) || [];
-    setFilePreviews([...existingPreviews, ...newPreviews]);
+    // Preserve existing previews from initialTask if they weren't replaced by new files with the same name
+    const existingPreviewsFromInitial = initialTask?.attachments?.filter(
+        att => !currentLiveFiles.some(f => f.name === att.name)
+    ) || [];
+
+    // Preserve current filePreviews that are not from initialTask and not being replaced
+    const currentNonInitialPreviews = filePreviews.filter(
+        fp => !fp.id.startsWith('temp-') && // not a preview of a currently selected live file
+              !(initialTask?.attachments || []).some(att => att.id === fp.id) && // not from initialTask
+              !currentLiveFiles.some(f => f.name === fp.name) // not being replaced by a new file
+    );
+    
+    setFilePreviews([...existingPreviewsFromInitial, ...currentNonInitialPreviews, ...newPreviews]);
   };
   
   const removeAttachment = (attachmentIdToRemove: string) => {
-    setSelectedFiles(prevFiles => prevFiles.filter(f => `temp-${f.name}-${Date.now()}` !== attachmentIdToRemove && f.name !== filePreviews.find(p=>p.id === attachmentIdToRemove)?.name ));
+    // For previews from newly selected files (temp-id)
+    setSelectedFiles(prevFiles => prevFiles.filter(f => {
+        const tempIdPattern = `temp-${f.name}-`;
+        return !attachmentIdToRemove.startsWith(tempIdPattern) || !filePreviews.find(p => p.id === attachmentIdToRemove && p.name === f.name);
+    }));
+    
+    // For previews from initialTask (non-temp-id) or existing filePreviews state
     setFilePreviews(prevPreviews => prevPreviews.filter(att => att.id !== attachmentIdToRemove));
   };
 
@@ -146,7 +177,7 @@ export function AddTaskDialog({ isOpen, onOpenChange, onTaskSave, initialTask }:
     const finalAttachments: TaskFileAttachment[] = filePreviews.map(fp => ({
         id: fp.id.startsWith('temp-') ? `file-${Date.now()}-${Math.random().toString(36).substring(7)}` : fp.id,
         name: fp.name,
-        url: fp.url,
+        url: fp.url, // For actual uploads, this would be a server URL
         type: fp.type,
         size: fp.size,
     }));
@@ -158,24 +189,25 @@ export function AddTaskDialog({ isOpen, onOpenChange, onTaskSave, initialTask }:
       startDate: values.startDate ? values.startDate.toISOString() : undefined,
       reminderDate: values.reminderDate ? values.reminderDate.toISOString() : undefined,
       attachments: finalAttachments,
+      relatedClientId: values.relatedClientId === NO_CLIENT_VALUE ? undefined : values.relatedClientId,
+      relatedBookingId: values.relatedBookingId === NO_BOOKING_VALUE ? undefined : values.relatedBookingId,
       createdBy: initialTask?.createdBy || "Admin User",
       createdAt: initialTask?.createdAt || new Date().toISOString(),
     };
     onTaskSave(newTask, saveAndAddAnother);
-    if (!saveAndAddAnother) {
-      // form.reset(); // Resetting is now handled by useEffect on initialTask/isOpen
-      // setSelectedFiles([]);
-      // setFilePreviews([]);
-    } else {
+    if (saveAndAddAnother) {
        form.reset({ 
             title: '', description: '', assignee: values.assignee, 
             priority: values.priority, status: 'To Do', category: values.category,
-            relatedClientId: values.relatedClientId, relatedBookingId: undefined, 
-            subtasks: '', colorTag: values.colorTag, attachments: []
+            relatedClientId: values.relatedClientId, // Keep client if adding another for same client
+            relatedBookingId: undefined, // Reset booking as it might be different
+            subtasks: '', colorTag: values.colorTag, attachments: [],
+            dueDate: undefined, startDate: undefined, reminderDate: undefined,
         });
         setSelectedFiles([]);
         setFilePreviews([]);
     }
+    // If !saveAndAddAnother, dialog closes, and useEffect handles form reset based on isOpen.
   };
   
   const onSubmit = (values: TaskFormValues) => processSave(values, false);
@@ -184,9 +216,6 @@ export function AddTaskDialog({ isOpen, onOpenChange, onTaskSave, initialTask }:
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
-      if (!open) {
-        // Resetting form handled by useEffect based on initialTask and isOpen
-      }
       onOpenChange(open);
     }}>
       <DialogContent className="sm:max-w-2xl">
@@ -297,10 +326,13 @@ export function AddTaskDialog({ isOpen, onOpenChange, onTaskSave, initialTask }:
                   <FormField control={form.control} name="relatedClientId" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Related Client (Optional)</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select 
+                        onValueChange={(value) => field.onChange(value === NO_CLIENT_VALUE ? undefined : value)} 
+                        value={field.value || NO_CLIENT_VALUE}
+                      >
                         <FormControl><SelectTrigger><SelectValue placeholder="Select a client" /></SelectTrigger></FormControl>
                         <SelectContent>
-                           <SelectItem value="">None</SelectItem>
+                           <SelectItem value={NO_CLIENT_VALUE}>None</SelectItem>
                            {mockClientsData.map(client => (
                             <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
                           ))}
@@ -313,12 +345,22 @@ export function AddTaskDialog({ isOpen, onOpenChange, onTaskSave, initialTask }:
                   <FormField control={form.control} name="relatedBookingId" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Related Booking (Optional)</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value} disabled={!selectedClientId || availableBookings.length === 0}>
+                      <Select 
+                        onValueChange={(value) => field.onChange(value === NO_BOOKING_VALUE ? undefined : value)} 
+                        value={field.value || NO_BOOKING_VALUE}
+                        disabled={!selectedClientIdWatch || selectedClientIdWatch === NO_CLIENT_VALUE || availableBookings.length === 0}
+                      >
                         <FormControl><SelectTrigger>
-                          <SelectValue placeholder={!selectedClientId ? "Select client first" : availableBookings.length === 0 ? "No bookings for client" : "Select a booking"} />
+                          <SelectValue placeholder={
+                            !selectedClientIdWatch || selectedClientIdWatch === NO_CLIENT_VALUE 
+                            ? "Select client first" 
+                            : availableBookings.length === 0 
+                            ? "No bookings for client" 
+                            : "Select a booking"
+                          } />
                         </SelectTrigger></FormControl>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value={NO_BOOKING_VALUE}>None</SelectItem>
                           {availableBookings.map(booking => {
                             const firstDate = booking.bookingDates[0]?.dateTime ? format(parseISO(booking.bookingDates[0].dateTime), 'MMM d, yy') : 'No Date';
                             return (
@@ -436,5 +478,3 @@ export function AddTaskDialog({ isOpen, onOpenChange, onTaskSave, initialTask }:
     </Dialog>
   );
 }
-
-    
