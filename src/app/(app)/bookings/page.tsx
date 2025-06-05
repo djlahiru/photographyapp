@@ -16,6 +16,8 @@ import React from "react";
 import { format, parseISO, isValid } from 'date-fns';
 import { toast } from 'react-toastify';
 import { initialMockPackages } from '@/app/(app)/packages/page';
+import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
+import { Textarea } from '@/components/ui/textarea';
 // Assuming initialMockClients is exported from clients/page.tsx for populating client selection if needed in future
 // import { initialMockClients } from '@/app/(app)/clients/page.tsx';
 
@@ -127,10 +129,16 @@ export default function BookingsPage() {
   const [dialogBookingDates, setDialogBookingDates] = React.useState<BookingDateTime[]>([{ id: 'dt_new_' + Date.now(), dateTime: '' }]);
   const [bookingCategory, setBookingCategory] = React.useState('');
 
+  // State for "Add New Client for Booking" dialog (to match clients page dialog)
   const [isAddNewClientDialogForBookingOpen, setIsAddNewClientDialogForBookingOpen] = React.useState(false);
   const [newClientForBookingName, setNewClientForBookingName] = React.useState('');
   const [newClientForBookingEmail, setNewClientForBookingEmail] = React.useState('');
   const [newClientForBookingPhone, setNewClientForBookingPhone] = React.useState('');
+  const [newClientForBookingWhatsApp, setNewClientForBookingWhatsApp] = React.useState('');
+  const [newClientForBookingAddress, setNewClientForBookingAddress] = React.useState('');
+  const [newClientForBookingNotes, setNewClientForBookingNotes] = React.useState('');
+  const [newClientForBookingPhotoFile, setNewClientForBookingPhotoFile] = React.useState<File | null>(null);
+  const [newClientForBookingPhotoPreview, setNewClientForBookingPhotoPreview] = React.useState<string | null>(null);
 
 
   const filteredBookings = React.useMemo(() => {
@@ -181,6 +189,22 @@ export default function BookingsPage() {
     setNewClientForBookingName('');
     setNewClientForBookingEmail('');
     setNewClientForBookingPhone('');
+    setNewClientForBookingWhatsApp('');
+    setNewClientForBookingAddress('');
+    setNewClientForBookingNotes('');
+    setNewClientForBookingPhotoFile(null);
+    setNewClientForBookingPhotoPreview(null);
+  };
+
+  const handleClientPhotoChangeForBooking = (file: File | null) => {
+    setNewClientForBookingPhotoFile(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setNewClientForBookingPhotoPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      setNewClientForBookingPhotoPreview(null);
+    }
   };
 
   const handleAddBookingDate = () => {
@@ -223,8 +247,9 @@ export default function BookingsPage() {
       toast.error("Client Name is required for the new client.");
       return;
     }
+    // This function now primarily sets the client name for the booking form
     setBookingClientName(newClientForBookingName.trim());
-    toast.success(`Client "${newClientForBookingName.trim()}" details captured for this booking.`);
+    toast.success(`Client "${newClientForBookingName.trim()}" selected for this booking.`);
     setIsAddNewClientDialogForBookingOpen(false);
     resetNewClientForBookingForm();
   };
@@ -597,14 +622,24 @@ export default function BookingsPage() {
       </Dialog>
 
       <Dialog open={isAddNewClientDialogForBookingOpen} onOpenChange={setIsAddNewClientDialogForBookingOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg">
             <DialogHeader>
                 <DialogTitle className="font-headline">Add New Client for Booking</DialogTitle>
                 <DialogDescription>
                     Enter the new client's details. This client will be associated with the current booking.
                 </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
+                <div className="grid gap-2">
+                    <Label htmlFor="new-client-booking-photo">Client Photo</Label>
+                    <ImageUploadDropzone
+                        onFileChange={handleClientPhotoChangeForBooking}
+                        initialImageUrl={newClientForBookingPhotoPreview || undefined}
+                        className="h-32"
+                        imageClassName="rounded-md"
+                        label="Drop photo or click to upload"
+                    />
+                </div>
                 <div className="grid gap-2">
                     <Label htmlFor="new-client-booking-name">Full Name</Label>
                     <Input
@@ -614,24 +649,56 @@ export default function BookingsPage() {
                         onChange={(e) => setNewClientForBookingName(e.target.value)}
                     />
                 </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="new-client-booking-email">Email (Optional)</Label>
+                        <Input
+                            id="new-client-booking-email"
+                            type="email"
+                            placeholder="e.g., jane.smith@example.com"
+                            value={newClientForBookingEmail}
+                            onChange={(e) => setNewClientForBookingEmail(e.target.value)}
+                        />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="new-client-booking-phone">Phone (Optional)</Label>
+                        <Input
+                            id="new-client-booking-phone"
+                            type="tel"
+                            placeholder="e.g., 555-0202"
+                            value={newClientForBookingPhone}
+                            onChange={(e) => setNewClientForBookingPhone(e.target.value)}
+                        />
+                    </div>
+                </div>
                 <div className="grid gap-2">
-                    <Label htmlFor="new-client-booking-email">Email (Optional)</Label>
+                    <Label htmlFor="new-client-booking-whatsapp">WhatsApp Number (Optional)</Label>
                     <Input
-                        id="new-client-booking-email"
-                        type="email"
-                        placeholder="e.g., jane.smith@example.com"
-                        value={newClientForBookingEmail}
-                        onChange={(e) => setNewClientForBookingEmail(e.target.value)}
+                        id="new-client-booking-whatsapp"
+                        type="tel"
+                        placeholder="e.g., +1 555-0102"
+                        value={newClientForBookingWhatsApp}
+                        onChange={(e) => setNewClientForBookingWhatsApp(e.target.value)}
                     />
                 </div>
                 <div className="grid gap-2">
-                    <Label htmlFor="new-client-booking-phone">Phone (Optional)</Label>
-                    <Input
-                        id="new-client-booking-phone"
-                        type="tel"
-                        placeholder="e.g., 555-0202"
-                        value={newClientForBookingPhone}
-                        onChange={(e) => setNewClientForBookingPhone(e.target.value)}
+                    <Label htmlFor="new-client-booking-address">Address (Optional)</Label>
+                    <Textarea
+                        id="new-client-booking-address"
+                        placeholder="e.g., 123 Main St, Anytown, USA"
+                        value={newClientForBookingAddress}
+                        onChange={(e) => setNewClientForBookingAddress(e.target.value)}
+                        rows={2}
+                    />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="new-client-booking-notes">Notes (Optional)</Label>
+                    <Textarea
+                        id="new-client-booking-notes"
+                        placeholder="e.g., Prefers evening calls, interested in family portraits."
+                        value={newClientForBookingNotes}
+                        onChange={(e) => setNewClientForBookingNotes(e.target.value)}
+                        rows={3}
                     />
                 </div>
             </div>
@@ -651,3 +718,4 @@ export default function BookingsPage() {
     </div>
   );
 }
+
