@@ -185,7 +185,7 @@ export default function PaymentsPage() {
     return () => {
       window.removeEventListener('fabOpenRecordPaymentDialog', openDialog);
     };
-  }, []); // Dependencies should include handleOpenRecordPaymentDialog if it changes.
+  }, []); 
 
   const handlePaymentClientNameChange = (name: string) => {
     setPaymentClientName(name);
@@ -745,3 +745,4 @@ export default function PaymentsPage() {
     </div>
   );
 }
+
