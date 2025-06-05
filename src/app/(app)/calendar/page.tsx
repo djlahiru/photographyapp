@@ -3,48 +3,56 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Calendar as CalendarIconFeather } from "react-feather";
+import { Button } from "@/components/ui/button";
+import { Calendar as CalendarIconFeather, Eye, EyeOff } from "react-feather";
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction'; // for eventClick
 import listPlugin from '@fullcalendar/list'; 
+import timeGridPlugin from '@fullcalendar/timegrid'; // for timeGrid views
 import type { EventClickArg, EventSourceInput } from '@fullcalendar/core';
-import { mockBookings } from '@/app/(app)/bookings/page'; // Assuming mockBookings is exported
+import { mockBookings } from '@/app/(app)/bookings/page'; 
 import type { BookingStatus } from '@/types';
 
-// Import FullCalendar styles
-// import '@fullcalendar/core/main.css'; // This line is removed
-// import '@fullcalendar/daygrid/main.css'; 
-// import '@fullcalendar/list/main.css'; // Required for list views
+// Removed direct CSS imports as they were causing module resolution issues.
+// FullCalendar might inject some base styles, or rely on component-level styling.
+// If styling issues persist, further investigation into CSS bundling might be needed.
 
 
 const getEventClassNames = (status: BookingStatus): string[] => {
-  let classNames = ['p-1', 'text-xs', 'rounded', 'border', 'text-white', 'cursor-pointer', 'hover:opacity-80'];
+  let classNames = ['p-1', 'text-xs', 'rounded', 'border', 'cursor-pointer', 'hover:opacity-80'];
+  // Using theme-based colors where possible
   switch (status) {
     case 'Pending':
-      classNames.push('bg-yellow-500', 'border-yellow-600');
+      // Using accent for pending. If accent color is not suitable, this could be changed.
+      // The PRD mentions accent is Soft Orange, but globals.css has Violet. Following globals.css.
+      classNames.push('bg-accent', 'border-accent', 'text-accent-foreground');
       break;
     case 'Confirmed':
-      classNames.push('bg-blue-500', 'border-blue-600');
+      classNames.push('bg-primary', 'border-primary', 'text-primary-foreground');
       break;
     case 'Completed':
-      classNames.push('bg-green-500', 'border-green-600');
+      // Green is often used for completed/success, but not a direct theme background color.
+      // Using a specific green, ensuring text contrast.
+      classNames.push('bg-green-500', 'border-green-600', 'text-white');
       break;
     case 'Cancelled':
-      classNames.push('bg-red-500', 'border-red-600', 'line-through');
+      classNames.push('bg-destructive', 'border-destructive', 'text-destructive-foreground', 'line-through');
       break;
     default:
-      classNames.push('bg-gray-400', 'border-gray-500');
+      classNames.push('bg-muted', 'border-border', 'text-muted-foreground');
   }
   return classNames;
 };
 
 export default function CalendarPage() {
+  const [weekendsVisible, setWeekendsVisible] = React.useState(true);
+
   const calendarEvents: EventSourceInput = mockBookings.map(booking => ({
     id: booking.id,
     title: `${booking.packageName} (${booking.clientName})`,
     start: booking.bookingDate,
-    allDay: false, // Assuming bookings have specific times
+    allDay: false, 
     extendedProps: {
       clientName: booking.clientName,
       packageName: booking.packageName,
@@ -56,7 +64,6 @@ export default function CalendarPage() {
   }));
 
   const handleEventClick = (clickInfo: EventClickArg) => {
-    // For now, just log the event details. Later, this could open a modal or navigate.
     console.log('Event clicked:', clickInfo.event);
     alert(
       `Booking Details:\n
@@ -68,13 +75,21 @@ export default function CalendarPage() {
     );
   };
 
+  const toggleWeekends = () => {
+    setWeekendsVisible(!weekendsVisible);
+  };
+
   return (
     <div className="space-y-6">
        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
             <h1 className="text-3xl font-bold tracking-tight font-headline">Booking Calendar</h1>
-            <p className="text-muted-foreground">Visualize your bookings. Events are color-coded by status. Includes diary view.</p>
+            <p className="text-muted-foreground">Visualize your bookings. Events are color-coded by status. Includes timeGrid and expanded list views.</p>
         </div>
+        <Button onClick={toggleWeekends} variant="outline">
+          {weekendsVisible ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
+          {weekendsVisible ? 'Hide Weekends' : 'Show Weekends'}
+        </Button>
       </div>
 
       <Card className="shadow-xl">
@@ -84,34 +99,33 @@ export default function CalendarPage() {
             In-App Calendar
           </CardTitle>
           <CardDescription>
-            This calendar displays your bookings. Use the toolbar to change views (e.g., month, week, day, list) and navigate years. Click an event for details.
+            This calendar displays your bookings. Use the toolbar to change views and navigate. Click an event for details.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="min-h-[700px] rounded-md text-sm">
             <FullCalendar
-              plugins={[dayGridPlugin, interactionPlugin, listPlugin]}
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
               initialView="dayGridMonth"
               events={calendarEvents}
               eventClick={handleEventClick}
+              weekends={weekendsVisible}
               height="auto" 
               aspectRatio={1.8} 
               headerToolbar={{
                 left: 'prevYear,prev,next,nextYear today',
                 center: 'title',
-                right: 'dayGridMonth,dayGridWeek,dayGridDay,listWeek' 
+                right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek,listDay,listMonth' 
               }}
               editable={false} 
               selectable={false} 
               dayMaxEvents={true} 
+              slotDuration={'00:30:00'} // Example: sets time slots to 30 minutes for timeGrid views
               eventTimeFormat={{ 
                 hour: 'numeric',
                 minute: '2-digit',
                 meridiem: 'short'
               }}
-              // Ensure list views have appropriate styling if needed
-              // listDayFormat={{ month: 'long', day: 'numeric', year: 'numeric' }} // Example for list day format
-              // listDaySideFormat={{ month: 'long', day: 'numeric', year: 'numeric' }} // Example
             />
           </div>
         </CardContent>
@@ -119,4 +133,3 @@ export default function CalendarPage() {
     </div>
   );
 }
-
