@@ -160,7 +160,7 @@ export function AppHeader() {
         )}
          <div className="flex items-center">
             {GreetingIconComponent && <GreetingIconComponent className="h-6 w-6 text-primary mr-2" />}
-            <h1 className="text-base sm:text-lg font-semibold text-foreground font-headline truncate max-w-[80px] xs:max-w-[100px] sm:max-w-[120px] md:max-w-[150px]">
+            <h1 className="text-base sm:text-lg font-semibold text-foreground font-headline truncate max-w-[70px] xs:max-w-[80px] sm:max-w-[100px] md:max-w-[120px]">
             {greeting}
             </h1>
         </div>
@@ -173,14 +173,14 @@ export function AppHeader() {
               src="/images/rubo-logo.png"
               alt={`${t(APP_NAME_KEY)} Logo`}
               width={160}
-              height={27}
+              height={27} 
               priority
               className="hidden sm:block"
             />
              <Image
               src="/images/rubo-logo.png"
               alt={`${t(APP_NAME_KEY)} Logo`}
-              width={80}
+              width={80} 
               height={14}
               priority
               className="block sm:hidden"
@@ -189,15 +189,15 @@ export function AppHeader() {
       </div>
 
       {/* Right Group */}
-      <div className="flex items-center gap-1 sm:gap-2">
-        <p className="text-xs sm:text-sm text-muted-foreground hidden lg:block whitespace-nowrap">
+      <div className="flex items-center gap-0.5 sm:gap-1">
+        <p className="text-xs text-muted-foreground hidden lg:block whitespace-nowrap mr-2">
           {format(currentDateTime, "E, MMM d, yyyy, HH:mm:ss")}
         </p>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 sm:h-9 sm:w-9" aria-label={t('language')}>
-              <Globe className="h-4 w-4 sm:h-5 sm:w-5" />
+            <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 sm:h-8 sm:w-8" aria-label={t('language')}>
+              <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -219,19 +219,20 @@ export function AppHeader() {
             size="icon"
             onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
             aria-label={t('toggleTheme')}
-            className="rounded-full h-8 w-8 sm:h-9 sm:w-9"
+            className="rounded-full h-7 w-7 sm:h-8 sm:w-8"
           >
             {resolvedTheme === 'dark' ? (
-              <SunIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+              <SunIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             ) : (
-              <Moon className="h-4 w-4 sm:h-5 sm:w-5" />
+              <Moon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             )}
           </Button>
         )}
-        <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 sm:h-9 sm:w-9" aria-label={t('toggleNotifications')}>
-          <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
+        <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 sm:h-8 sm:w-8" aria-label={t('toggleNotifications')}>
+          <Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </Button>
       </div>
     </header>
   );
 }
+    
