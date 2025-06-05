@@ -31,6 +31,10 @@ export function ImageUploadDropzone({
     if (initialImageUrl && !file) {
       setPreview(initialImageUrl);
     }
+    // Clear preview if initialImageUrl is removed and no file is set
+    if (!initialImageUrl && !file) {
+      setPreview(null);
+    }
   }, [initialImageUrl, file]);
 
   const onDrop = useCallback(
@@ -59,29 +63,32 @@ export function ImageUploadDropzone({
   const handleRemoveImage = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation(); // Prevent dropzone click
     setFile(null);
-    setPreview(initialImageUrl || null); // Revert to initial or clear
+    // If there was an initial image, removing should clear the preview to show the placeholder,
+    // unless the onFileChange(null) call leads to initialImageUrl being re-asserted by the parent.
+    // For now, simply clearing preview to null is often desired to show placeholder.
+    setPreview(null); 
     onFileChange(null);
   };
 
-  const displayPreview = preview || initialImageUrl;
+  const displayPreview = preview || (file ? preview : initialImageUrl); // Prioritize file preview, then initial
 
   return (
     <div
       {...getRootProps()}
       className={cn(
-        'border-2 border-dashed border-muted-foreground/30 rounded-lg p-6 text-center cursor-pointer hover:border-primary transition-colors relative group',
+        'border-2 border-dashed border-muted-foreground/30 rounded-lg p-2 text-center cursor-pointer hover:border-primary transition-colors relative group flex items-center justify-center', // Ensure flex properties for centering
         isDragActive && 'border-primary bg-primary/10',
-        className
+        className // This className (e.g. h-32) defines the component's dimensions
       )}
     >
       <input {...getInputProps()} />
       {isUploading ? (
-        <div className="flex flex-col items-center justify-center h-48">
-          <Loader className="h-12 w-12 text-primary animate-spin mb-4" />
-          <p className="text-muted-foreground">Uploading...</p>
+        <div className="flex flex-col items-center justify-center h-full w-full">
+          <Loader className="h-10 w-10 text-primary animate-spin mb-2" />
+          <p className="text-sm text-muted-foreground">Uploading...</p>
         </div>
       ) : displayPreview ? (
-        <div className="relative w-full h-48 flex items-center justify-center">
+        <div className="relative w-full h-full flex items-center justify-center">
           <Image
             src={displayPreview}
             alt="Preview"
@@ -92,7 +99,7 @@ export function ImageUploadDropzone({
           <Button
             variant="destructive"
             size="icon"
-            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 h-8 w-8"
+            className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 h-7 w-7 p-1"
             onClick={handleRemoveImage}
             aria-label="Remove image"
           >
@@ -100,9 +107,9 @@ export function ImageUploadDropzone({
           </Button>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center h-48">
-          <UploadCloud className="h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-muted-foreground">{label}</p>
+        <div className="flex flex-col items-center justify-center h-full w-full text-muted-foreground">
+          <UploadCloud className="h-10 w-10 mb-2" />
+          <p className="text-sm">{label}</p>
           <p className="text-xs text-muted-foreground/70 mt-1">PNG, JPG, GIF up to 10MB</p>
         </div>
       )}
