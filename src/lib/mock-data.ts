@@ -1,5 +1,16 @@
 
-import type { PhotographyPackage, Client, Booking, BookingStatus, PaymentStatus, BookingActivityLogEntry, BookingDateTime, Task, TaskPriority, TaskStatus, SpecialNote, SpecialNoteColor } from '@/types';
+import type { PhotographyPackage, Client, Booking, BookingStatus, PaymentStatus, BookingActivityLogEntry, BookingDateTime, Task, TaskPriority, TaskStatus, SpecialNote, SpecialNoteColor, BookingCategory } from '@/types';
+
+// --- BOOKING CATEGORIES DATA ---
+export let mockBookingCategoriesData: BookingCategory[] = [
+  { id: "cat-wedding", name: "Wedding", gradientClasses: "bg-gradient-to-br from-pink-400 to-red-500", textColorClass: "text-white" },
+  { id: "cat-portrait", name: "Portrait", gradientClasses: "bg-gradient-to-br from-sky-400 to-cyan-500", textColorClass: "text-white" },
+  { id: "cat-family", name: "Family", gradientClasses: "bg-gradient-to-br from-emerald-400 to-teal-500", textColorClass: "text-white" },
+  { id: "cat-event", name: "Event", gradientClasses: "bg-gradient-to-br from-amber-400 to-yellow-500", textColorClass: "text-black" },
+  { id: "cat-commercial", name: "Commercial", gradientClasses: "bg-gradient-to-br from-slate-500 to-gray-600", textColorClass: "text-white" },
+  { id: "cat-maternity", name: "Maternity", gradientClasses: "bg-gradient-to-br from-purple-400 to-indigo-500", textColorClass: "text-white" },
+  { id: "cat-newborn", name: "Newborn", gradientClasses: "bg-gradient-to-br from-rose-300 to-pink-300", textColorClass: "text-black" },
+];
 
 // --- PACKAGES DATA ---
 export let mockPackagesData: PhotographyPackage[] = [
@@ -25,7 +36,7 @@ export let mockBookingsData: Booking[] = [
     packageName: "Basic Portrait Session",
     packageId: "1",
     bookingDates: [{ id: 'dt1_1', dateTime: "2024-08-15T14:00:00Z", note: "Focus on professional headshots." }],
-    category: "Portrait",
+    categoryId: "cat-portrait",
     status: "Confirmed" as BookingStatus,
     price: 150,
     payments: [
@@ -46,7 +57,7 @@ export let mockBookingsData: Booking[] = [
     packageName: "Standard Wedding Package",
     packageId: "2",
     bookingDates: [{ id: 'dt2_1', dateTime: "2024-09-20T10:30:00Z", note: "Ceremony at City Hall, reception at The Grand Ballroom." }],
-    category: "Wedding",
+    categoryId: "cat-wedding",
     status: "Completed" as BookingStatus,
     price: 2500,
     payments: [
@@ -66,7 +77,7 @@ export let mockBookingsData: Booking[] = [
     packageName: "Family Lifestyle Shoot",
     packageId: "3",
     bookingDates: [{ id: 'dt3_1', dateTime: "2024-07-30T16:00:00Z" }],
-    category: "Family",
+    categoryId: "cat-family",
     status: "Pending" as BookingStatus,
     price: 350,
     payments: [
@@ -83,7 +94,7 @@ export let mockBookingsData: Booking[] = [
     packageName: "Basic Portrait Session",
     packageId: "1",
     bookingDates: [{ id: 'dt4_1', dateTime: "2024-08-05T09:00:00Z", note: "Client requested a very specific studio background." }],
-    category: "Portrait",
+    categoryId: "cat-portrait",
     status: "Cancelled" as BookingStatus,
     price: 150,
     activityLog: [
@@ -100,7 +111,7 @@ export let mockBookingsData: Booking[] = [
         { id: 'dt5_1', dateTime: "2024-10-10T10:00:00Z", note: "Park session, bring picnic blanket." },
         { id: 'dt5_2', dateTime: "2024-10-12T15:00:00Z", note: "Rain date backup." }
     ],
-    category: "Family",
+    categoryId: "cat-family",
     status: "Pending" as BookingStatus,
     price: 350,
     payments: [],

@@ -106,13 +106,20 @@ export interface BookingDateTime {
   note?: string;
 }
 
+export interface BookingCategory {
+  id: string;
+  name: string;
+  gradientClasses: string;
+  textColorClass: string;
+}
+
 export interface Booking {
   id: string;
   clientName: string;
   packageId: string;
   packageName: string;
   bookingDates: BookingDateTime[];
-  category?: string;
+  categoryId?: string; // Changed from category: string to categoryId: string
   status: BookingStatus;
   price: number;
   notes?: string;
@@ -141,4 +148,3 @@ export interface Invoice {
   dueDate?: string; // ISO string
   status: InvoiceStatus;
 }
-
