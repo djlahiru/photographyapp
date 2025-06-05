@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Users, Edit, Trash2, Phone, Mail, MessageCircle, Briefcase, TrendingUp, TrendingDown, FileText, Edit2, DollarSign, Calendar as CalendarIconFeather, Package, Save } from "react-feather";
+import { PlusCircle, Users, Edit, Trash2, Phone, Mail, MessageCircle, Briefcase, TrendingUp, TrendingDown, FileText, Edit2, DollarSign, Calendar as CalendarIconFeather, Package, Save, Grid, List as ListIcon } from "react-feather";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'react-toastify';
+import { cn } from '@/lib/utils';
 
 // Mock data for clients
 const initialMockClients = [
@@ -32,6 +33,8 @@ const paymentStatusVariantMap: Record<PaymentStatus, "default" | "secondary" | "
   Refunded: "outline",
 };
 
+type LayoutMode = 'grid' | 'list';
+
 export default function ClientsPage() {
   const [mockClients, setMockClients] = useState(initialMockClients);
   const [isAddClientDialogOpen, setIsAddClientDialogOpen] = useState(false);
@@ -40,6 +43,7 @@ export default function ClientsPage() {
   const [newClientPhone, setNewClientPhone] = useState('');
   const [newClientAddress, setNewClientAddress] = useState('');
   const [newClientNotes, setNewClientNotes] = useState('');
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>('grid');
 
   const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase();
 
@@ -103,13 +107,37 @@ export default function ClientsPage() {
             <h1 className="text-3xl font-bold tracking-tight font-headline">Client Management</h1>
             <p className="text-muted-foreground">Add, view, edit, and manage client information.</p>
         </div>
-        <Button onClick={() => setIsAddClientDialogOpen(true)}>
-          <PlusCircle className="mr-2 h-4 w-4" /> Add New Client
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant={layoutMode === 'grid' ? 'default' : 'outline'} 
+            size="icon" 
+            onClick={() => setLayoutMode('grid')}
+            aria-label="Grid View"
+            title="Grid View"
+          >
+            <Grid className="h-5 w-5" />
+          </Button>
+          <Button 
+            variant={layoutMode === 'list' ? 'default' : 'outline'} 
+            size="icon" 
+            onClick={() => setLayoutMode('list')}
+            aria-label="List View"
+            title="List View"
+          >
+            <ListIcon className="h-5 w-5" />
+          </Button>
+          <Button onClick={() => setIsAddClientDialogOpen(true)}>
+            <PlusCircle className="mr-2 h-4 w-4" /> Add New Client
+          </Button>
+        </div>
       </div>
 
       {mockClients.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className={cn(
+          layoutMode === 'grid'
+            ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+            : "flex flex-col gap-4"
+        )}>
           {mockClients.map((client) => {
             const recentPayments = getClientPayments(client.name).slice(0, 3);
             return (
@@ -335,6 +363,5 @@ export default function ClientsPage() {
     </div>
   );
 }
-
 
     
