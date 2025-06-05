@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { LogOut } from 'react-feather';
 import { useTranslation } from 'react-i18next';
+import React, { useEffect, useState } from 'react'; // Import React, useEffect, useState
 
 // Mock user data for now
 const mockUser: UserProfile = {
@@ -31,36 +32,53 @@ const mockUser: UserProfile = {
 export function AppSidebar() {
   const pathname = usePathname();
   const { t } = useTranslation();
+  const [themeUpdateKey, setThemeUpdateKey] = useState(0); // For forcing re-render on theme change
+
+  useEffect(() => {
+    const handleThemeUpdate = () => {
+      setThemeUpdateKey(k => k + 1);
+    };
+    window.addEventListener('accentThemeChanged', handleThemeUpdate);
+    window.addEventListener('fontThemeChanged', handleThemeUpdate); // Also listen for font changes if they affect sidebar
+    return () => {
+      window.removeEventListener('accentThemeChanged', handleThemeUpdate);
+      window.removeEventListener('fontThemeChanged', handleThemeUpdate);
+    };
+  }, []);
+
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" side="left" className="border-r border-sidebar-border">
       <SidebarHeader>
         <UserProfileCard user={mockUser} />
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent key={themeUpdateKey}> {/* Add key here to force re-render of content */}
         <SidebarMenu>
-          {NAV_ITEMS.map((item) => (
-            <SidebarMenuItem key={item.href}>
-              <Link href={item.href} passHref legacyBehavior>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
-                  tooltip={t(item.labelKey)}
-                  className={cn(
-                    "justify-start",
-                    (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href)))
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground"
-                  )}
-                >
-                  <a>
-                    <item.icon className="h-5 w-5" />
-                    <span>{t(item.labelKey)}</span>
-                  </a>
-                </SidebarMenuButton>
-              </Link>
-            </SidebarMenuItem>
-          ))}
+          {NAV_ITEMS.map((item) => {
+            const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
+            return (
+              <SidebarMenuItem key={item.href}>
+                <Link href={item.href} passHref legacyBehavior>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive} // This prop might not be directly used by SidebarMenuButton for styling anymore
+                    tooltip={t(item.labelKey)}
+                    className={cn(
+                      "justify-start",
+                      isActive
+                        ? "sidebar-menu-button--active" // Custom class for gradient
+                        : "sidebar-menu-button--inactive text-sidebar-foreground" // Ensures correct hover and text for inactive
+                    )}
+                  >
+                    <a>
+                      <item.icon className="h-5 w-5" />
+                      <span>{t(item.labelKey)}</span>
+                    </a>
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
+            );
+          })}
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>

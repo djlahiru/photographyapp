@@ -11,22 +11,62 @@ import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 type AvatarShape = 'circle' | 'square';
+const USER_PROFILE_LS_KEY = 'userProfile'; // Same key as in settings
 
 interface UserProfileCardProps {
-  user?: UserProfile;
+  user?: UserProfile; // Initial user prop, can be overridden by localStorage
 }
 
-export function UserProfileCard({ user }: UserProfileCardProps) {
+const defaultUser: UserProfile = {
+  id: 'default-1',
+  name: 'Admin User', // Fallback name
+  email: 'admin@workflowzen.com', // Fallback email
+  avatarUrl: 'https://placehold.co/100x100.png', // Fallback avatar
+};
+
+export function UserProfileCard({ user: initialUser }: UserProfileCardProps) {
   const { t } = useTranslation();
   const appNameTranslated = t(APP_NAME_KEY);
+  const [currentUser, setCurrentUser] = useState<UserProfile>(initialUser || defaultUser);
   const [avatarShape, setAvatarShape] = useState<AvatarShape>('circle');
 
   useEffect(() => {
+    const loadProfile = () => {
+      const storedProfile = localStorage.getItem(USER_PROFILE_LS_KEY);
+      if (storedProfile) {
+        setCurrentUser(JSON.parse(storedProfile));
+      } else if (initialUser) {
+        setCurrentUser(initialUser);
+      } else {
+        setCurrentUser(defaultUser);
+      }
+    };
+    loadProfile();
+
+    const handleProfileUpdate = () => loadProfile();
+    const handleAvatarShapeChange = (event: Event) => {
+        const customEvent = event as CustomEvent<AvatarShape>;
+        if (customEvent.detail) {
+            setAvatarShape(customEvent.detail);
+        }
+    };
+    
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    window.addEventListener('avatarShapeChange', handleAvatarShapeChange);
+    
+    // Initial shape from localStorage
     const storedShape = localStorage.getItem('avatarShape') as AvatarShape | null;
     if (storedShape) {
       setAvatarShape(storedShape);
     }
-  }, []);
+
+
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+      window.removeEventListener('avatarShapeChange', handleAvatarShapeChange);
+    };
+  }, [initialUser]);
+
 
   const getInitials = (name: string) => {
     return name
@@ -44,23 +84,24 @@ export function UserProfileCard({ user }: UserProfileCardProps) {
           avatarShape === 'circle' ? 'rounded-full' : 'rounded-md'
         )}>
           <AvatarImage 
-            src={user?.avatarUrl} 
-            alt={user?.name || appNameTranslated} 
+            src={currentUser?.avatarUrl} 
+            alt={currentUser?.name || appNameTranslated} 
             data-ai-hint="user avatar" 
             className={cn(avatarShape === 'circle' ? 'rounded-full' : 'rounded-md')}
           />
           <AvatarFallback className={cn(
+            "bg-sidebar-primary/30 text-sidebar-primary-foreground",
             avatarShape === 'circle' ? 'rounded-full' : 'rounded-md'
           )}>
-            {user ? getInitials(user.name) : appNameTranslated.substring(0,2).toUpperCase()}
+            {currentUser ? getInitials(currentUser.name) : appNameTranslated.substring(0,2).toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <div className="flex flex-col">
           <span className="text-lg font-semibold text-sidebar-foreground font-headline">
-            {user?.name || appNameTranslated}
+            {currentUser?.name || appNameTranslated}
           </span>
-          {user?.email && (
-             <span className="text-xs text-sidebar-foreground/70">{user.email}</span>
+          {currentUser?.email && (
+             <span className="text-xs text-sidebar-foreground/70">{currentUser.email}</span>
           )}
         </div>
       </div>

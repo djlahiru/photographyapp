@@ -8,7 +8,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { I18nProviderClient } from '@/components/i18n-provider-client';
-import { useTheme } from 'next-themes';
+// Removed useTheme import as it's not directly used here for class manipulation
 
 type AccentTheme = 'default' | 'oceanic' | 'forest' | 'sunset';
 type FontTheme = 'default-sans' | 'classic-serif' | 'modern-mono';
@@ -18,39 +18,43 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { theme: nextTheme } = useTheme(); 
 
   useEffect(() => {
-    // Apply persisted accent theme
-    const storedAccentTheme = localStorage.getItem('accentTheme') as AccentTheme | null;
-    const currentHtmlClasses = document.documentElement.className.split(' ');
-    
-    currentHtmlClasses.forEach(cls => {
-      if (cls.startsWith('theme-accent-')) {
-        document.documentElement.classList.remove(cls);
+    const applyCustomThemes = () => {
+      // Apply persisted accent theme
+      const storedAccentTheme = localStorage.getItem('accentTheme') as AccentTheme | null;
+      document.documentElement.classList.forEach(cls => {
+        if (cls.startsWith('theme-accent-')) {
+          document.documentElement.classList.remove(cls);
+        }
+      });
+      if (storedAccentTheme && storedAccentTheme !== 'default') {
+        document.documentElement.classList.add(`theme-accent-${storedAccentTheme}`);
+      } else {
+         // Ensure default is applied if nothing is stored or if 'default' is explicitly chosen
+        document.documentElement.classList.add('theme-accent-default');
       }
-    });
 
-    if (storedAccentTheme && storedAccentTheme !== 'default') {
-      document.documentElement.classList.add(`theme-accent-${storedAccentTheme}`);
-    }
-
-    // Apply persisted font theme
-    const storedFontTheme = localStorage.getItem('fontTheme') as FontTheme | null;
-    // Re-fetch class list as it might have changed
-    const updatedHtmlClasses = document.documentElement.className.split(' ');
-    updatedHtmlClasses.forEach(cls => {
-      if (cls.startsWith('font-theme-')) {
-        document.documentElement.classList.remove(cls);
+      // Apply persisted font theme
+      const storedFontTheme = localStorage.getItem('fontTheme') as FontTheme | null;
+      document.documentElement.classList.forEach(cls => {
+        if (cls.startsWith('font-theme-')) {
+          document.documentElement.classList.remove(cls);
+        }
+      });
+      if (storedFontTheme && storedFontTheme !== 'default-sans') {
+        document.documentElement.classList.add(`font-theme-${storedFontTheme}`);
       }
-    });
-    if (storedFontTheme && storedFontTheme !== 'default-sans') {
-      document.documentElement.classList.add(`font-theme-${storedFontTheme}`);
-    }
+      // Default font is applied via body tag in globals.css, so no explicit add for default-sans needed here
+    };
 
-  }, [nextTheme]); 
+    applyCustomThemes(); // Apply on initial mount
 
-  useEffect(() => {
+    // Listen for theme changes dispatched from the settings page
+    window.addEventListener('accentThemeChanged', applyCustomThemes);
+    window.addEventListener('fontThemeChanged', applyCustomThemes);
+
+    // App Name logic
     if (typeof window !== 'undefined' && I18nProviderClient && (I18nProviderClient as any).i18n) {
       const i18nInstance = (I18nProviderClient as any).i18n;
        if (i18nInstance.isInitialized) {
@@ -61,9 +65,14 @@ export default function RootLayout({
          });
        }
     } else {
-        document.title = "WorkFlowZen";
+        document.title = "WorkFlowZen"; // Fallback
     }
-  }, []);
+
+    return () => {
+      window.removeEventListener('accentThemeChanged', applyCustomThemes);
+      window.removeEventListener('fontThemeChanged', applyCustomThemes);
+    };
+  }, []); // Empty dependency array means this runs once on mount and cleans up on unmount
 
 
   return (
@@ -76,7 +85,7 @@ export default function RootLayout({
       <body className="antialiased">
         <I18nProviderClient>
           <ThemeProvider
-            attribute="class"
+            attribute="class" // This handles the 'dark' class for light/dark mode
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange

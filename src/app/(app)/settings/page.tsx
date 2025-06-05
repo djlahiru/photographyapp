@@ -14,12 +14,13 @@ import { format } from 'date-fns';
 import { useTheme } from 'next-themes';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Slider } from '@/components/ui/slider'; // Import Slider
+import { Slider } from '@/components/ui/slider';
 
 type AvatarShape = 'circle' | 'square';
 type AccentTheme = 'default' | 'oceanic' | 'forest' | 'sunset';
 type FontTheme = 'default-sans' | 'classic-serif' | 'modern-mono';
 
+const USER_PROFILE_LS_KEY = 'userProfile';
 const ACCENT_THEMES: { value: AccentTheme; label: string }[] = [
   { value: 'default', label: 'Default Violet' },
   { value: 'oceanic', label: 'Oceanic Blue' },
@@ -56,24 +57,29 @@ export default function SettingsPage() {
 
   const [dashboardCoverPhotoFile, setDashboardCoverPhotoFile] = useState<File | null>(null);
   const [dashboardCoverPhotoPreview, setDashboardCoverPhotoPreview] = useState<string | null>(null);
-  const [dashboardBlurIntensity, setDashboardBlurIntensity] = useState<number>(8); // Default blur intensity
+  const [dashboardBlurIntensity, setDashboardBlurIntensity] = useState<number>(8);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentDateTime(new Date()), 1000 * 60);
     
+    const storedProfile = localStorage.getItem(USER_PROFILE_LS_KEY);
+    if (storedProfile) {
+      setUser(JSON.parse(storedProfile));
+    }
+
     const storedShape = localStorage.getItem('avatarShape') as AvatarShape | null;
     if (storedShape) setAvatarShape(storedShape);
 
     const storedAccentTheme = localStorage.getItem('accentTheme') as AccentTheme | null;
     if (storedAccentTheme) {
       setCurrentAccentTheme(storedAccentTheme);
-      handleAccentThemeChange(storedAccentTheme, false);
+      // Initial application handled by RootLayout
     }
 
     const storedFontTheme = localStorage.getItem('fontTheme') as FontTheme | null;
     if (storedFontTheme) {
       setCurrentFontTheme(storedFontTheme);
-      handleFontThemeChange(storedFontTheme, false);
+      // Initial application handled by RootLayout
     }
     
     const storedCalendarConnection = localStorage.getItem('googleCalendarConnected');
@@ -103,20 +109,27 @@ export default function SettingsPage() {
   };
 
   const handleProfileImageChange = (file: File | null) => {
-    setProfileImageFile(file);
+    setProfileImageFile(file); // Keep track of the file itself if needed for actual upload
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setUser(prevUser => ({ ...prevUser, avatarUrl: reader.result as string }));
       };
       reader.readAsDataURL(file);
+    } else {
+      // If file is removed, revert to a placeholder or default if desired
+      // For now, we assume avatarUrl in user state is the source of truth
+      // setUser(prevUser => ({ ...prevUser, avatarUrl: "https://placehold.co/100x100.png" }));
     }
   };
   
   const handleSaveChanges = () => {
-    toast.success("Profile changes saved (simulated).");
+    localStorage.setItem(USER_PROFILE_LS_KEY, JSON.stringify(user));
+    toast.success("Profile changes saved.");
+    window.dispatchEvent(new CustomEvent('profileUpdated'));
     if (profileImageFile) {
-        console.log("New profile image to 'upload':", profileImageFile.name);
+        console.log("New profile image was selected:", profileImageFile.name);
+        // In a real app, you'd upload profileImageFile here
         setProfileImageFile(null); 
     }
   };
@@ -131,35 +144,35 @@ export default function SettingsPage() {
   const handleAvatarShapeChange = (shape: AvatarShape) => {
     setAvatarShape(shape);
     localStorage.setItem('avatarShape', shape);
-     window.dispatchEvent(new CustomEvent('avatarShapeChange', { detail: shape }));
+    window.dispatchEvent(new CustomEvent('avatarShapeChange', { detail: shape }));
   };
 
-  const handleAccentThemeChange = (themeValue: AccentTheme, save: boolean = true) => {
-    setCurrentAccentTheme(themeValue);
-    if (save) localStorage.setItem('accentTheme', themeValue);
+  const applyThemeClass = (themeType: 'accent' | 'font', themeValue: AccentTheme | FontTheme) => {
+    const classPrefix = themeType === 'accent' ? 'theme-accent-' : 'font-theme-';
+    const defaultThemeValue = themeType === 'accent' ? 'default' : 'default-sans';
     
-    ACCENT_THEMES.forEach(t => {
-        if (t.value !== 'default') {
-            document.documentElement.classList.remove(`theme-accent-${t.value}`);
+    document.documentElement.classList.forEach(cls => {
+        if (cls.startsWith(classPrefix)) {
+            document.documentElement.classList.remove(cls);
         }
     });
-    if (themeValue !== 'default') {
-        document.documentElement.classList.add(`theme-accent-${themeValue}`);
+    if (themeValue !== defaultThemeValue) {
+        document.documentElement.classList.add(`${classPrefix}${themeValue}`);
     }
   };
 
-  const handleFontThemeChange = (themeValue: FontTheme, save: boolean = true) => {
+  const handleAccentThemeChange = (themeValue: AccentTheme) => {
+    setCurrentAccentTheme(themeValue);
+    localStorage.setItem('accentTheme', themeValue);
+    applyThemeClass('accent', themeValue);
+    window.dispatchEvent(new CustomEvent('accentThemeChanged'));
+  };
+
+  const handleFontThemeChange = (themeValue: FontTheme) => {
     setCurrentFontTheme(themeValue);
-    if (save) localStorage.setItem('fontTheme', themeValue);
-    
-    FONT_THEMES.forEach(t => {
-      if (t.value !== 'default-sans') {
-        document.documentElement.classList.remove(`font-theme-${t.value}`);
-      }
-    });
-    if (themeValue !== 'default-sans') {
-      document.documentElement.classList.add(`font-theme-${themeValue}`);
-    }
+    localStorage.setItem('fontTheme', themeValue);
+    applyThemeClass('font', themeValue);
+    window.dispatchEvent(new CustomEvent('fontThemeChanged'));
   };
 
   const handleDashboardCoverPhotoSelected = (file: File | null) => {
@@ -306,14 +319,14 @@ export default function SettingsPage() {
               ))}
             </RadioGroup>
             <style jsx>{`
-              .theme-preview-default { background-color: hsl(270 70% 65%); }
-              .dark .theme-preview-default { background-color: hsl(270 70% 70%); }
-              .theme-preview-oceanic { background-color: hsl(205 75% 50%); }
-              .dark .theme-preview-oceanic { background-color: hsl(205 70% 60%); }
-              .theme-preview-forest { background-color: hsl(140 60% 40%); }
-              .dark .theme-preview-forest { background-color: hsl(140 50% 50%); }
-              .theme-preview-sunset { background-color: hsl(25 90% 55%); }
-              .dark .theme-preview-sunset { background-color: hsl(25 80% 65%); }
+              .theme-preview-default { background-image: linear-gradient(to right, hsl(270 70% 65%), hsl(270 60% 55%)); }
+              .dark .theme-preview-default { background-image: linear-gradient(to right, hsl(270 70% 70%), hsl(270 60% 60%)); }
+              .theme-preview-oceanic { background-image: linear-gradient(to right, hsl(205 75% 50%), hsl(205 65% 40%)); }
+              .dark .theme-preview-oceanic { background-image: linear-gradient(to right, hsl(205 70% 60%), hsl(205 60% 50%)); }
+              .theme-preview-forest { background-image: linear-gradient(to right, hsl(140 60% 40%), hsl(140 50% 30%)); }
+              .dark .theme-preview-forest { background-image: linear-gradient(to right, hsl(140 50% 50%), hsl(140 40% 40%)); }
+              .theme-preview-sunset { background-image: linear-gradient(to right, hsl(25 90% 55%), hsl(25 80% 45%)); }
+              .dark .theme-preview-sunset { background-image: linear-gradient(to right, hsl(25 80% 65%), hsl(25 70% 55%)); }
             `}</style>
           </div>
            <div>
@@ -373,7 +386,7 @@ export default function SettingsPage() {
             <Slider
               id="dashboardBlurIntensity"
               min={0}
-              max={24} // Max blur-xl like effect
+              max={24} 
               step={1}
               value={[dashboardBlurIntensity]}
               onValueChange={handleBlurIntensityChange}
@@ -478,8 +491,4 @@ export default function SettingsPage() {
     </div>
   );
 }
-    
-
-    
-
     
