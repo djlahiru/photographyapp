@@ -13,13 +13,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGr
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
-import { Label } from '@/components/ui/label';
+// Removed Label import from here as FormLabel from ui/form will be used
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Calendar as CalendarIcon, Save, Plus, AlertCircle, Trash2 } from 'react-feather';
 import { format, parseISO, isValid } from 'date-fns';
 import { toast } from 'react-toastify';
 import type { Task, TaskPriority, TaskStatus, TaskFileAttachment, Client, Booking } from '@/types';
 import { mockClientsData, mockBookingsData } from '@/lib/mock-data';
+import { Form, FormDescription, FormField, FormItem, FormLabel, FormMessage, FormControl } from "@/components/ui/form"; // Correctly import Form here
 
 const TASK_PRIORITIES: TaskPriority[] = ['Low', 'Medium', 'High', 'Urgent'];
 const TASK_STATUSES: TaskStatus[] = ['To Do', 'In Progress', 'Waiting', 'Completed', 'Cancelled'];
@@ -40,8 +41,7 @@ const taskFormSchema = z.object({
   relatedClientId: z.string().optional(),
   relatedBookingId: z.string().optional(),
   category: z.string().optional(),
-  // attachments: z.array(z.instanceof(File)).optional(), // For actual file objects
-  attachments: z.array(z.object({ id: z.string(), name: z.string(), url: z.string(), type: z.string(), size: z.number() })).optional(), // For mock
+  attachments: z.array(z.object({ id: z.string(), name: z.string(), url: z.string(), type: z.string(), size: z.number() })).optional(),
   reminderDate: z.date().optional(),
   subtasks: z.string().optional(),
   colorTag: z.string().optional(),
@@ -53,7 +53,7 @@ interface AddTaskDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   onTaskSave: (task: Task, saveAndAddAnother: boolean) => void;
-  initialTask?: Task; // For editing in the future
+  initialTask?: Task;
 }
 
 export function AddTaskDialog({ isOpen, onOpenChange, onTaskSave, initialTask }: AddTaskDialogProps) {
@@ -95,7 +95,7 @@ export function AddTaskDialog({ isOpen, onOpenChange, onTaskSave, initialTask }:
     } else {
       setAvailableBookings([]);
     }
-    form.setValue('relatedBookingId', undefined); // Reset booking if client changes
+    form.setValue('relatedBookingId', undefined);
   }, [selectedClientId, form]);
   
   useEffect(() => {
@@ -108,7 +108,7 @@ export function AddTaskDialog({ isOpen, onOpenChange, onTaskSave, initialTask }:
             attachments: initialTask.attachments || [],
         });
         setFilePreviews(initialTask.attachments || []);
-        setSelectedFiles([]); // Clear any live selected files if initialTask changes
+        setSelectedFiles([]);
     } else {
         form.reset({
             title: '', description: '', assignee: '', priority: 'Medium', status: 'To Do',
@@ -117,41 +117,36 @@ export function AddTaskDialog({ isOpen, onOpenChange, onTaskSave, initialTask }:
         setFilePreviews([]);
         setSelectedFiles([]);
     }
-  }, [initialTask, form.reset, isOpen]);
+  }, [initialTask, form, isOpen]); // Added form and isOpen to dependencies
 
 
   const handleFileChange = (newFiles: File[] | null) => {
     const currentLiveFiles = newFiles || [];
     setSelectedFiles(currentLiveFiles);
 
-    // Update previews: keep existing (from initialTask) and add new ones from live selection
     const newPreviews = currentLiveFiles.map(file => ({
       id: `temp-${file.name}-${Date.now()}`,
       name: file.name,
-      url: URL.createObjectURL(file), // Create blob URL for preview
+      url: URL.createObjectURL(file),
       type: file.type,
       size: file.size,
     }));
 
-    // If initialTask provided attachments, merge them but prioritize new selections for the same name.
-    // For simplicity here, we'll just append. A more robust solution would handle overwrites.
     const existingPreviews = initialTask?.attachments?.filter(att => !currentLiveFiles.find(f => f.name === att.name)) || [];
     setFilePreviews([...existingPreviews, ...newPreviews]);
   };
   
   const removeAttachment = (attachmentIdToRemove: string) => {
-     // Remove from live selected files
-    setSelectedFiles(prevFiles => prevFiles.filter(f => `temp-${f.name}-${Date.now()}` !== attachmentIdToRemove && f.name !== filePreviews.find(p=>p.id === attachmentIdToRemove)?.name )); // A bit hacky comparison
-    // Remove from previews (both initial and newly added)
+    setSelectedFiles(prevFiles => prevFiles.filter(f => `temp-${f.name}-${Date.now()}` !== attachmentIdToRemove && f.name !== filePreviews.find(p=>p.id === attachmentIdToRemove)?.name ));
     setFilePreviews(prevPreviews => prevPreviews.filter(att => att.id !== attachmentIdToRemove));
   };
 
 
   const processSave = (values: TaskFormValues, saveAndAddAnother: boolean) => {
     const finalAttachments: TaskFileAttachment[] = filePreviews.map(fp => ({
-        id: fp.id.startsWith('temp-') ? `file-${Date.now()}-${Math.random().toString(36).substring(7)}` : fp.id, // Ensure final IDs are not temp
+        id: fp.id.startsWith('temp-') ? `file-${Date.now()}-${Math.random().toString(36).substring(7)}` : fp.id,
         name: fp.name,
-        url: fp.url, // For mock, blob URL is fine. In real app, this would be uploaded URL.
+        url: fp.url,
         type: fp.type,
         size: fp.size,
     }));
@@ -163,19 +158,19 @@ export function AddTaskDialog({ isOpen, onOpenChange, onTaskSave, initialTask }:
       startDate: values.startDate ? values.startDate.toISOString() : undefined,
       reminderDate: values.reminderDate ? values.reminderDate.toISOString() : undefined,
       attachments: finalAttachments,
-      createdBy: initialTask?.createdBy || "Admin User", // Keep original creator if editing
+      createdBy: initialTask?.createdBy || "Admin User",
       createdAt: initialTask?.createdAt || new Date().toISOString(),
     };
     onTaskSave(newTask, saveAndAddAnother);
     if (!saveAndAddAnother) {
-      form.reset();
-      setSelectedFiles([]);
-      setFilePreviews([]);
+      // form.reset(); // Resetting is now handled by useEffect on initialTask/isOpen
+      // setSelectedFiles([]);
+      // setFilePreviews([]);
     } else {
-       form.reset({ // Reset for "add another" but keep some sensible defaults or clear specific fields
-            title: '', description: '', assignee: values.assignee, // keep assignee?
+       form.reset({ 
+            title: '', description: '', assignee: values.assignee, 
             priority: values.priority, status: 'To Do', category: values.category,
-            relatedClientId: values.relatedClientId, relatedBookingId: undefined, // clear booking
+            relatedClientId: values.relatedClientId, relatedBookingId: undefined, 
             subtasks: '', colorTag: values.colorTag, attachments: []
         });
         setSelectedFiles([]);
@@ -190,9 +185,7 @@ export function AddTaskDialog({ isOpen, onOpenChange, onTaskSave, initialTask }:
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
       if (!open) {
-        form.reset();
-        setSelectedFiles([]);
-        setFilePreviews([]);
+        // Resetting form handled by useEffect based on initialTask and isOpen
       }
       onOpenChange(open);
     }}>
@@ -353,8 +346,8 @@ export function AddTaskDialog({ isOpen, onOpenChange, onTaskSave, initialTask }:
                 <FormItem>
                     <FormLabel>Attachments (Optional)</FormLabel>
                     <ImageUploadDropzone
-                        onFileChange={(file) => handleFileChange(file ? [file] : [])} // Adapt to single file, or update dropzone for multiple
-                        className="h-28" // Adjust height as needed
+                        onFileChange={(file) => handleFileChange(file ? [file] : [])} 
+                        className="h-28" 
                         label="Drop files or click to upload (images, PDFs, etc.)"
                     />
                     {filePreviews.length > 0 && (
@@ -421,7 +414,6 @@ export function AddTaskDialog({ isOpen, onOpenChange, onTaskSave, initialTask }:
                   </FormItem>
                 )} />
                 
-                 {/* Hidden Created By for mock */}
                  {initialTask && <p className="text-xs text-muted-foreground">Created by: {initialTask.createdBy} on {format(parseISO(initialTask.createdAt), "PPP")}</p>}
 
 
@@ -445,8 +437,4 @@ export function AddTaskDialog({ isOpen, onOpenChange, onTaskSave, initialTask }:
   );
 }
 
-// Helper to add to FormItem for zod issues, not directly used in this component's structure
-// but useful for general form building.
-import { FormDescription, FormField, FormItem, FormLabel, FormMessage, FormControl } from "@/components/ui/form";
-import { Form } from 'react-hook-form';
-
+    
