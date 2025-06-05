@@ -91,7 +91,7 @@ export default function ClientsPage() {
     return () => {
       window.removeEventListener('fabOpenNewClientDialog', openDialog);
     };
-  }, []); // Dependencies should include handleOpenAddClientDialog if it changes.
+  }, []); 
 
   const handleEditNote = (clientName: string) => {
     const clientToEdit = clients.find(c => c.name === clientName);
@@ -744,8 +744,3 @@ export default function ClientsPage() {
     </div>
   );
 }
-    
-
-      
-
-    

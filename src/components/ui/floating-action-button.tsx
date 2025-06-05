@@ -5,15 +5,12 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, X, PlusCircle, UserPlus, DollarSign } from 'react-feather';
 import { cn } from '@/lib/utils';
-// Link import removed as it's not used for onClick event dispatch
-// import Link from 'next/link'; 
 
 interface SpeedDialAction {
   id: string;
   label: string;
   icon: React.ElementType;
   onClick?: () => void;
-  // href?: string; // href is not used for this event-based approach
 }
 
 export function FloatingActionButton() {
@@ -28,7 +25,7 @@ export function FloatingActionButton() {
 
   const actions: SpeedDialAction[] = [
     {
-      id: 'fab-new-booking', // Changed id for clarity
+      id: 'fab-new-booking',
       label: 'New Booking',
       icon: PlusCircle,
       onClick: () => {
@@ -36,7 +33,7 @@ export function FloatingActionButton() {
       },
     },
     {
-      id: 'fab-new-client', // Changed id for clarity
+      id: 'fab-new-client',
       label: 'New Client',
       icon: UserPlus,
       onClick: () => {
@@ -44,7 +41,7 @@ export function FloatingActionButton() {
       },
     },
     {
-      id: 'fab-new-payment', // Changed id for clarity
+      id: 'fab-new-payment',
       label: 'New Payment',
       icon: DollarSign,
       onClick: () => {
@@ -58,7 +55,6 @@ export function FloatingActionButton() {
   }
 
   return (
-    // Removed fixed positioning from here, it will be handled by the parent div in AppLayout
     <div className="relative flex flex-col items-center gap-2">
       {/* Speed Dial Actions */}
       <div
@@ -118,4 +114,3 @@ export function FloatingActionButton() {
     </div>
   );
 }
-
