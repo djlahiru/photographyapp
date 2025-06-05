@@ -18,8 +18,7 @@ import { toast } from 'react-toastify';
 import { initialMockPackages } from '@/app/(app)/packages/page';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 import { Textarea } from '@/components/ui/textarea';
-// Assuming initialMockClients is exported from clients/page.tsx for populating client selection if needed in future
-// import { initialMockClients } from '@/app/(app)/clients/page.tsx';
+import { initialMockClients } from '@/app/(app)/clients/page';
 
 
 export const initialMockBookings: Booking[] = [
@@ -128,8 +127,12 @@ export default function BookingsPage() {
   const [bookingPackageId, setBookingPackageId] = React.useState<string | undefined>(undefined);
   const [dialogBookingDates, setDialogBookingDates] = React.useState<BookingDateTime[]>([{ id: 'dt_new_' + Date.now(), dateTime: '' }]);
   const [bookingCategory, setBookingCategory] = React.useState('');
+  
+  const [suggestedClients, setSuggestedClients] = React.useState<Client[]>([]);
+  const [isClientSuggestionsOpen, setIsClientSuggestionsOpen] = React.useState(false);
 
-  // State for "Add New Client for Booking" dialog (to match clients page dialog)
+
+  // State for "Add New Client for Booking" dialog
   const [isAddNewClientDialogForBookingOpen, setIsAddNewClientDialogForBookingOpen] = React.useState(false);
   const [newClientForBookingName, setNewClientForBookingName] = React.useState('');
   const [newClientForBookingEmail, setNewClientForBookingEmail] = React.useState('');
@@ -183,6 +186,8 @@ export default function BookingsPage() {
     setDialogBookingDates([{ id: 'dt_reset_' + Date.now(), dateTime: '' }]);
     setBookingCategory('');
     setEditingBookingId(null);
+    setSuggestedClients([]);
+    setIsClientSuggestionsOpen(false);
   };
 
   const resetNewClientForBookingForm = () => {
@@ -194,6 +199,20 @@ export default function BookingsPage() {
     setNewClientForBookingNotes('');
     setNewClientForBookingPhotoFile(null);
     setNewClientForBookingPhotoPreview(null);
+  };
+  
+  const handleClientNameChange = (name: string) => {
+    setBookingClientName(name);
+    if (name.trim() === '') {
+      setSuggestedClients([]);
+      setIsClientSuggestionsOpen(false);
+      return;
+    }
+    const matches = initialMockClients.filter(client =>
+      client.name.toLowerCase().includes(name.toLowerCase())
+    );
+    setSuggestedClients(matches);
+    setIsClientSuggestionsOpen(matches.length > 0);
   };
 
   const handleClientPhotoChangeForBooking = (file: File | null) => {
@@ -240,6 +259,8 @@ export default function BookingsPage() {
     setDialogBookingDates(formattedDates.length > 0 ? formattedDates : [{ id: 'dt_edit_empty_' + Date.now(), dateTime: '' }]);
     setBookingCategory(booking.category || '');
     setIsEditBookingDialogOpen(true);
+    setSuggestedClients([]);
+    setIsClientSuggestionsOpen(false);
   };
 
   const handleSaveNewClientForBooking = () => {
@@ -247,11 +268,12 @@ export default function BookingsPage() {
       toast.error("Client Name is required for the new client.");
       return;
     }
-    // This function now primarily sets the client name for the booking form
     setBookingClientName(newClientForBookingName.trim());
     toast.success(`Client "${newClientForBookingName.trim()}" selected for this booking.`);
     setIsAddNewClientDialogForBookingOpen(false);
     resetNewClientForBookingForm();
+    setSuggestedClients([]);
+    setIsClientSuggestionsOpen(false);
   };
 
 
@@ -537,20 +559,48 @@ export default function BookingsPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
+            <div className="relative grid gap-2">
               <Label htmlFor="booking-client-name">Client Name</Label>
               <div className="flex items-center gap-2">
                 <Input
                   id="booking-client-name"
-                  placeholder="e.g., John Doe"
+                  placeholder="Search clients or enter new name..."
                   value={bookingClientName}
-                  onChange={(e) => setBookingClientName(e.target.value)}
+                  onChange={(e) => handleClientNameChange(e.target.value)}
+                  onFocus={() => {
+                     if (bookingClientName.trim()) {
+                       const matches = initialMockClients.filter(client =>
+                         client.name.toLowerCase().includes(bookingClientName.toLowerCase())
+                       );
+                       setSuggestedClients(matches);
+                       setIsClientSuggestionsOpen(matches.length > 0);
+                     }
+                   }}
+                   onBlur={() => setTimeout(() => setIsClientSuggestionsOpen(false), 150)} // Delay to allow click on suggestion
+                  autoComplete="off"
                   className="flex-grow"
                 />
-                <Button variant="outline" size="sm" onClick={() => { resetNewClientForBookingForm(); setIsAddNewClientDialogForBookingOpen(true); }}>
+                <Button variant="outline" size="sm" onClick={() => { resetNewClientForBookingForm(); setIsAddNewClientDialogForBookingOpen(true); setIsClientSuggestionsOpen(false); }}>
                     <UserPlus className="mr-1 h-4 w-4" /> Add New
                 </Button>
               </div>
+              {isClientSuggestionsOpen && suggestedClients.length > 0 && (
+                <div className="absolute top-full left-0 right-0 z-10 mt-1 w-full rounded-md border bg-popover shadow-lg max-h-60 overflow-y-auto">
+                  {suggestedClients.map(client => (
+                    <div
+                      key={client.id}
+                      className="p-2 hover:bg-accent cursor-pointer text-sm"
+                      onMouseDown={() => { // Use onMouseDown to fire before onBlur of input
+                        setBookingClientName(client.name);
+                        setIsClientSuggestionsOpen(false);
+                        setSuggestedClients([]);
+                      }}
+                    >
+                      {client.name}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="booking-package">Photography Package</Label>
