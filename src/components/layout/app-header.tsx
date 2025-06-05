@@ -63,7 +63,7 @@ export function AppHeader() {
       if (storedProfile) {
         try {
           const parsedProfile: UserProfile = JSON.parse(storedProfile);
-          profileToUse = { ...defaultUser, ...parsedProfile }; // Merge with default to ensure all fields
+          profileToUse = { ...defaultUser, ...parsedProfile }; 
         } catch (e) {
           console.error("Failed to parse user profile for header", e);
           profileToUse = defaultUser;
@@ -80,9 +80,16 @@ export function AppHeader() {
     loadProfileAndShape();
 
     const handleProfileUpdate = () => loadProfileAndShape();
-    const handleAvatarShapeChange = () => {
+    const handleAvatarShapeChange = (event: Event) => {
+        const customEvent = event as CustomEvent<AvatarShape>;
         const storedShape = localStorage.getItem(AVATAR_SHAPE_LS_KEY) as AvatarShape | null;
-        setHeaderAvatarShape(storedShape || 'circle');
+        if (customEvent.detail) { 
+            setHeaderAvatarShape(customEvent.detail);
+        } else if (storedShape) { 
+            setHeaderAvatarShape(storedShape);
+        } else {
+            setHeaderAvatarShape('circle'); 
+        }
     };
     
     window.addEventListener('profileUpdated', handleProfileUpdate);
@@ -154,7 +161,7 @@ export function AppHeader() {
         )}
          <div className="flex items-center">
             {GreetingIconComponent && <GreetingIconComponent className="h-6 w-6 text-primary mr-2" />}
-            <h1 className="text-base sm:text-lg font-semibold text-foreground font-headline truncate max-w-[80px] xs:max-w-[120px] sm:max-w-[150px] md:max-w-xs">
+            <h1 className="text-base sm:text-lg font-semibold text-foreground font-headline truncate max-w-[80px] xs:max-w-[100px] sm:max-w-[120px] md:max-w-[150px]">
             {greeting}
             </h1>
         </div>
@@ -167,32 +174,32 @@ export function AppHeader() {
             <Image 
               src="/images/rubo-logo.png" 
               alt={`${t(APP_NAME_KEY)} Logo`} 
-              width={160} // Adjusted width for better fit, original aspect ratio 713x120 -> 160x27
+              width={160} 
               height={27} 
               priority 
-              className="hidden sm:block" // Hide on very small screens if needed, show from sm up
+              className="hidden sm:block" 
             />
              <Image 
-              src="/images/rubo-logo.png" // Could use a smaller/icon version for xs screens
+              src="/images/rubo-logo.png" 
               alt={`${t(APP_NAME_KEY)} Logo`} 
               width={80} 
               height={14} 
               priority 
-              className="block sm:hidden" // Show a smaller version on xs screens
+              className="block sm:hidden" 
             />
           </a>
         </Link>
       </div>
 
       {/* Right Group */}
-      <div className="flex items-center gap-1 sm:gap-2"> {/* Reduced md:gap-4 to sm:gap-2 for space */}
-        <p className="text-xs sm:text-sm text-muted-foreground hidden lg:block whitespace-nowrap"> {/* Changed from md:block to lg:block */}
+      <div className="flex items-center gap-1 sm:gap-2">
+        <p className="text-xs sm:text-sm text-muted-foreground hidden lg:block whitespace-nowrap">
           {format(currentDateTime, "E, MMM d, yyyy, HH:mm:ss")}
         </p>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 sm:h-9 sm:w-9" aria-label={t('language')}> {/* Adjusted size */}
+            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 sm:h-9 sm:w-9" aria-label={t('language')}>
               <Globe className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </DropdownMenuTrigger>
@@ -215,7 +222,7 @@ export function AppHeader() {
             size="icon"
             onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
             aria-label={t('toggleTheme')}
-            className="rounded-full h-8 w-8 sm:h-9 sm:w-9" /* Adjusted size */
+            className="rounded-full h-8 w-8 sm:h-9 sm:w-9"
           >
             {resolvedTheme === 'dark' ? (
               <SunIcon className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -224,7 +231,7 @@ export function AppHeader() {
             )}
           </Button>
         )}
-        <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 sm:h-9 sm:w-9" aria-label={t('toggleNotifications')}> {/* Adjusted size */}
+        <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 sm:h-9 sm:w-9" aria-label={t('toggleNotifications')}>
           <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
         </Button>
       </div>
