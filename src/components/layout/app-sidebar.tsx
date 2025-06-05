@@ -80,6 +80,30 @@ export function AppSidebar() {
             );
           })}
         </SidebarMenu>
+
+        {/* Settings item, pushed to the bottom of SidebarContent */}
+        <SidebarMenu className="mt-auto pt-2 border-t border-sidebar-border/30"> 
+          <SidebarMenuItem key={SETTINGS_NAV_ITEM.href}>
+            <Link href={SETTINGS_NAV_ITEM.href} passHref legacyBehavior>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname === SETTINGS_NAV_ITEM.href || pathname.startsWith(SETTINGS_NAV_ITEM.href)}
+                tooltip={t(SETTINGS_NAV_ITEM.labelKey)}
+                className={cn(
+                  "justify-start",
+                  (pathname === SETTINGS_NAV_ITEM.href || pathname.startsWith(SETTINGS_NAV_ITEM.href))
+                    ? "sidebar-menu-button--active"
+                    : "sidebar-menu-button--inactive text-sidebar-foreground"
+                )}
+              >
+                <a>
+                  <SETTINGS_NAV_ITEM.icon className="h-5 w-5" />
+                  <span>{t(SETTINGS_NAV_ITEM.labelKey)}</span>
+                </a>
+              </SidebarMenuButton>
+            </Link>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
          <div className="p-2">
