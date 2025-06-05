@@ -190,7 +190,7 @@ export function AppHeader() {
 
       {/* Right Group */}
       <div className="flex items-center gap-0.5 sm:gap-1">
-        <p className="text-xs text-muted-foreground hidden lg:block whitespace-nowrap mr-2">
+        <p className="text-sm text-muted-foreground hidden lg:block whitespace-nowrap mr-2">
           {format(currentDateTime, "E, MMM d, yyyy, HH:mm:ss")}
         </p>
 
