@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 
 const paymentStatusVariantMap: Record<PaymentStatus, "default" | "secondary" | "destructive" | "outline" | "success" | "warning"> = {
   Paid: "success",
@@ -37,23 +38,27 @@ interface EnrichedPayment extends Payment {
 }
 
 export default function PaymentsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | 'all'>('all');
-  const [refreshKey, setRefreshKey] = useState(0); 
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // State for Record Payment Dialog
   const [isRecordPaymentDialogOpen, setIsRecordPaymentDialogOpen] = useState(false);
   const [paymentClientName, setPaymentClientName] = useState(''); // For text input
   const [suggestedPaymentClients, setSuggestedPaymentClients] = useState<Client[]>([]);
   const [isPaymentClientSuggestionsOpen, setIsPaymentClientSuggestionsOpen] = useState(false);
-  
+
   const [selectedBookingIdForPayment, setSelectedBookingIdForPayment] = useState<string | undefined>(undefined);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentDate, setPaymentDate] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<string | undefined>(undefined);
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | undefined>(undefined);
   const [paymentDescription, setPaymentDescription] = useState('');
-  
+
   const [availableBookingsForClient, setAvailableBookingsForClient] = useState<Booking[]>([]);
 
   // State for "Add New Client for Payment" dialog
@@ -107,7 +112,7 @@ export default function PaymentsPage() {
         payment.packageName.toLowerCase().includes(searchLower) ||
         (payment.description && payment.description.toLowerCase().includes(searchLower)) ||
         payment.amount.toString().includes(searchLower);
-      
+
       const matchesStatus = statusFilter === 'all' || payment.status === statusFilter;
 
       return matchesSearch && matchesStatus;
@@ -121,7 +126,7 @@ export default function PaymentsPage() {
   const summaryStats = useMemo(() => {
     const now = new Date();
     const currentMonthInterval = { start: startOfMonth(now), end: endOfMonth(now) };
-    
+
     let totalRevenueThisMonth = 0;
     let totalOutstanding = 0;
     let totalPaidAllTime = 0;
@@ -162,7 +167,7 @@ export default function PaymentsPage() {
     setPaymentDescription('');
     setAvailableBookingsForClient([]);
   }, []);
-  
+
   const resetNewClientForPaymentForm = () => {
     setNewClientForPaymentName('');
     setNewClientForPaymentEmail('');
@@ -178,14 +183,14 @@ export default function PaymentsPage() {
     resetRecordPaymentForm();
     setIsRecordPaymentDialogOpen(true);
   }, [resetRecordPaymentForm]);
-  
+
   useEffect(() => {
-    const openDialog = () => handleOpenRecordPaymentDialog();
-    window.addEventListener('fabOpenRecordPaymentDialog', openDialog);
-    return () => {
-      window.removeEventListener('fabOpenRecordPaymentDialog', openDialog);
-    };
-  }, [handleOpenRecordPaymentDialog]); 
+    if (searchParams.get('openDialog') === 'true') {
+      handleOpenRecordPaymentDialog();
+      router.replace(pathname, { shallow: true });
+    }
+  }, [searchParams, router, pathname, handleOpenRecordPaymentDialog]);
+
 
   const handlePaymentClientNameChange = (name: string) => {
     setPaymentClientName(name);
@@ -194,7 +199,7 @@ export default function PaymentsPage() {
       setIsPaymentClientSuggestionsOpen(false);
       return;
     }
-    const matches = mockClientsData.filter(client => 
+    const matches = mockClientsData.filter(client =>
       client.name.toLowerCase().includes(name.toLowerCase())
     );
     setSuggestedPaymentClients(matches);
@@ -241,11 +246,11 @@ export default function PaymentsPage() {
             outstandingBalance: 0,
             totalBookings: 0,
         };
-        mockClientsData.unshift(newClientToAdd); 
+        mockClientsData.unshift(newClientToAdd);
         setPaymentClientName(newClientToAdd.name);
         toast.success(`New client "${newClientToAdd.name}" added and selected.`);
     }
-    
+
     setIsAddNewClientDialogForPaymentOpen(false);
     resetNewClientForPaymentForm();
     setSuggestedPaymentClients([]); // Clear suggestions
@@ -272,7 +277,7 @@ export default function PaymentsPage() {
       toast.error("Selected booking not found. Please try again.");
       return;
     }
-    
+
     // Ensure the booking client matches the selected/entered client name
     if (mockBookingsData[bookingIndex].clientName.toLowerCase() !== paymentClientName.trim().toLowerCase()){
         toast.error("The selected booking does not belong to the specified client. Please verify your selection.");
@@ -295,7 +300,7 @@ export default function PaymentsPage() {
     mockBookingsData[bookingIndex].payments!.unshift(newPayment);
 
     toast.success(`Payment of $${amount.toFixed(2)} recorded for booking.`);
-    setRefreshKey(prev => prev + 1); 
+    setRefreshKey(prev => prev + 1);
     setIsRecordPaymentDialogOpen(false);
     resetRecordPaymentForm();
   };
@@ -505,14 +510,14 @@ export default function PaymentsPage() {
                   onChange={(e) => handlePaymentClientNameChange(e.target.value)}
                   onFocus={() => {
                      if (paymentClientName.trim()) {
-                       const matches = mockClientsData.filter(client => 
+                       const matches = mockClientsData.filter(client =>
                          client.name.toLowerCase().includes(paymentClientName.toLowerCase())
                        );
                        setSuggestedPaymentClients(matches);
                        setIsPaymentClientSuggestionsOpen(matches.length > 0);
                      }
                    }}
-                   onBlur={() => setTimeout(() => setIsPaymentClientSuggestionsOpen(false), 150)} 
+                   onBlur={() => setTimeout(() => setIsPaymentClientSuggestionsOpen(false), 150)}
                   autoComplete="off"
                   className="flex-grow"
                 />
@@ -603,7 +608,7 @@ export default function PaymentsPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="payment-status">Payment Status</Label>
               <Select value={paymentStatus} onValueChange={(val) => setPaymentStatus(val as PaymentStatus)}>
@@ -745,4 +750,3 @@ export default function PaymentsPage() {
     </div>
   );
 }
-

@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { mockClientsData, mockBookingsData } from '@/lib/mock-data'; // Import from centralized mock data
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 
 
 const paymentStatusVariantMap: Record<PaymentStatus, "default" | "secondary" | "destructive" | "outline" | "success" | "warning"> = {
@@ -38,7 +39,11 @@ const bookingStatusVariantMap: Record<BookingStatus, "default" | "secondary" | "
 type LayoutMode = 'grid' | 'list';
 
 export default function ClientsPage() {
-  const [clients, setClients] = useState<Client[]>(mockClientsData); 
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  const [clients, setClients] = useState<Client[]>(mockClientsData);
   const [isAddClientDialogOpen, setIsAddClientDialogOpen] = useState(false);
   const [isEditClientDialogOpen, setIsEditClientDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -60,7 +65,7 @@ export default function ClientsPage() {
   const [editClientNotes, setEditClientNotes] = useState('');
   const [editClientPhotoFile, setEditClientPhotoFile] = useState<File | null>(null);
   const [editClientPhotoPreview, setEditClientPhotoPreview] = useState<string | null>(null);
-  
+
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('grid');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -86,12 +91,11 @@ export default function ClientsPage() {
   }, [resetNewClientForm]);
 
   useEffect(() => {
-    const openDialog = () => handleOpenAddClientDialog();
-    window.addEventListener('fabOpenNewClientDialog', openDialog);
-    return () => {
-      window.removeEventListener('fabOpenNewClientDialog', openDialog);
-    };
-  }, [handleOpenAddClientDialog]); 
+    if (searchParams.get('openDialog') === 'true') {
+      handleOpenAddClientDialog();
+      router.replace(pathname, { shallow: true });
+    }
+  }, [searchParams, router, pathname, handleOpenAddClientDialog]);
 
   const handleEditNote = (clientName: string) => {
     const clientToEdit = clients.find(c => c.name === clientName);
@@ -101,7 +105,7 @@ export default function ClientsPage() {
   };
 
   const getClientPayments = (clientName: string): Payment[] => {
-    const clientBookings = mockBookingsData.filter(b => b.clientName === clientName); 
+    const clientBookings = mockBookingsData.filter(b => b.clientName === clientName);
     const allPayments: Payment[] = [];
     clientBookings.forEach(booking => {
       if (booking.payments) {
@@ -110,9 +114,9 @@ export default function ClientsPage() {
     });
     return allPayments.sort((a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime());
   };
-  
+
   const getClientBookingsList = (clientName: string): Booking[] => {
-    return mockBookingsData.filter(booking => booking.clientName === clientName) 
+    return mockBookingsData.filter(booking => booking.clientName === clientName)
                               .sort((a,b) => {
                                 const dateA = a.bookingDates[0]?.dateTime ? new Date(a.bookingDates[0].dateTime) : new Date(0);
                                 const dateB = b.bookingDates[0]?.dateTime ? new Date(b.bookingDates[0].dateTime) : new Date(0);
@@ -155,7 +159,7 @@ export default function ClientsPage() {
     }
 
     const newClient: Client = {
-      id: (mockClientsData.length + Date.now()).toString(), 
+      id: (mockClientsData.length + Date.now()).toString(),
       name: newClientName,
       contactDetails: {
         email: newClientEmail.trim() || undefined,
@@ -166,13 +170,13 @@ export default function ClientsPage() {
       notes: newClientNotes.trim() || undefined,
       avatarUrl: newClientPhotoPreview || `https://placehold.co/80x80.png?text=${getInitials(newClientName)}`,
       dataAiHint: newClientPhotoPreview ? "person client custom" : "person client",
-      totalPayments: 0, 
-      outstandingBalance: 0, 
-      totalBookings: 0, 
+      totalPayments: 0,
+      outstandingBalance: 0,
+      totalBookings: 0,
     };
 
-    mockClientsData.unshift(newClient); 
-    setClients([...mockClientsData]); 
+    mockClientsData.unshift(newClient);
+    setClients([...mockClientsData]);
 
     toast.success(`Client "${newClient.name}" added successfully!`);
     resetNewClientForm();
@@ -212,29 +216,29 @@ export default function ClientsPage() {
       dataAiHint: editClientPhotoPreview && editClientPhotoPreview !== editingClient.avatarUrl ? "person client custom" : editingClient.dataAiHint,
     };
 
-    const clientIndex = mockClientsData.findIndex(c => c.id === editingClient.id); 
+    const clientIndex = mockClientsData.findIndex(c => c.id === editingClient.id);
     if (clientIndex !== -1) {
-      mockClientsData[clientIndex] = updatedClient; 
+      mockClientsData[clientIndex] = updatedClient;
     }
-    setClients([...mockClientsData]); 
+    setClients([...mockClientsData]);
 
     toast.success(`Client "${updatedClient.name}" updated successfully!`);
     setIsEditClientDialogOpen(false);
     setEditingClient(null);
   };
-  
+
   const handleDeleteClient = (clientId: string, clientName: string) => {
-    const clientIndex = mockClientsData.findIndex(c => c.id === clientId); 
+    const clientIndex = mockClientsData.findIndex(c => c.id === clientId);
     if (clientIndex !== -1) {
-      mockClientsData.splice(clientIndex, 1); 
+      mockClientsData.splice(clientIndex, 1);
     }
-    setClients([...mockClientsData]); 
+    setClients([...mockClientsData]);
     toast.info(`Client "${clientName}" deleted.`);
   };
 
   const clientsWithDynamicData = useMemo(() => {
-    return clients.map(client => { 
-        const clientBookings = mockBookingsData.filter(b => b.clientName === client.name); 
+    return clients.map(client => {
+        const clientBookings = mockBookingsData.filter(b => b.clientName === client.name);
         const totalPaidForClient = clientBookings.reduce((sum, booking) => {
             return sum + (booking.payments?.filter(p => p.status === 'Paid').reduce((acc, p) => acc + p.amount, 0) || 0);
         }, 0);
@@ -248,7 +252,7 @@ export default function ClientsPage() {
             outstandingBalance: outstandingBalance < 0 ? 0 : outstandingBalance,
         };
     });
-  }, [clients]); 
+  }, [clients]);
 
   const filteredClients = useMemo(() => {
     let clientsToDisplay = [...clientsWithDynamicData];
@@ -260,7 +264,7 @@ export default function ClientsPage() {
     }
     return clientsToDisplay;
   }, [clientsWithDynamicData, searchTerm]);
-  
+
 
   return (
     <div className="space-y-6">
@@ -281,18 +285,18 @@ export default function ClientsPage() {
               />
             </div>
             <div className="flex items-center gap-2">
-              <Button 
-                variant={layoutMode === 'grid' ? 'default' : 'outline'} 
-                size="icon" 
+              <Button
+                variant={layoutMode === 'grid' ? 'default' : 'outline'}
+                size="icon"
                 onClick={() => setLayoutMode('grid')}
                 aria-label="Grid View"
                 title="Grid View"
               >
                 <Grid className="h-5 w-5" />
               </Button>
-              <Button 
-                variant={layoutMode === 'list' ? 'default' : 'outline'} 
-                size="icon" 
+              <Button
+                variant={layoutMode === 'list' ? 'default' : 'outline'}
+                size="icon"
                 onClick={() => setLayoutMode('list')}
                 aria-label="List View"
                 title="List View"
@@ -310,7 +314,7 @@ export default function ClientsPage() {
         <div className={cn(
           layoutMode === 'grid'
             ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
-            : "flex flex-col gap-2" 
+            : "flex flex-col gap-2"
         )}>
           {filteredClients.map((client) => (
             layoutMode === 'list' ? (
@@ -373,7 +377,7 @@ export default function ClientsPage() {
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-2 text-sm">
                       <div className="flex items-center">
                           <Briefcase className="h-4 w-4 mr-2 text-primary" />
@@ -470,9 +474,9 @@ export default function ClientsPage() {
                       <Edit2 className="h-4 w-4" />
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => handleOpenEditDialog(client)}><Edit className="mr-1.5 h-4 w-4" />Edit</Button>
-                  <Button 
-                      variant="ghost" 
-                      size="sm" 
+                  <Button
+                      variant="ghost"
+                      size="sm"
                       className="text-destructive hover:text-destructive hover:bg-destructive/10"
                       onClick={() => handleDeleteClient(client.id, client.name)}
                   >
@@ -486,7 +490,7 @@ export default function ClientsPage() {
       ) : (
          <div className="flex flex-col items-center justify-center py-20 text-center rounded-lg border border-dashed">
           <Users className="h-20 w-20 text-muted-foreground mb-6" />
-          {clientsWithDynamicData.length === 0 && searchTerm.trim() === '' ? ( 
+          {clientsWithDynamicData.length === 0 && searchTerm.trim() === '' ? (
             <>
               <h3 className="text-2xl font-semibold mb-3 font-headline">No Clients Yet</h3>
               <p className="text-muted-foreground mb-6 max-w-sm">You haven&apos;t added any clients. Click the button below to add your first client and start managing their bookings.</p>

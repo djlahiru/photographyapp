@@ -21,6 +21,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { mockBookingsData, mockClientsData, mockPackagesData, mockBookingCategoriesData } from '@/lib/mock-data';
 import { cn } from "@/lib/utils";
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 
 
 const ALL_STATUSES: BookingStatus[] = ["Pending", "Confirmed", "Completed", "Cancelled"];
@@ -54,6 +55,10 @@ const featherIconComponentsMap: Record<string, React.ElementType> = {
 type LayoutMode = 'grid' | 'list';
 
 export default function BookingsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
   const [bookings, setBookings] = React.useState<Booking[]>(mockBookingsData);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [selectedStatuses, setSelectedStatuses] = React.useState<BookingStatus[]>([]);
@@ -67,7 +72,7 @@ export default function BookingsPage() {
   const [bookingPackageId, setBookingPackageId] = React.useState<string | undefined>(undefined);
   const [dialogBookingDates, setDialogBookingDates] = React.useState<BookingDateTime[]>([{ id: 'dt_new_' + Date.now(), dateTime: '', note: '' }]);
   const [bookingCategoryId, setBookingCategoryId] = React.useState<string | undefined>(undefined);
-  
+
   const [suggestedClients, setSuggestedClients] = React.useState<Client[]>([]);
   const [isClientSuggestionsOpen, setIsClientSuggestionsOpen] = React.useState(false);
 
@@ -144,7 +149,7 @@ export default function BookingsPage() {
       setIsClientSuggestionsOpen(false);
       return;
     }
-    const matches = mockClientsData.filter(client => 
+    const matches = mockClientsData.filter(client =>
       client.name.toLowerCase().includes(name.toLowerCase())
     );
     setSuggestedClients(matches);
@@ -178,12 +183,12 @@ export default function BookingsPage() {
   }, [resetBookingForm]);
 
   useEffect(() => {
-    const openDialog = () => handleOpenAddBookingDialog();
-    window.addEventListener('fabOpenNewBookingDialog', openDialog);
-    return () => {
-      window.removeEventListener('fabOpenNewBookingDialog', openDialog);
-    };
-  }, [handleOpenAddBookingDialog]); 
+    if (searchParams.get('openDialog') === 'true') {
+      handleOpenAddBookingDialog();
+      router.replace(pathname, { shallow: true });
+    }
+  }, [searchParams, router, pathname, handleOpenAddBookingDialog]);
+
 
   const handleOpenEditBookingDialog = (booking: Booking) => {
     resetBookingForm();
@@ -195,7 +200,7 @@ export default function BookingsPage() {
     setBookingCategoryId(booking.categoryId);
     setIsEditBookingDialogOpen(true);
   };
-  
+
   const handleOpenViewDetailsDialog = (booking: Booking) => {
     setSelectedBookingForDetailsView(booking);
     setIsViewDetailsDialogOpen(true);
@@ -218,13 +223,13 @@ export default function BookingsPage() {
         notes: newClientForBookingNotes.trim() || undefined,
         avatarUrl: newClientForBookingPhotoPreview || `https://placehold.co/80x80.png?text=${newClientForBookingName.trim().split(' ').map(n=>n[0]).join('').toUpperCase()}`,
         dataAiHint: newClientForBookingPhotoPreview ? "person client custom" : "person client",
-        totalPayments: 0, 
-        outstandingBalance: 0, 
+        totalPayments: 0,
+        outstandingBalance: 0,
         totalBookings: 0,
     };
     mockClientsData.unshift(newClient);
     toast.success(`Client "${newClient.name}" added. You can now select them.`);
-    setBookingClientName(newClient.name); 
+    setBookingClientName(newClient.name);
     setIsAddNewClientDialogForBookingOpen(false);
     resetNewClientForBookingForm();
   };
@@ -234,7 +239,7 @@ export default function BookingsPage() {
       toast.error("Client Name, Package, and at least one valid Booking Date & Time are required.");
       return;
     }
-    const selectedPackage = mockPackagesData.find(p => p.id === bookingPackageId); 
+    const selectedPackage = mockPackagesData.find(p => p.id === bookingPackageId);
     if (!selectedPackage) { toast.error("Selected package not found."); return; }
     const validBookingDates = dialogBookingDates.filter(dt => dt.dateTime.trim() !== '').map(dt => ({ ...dt, dateTime: new Date(dt.dateTime).toISOString(), note: dt.note?.trim() || undefined }));
     if (validBookingDates.length === 0) { toast.error("Please provide at least one valid booking date and time."); return; }
@@ -259,8 +264,8 @@ export default function BookingsPage() {
       setIsEditBookingDialogOpen(false);
     } else {
       const newBooking: Booking = { id: `booking-${Date.now()}`, ...bookingData, status: "Pending" as BookingStatus, payments: [], activityLog: [{ id: `log-new-${Date.now()}`, timestamp: new Date().toISOString(), action: `Booking created for ${selectedPackage.name}.`, actor: "Admin", iconName: "PlusCircle" }] };
-      mockBookingsData.unshift(newBooking); 
-      setBookings([...mockBookingsData]); 
+      mockBookingsData.unshift(newBooking);
+      setBookings([...mockBookingsData]);
       toast.success(`Booking for ${newBooking.clientName} with ${newBooking.packageName} scheduled!`);
       setIsAddBookingDialogOpen(false);
     }
@@ -423,7 +428,7 @@ export default function BookingsPage() {
         </DialogContent>
       </Dialog>
 
-      
+
       <Dialog open={isAddNewClientDialogForBookingOpen} onOpenChange={setIsAddNewClientDialogForBookingOpen}>
         <DialogContent className="sm:max-w-lg">
             <DialogHeader>
@@ -517,7 +522,7 @@ export default function BookingsPage() {
             </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       {selectedBookingForDetailsView && (
         <Dialog open={isViewDetailsDialogOpen} onOpenChange={setIsViewDetailsDialogOpen}>
             <DialogContent className="sm:max-w-2xl">
@@ -548,7 +553,7 @@ export default function BookingsPage() {
                                 <p className="text-foreground">${selectedBookingForDetailsView.price.toFixed(2)}</p>
                             </div>
                         </div>
-                        
+
                          <Separator />
                         <div>
                             <Label className="font-semibold text-muted-foreground mb-2 block">Booking Dates & Sessions</Label>
@@ -566,7 +571,7 @@ export default function BookingsPage() {
                             </div>
                         </div>
 
-                         {(selectedBookingForDetailsView.payments && selectedBookingForDetailsView.payments.length > 0) && ( 
+                         {(selectedBookingForDetailsView.payments && selectedBookingForDetailsView.payments.length > 0) && (
                             <>
                                 <Separator />
                                 <div>
@@ -587,29 +592,29 @@ export default function BookingsPage() {
                                 </div>
                             </>
                         )}
-                         {selectedBookingForDetailsView.notes && ( 
+                         {selectedBookingForDetailsView.notes && (
                             <>
-                                <Separator /> 
+                                <Separator />
                                 <div>
                                     <Label className="font-semibold text-muted-foreground mb-1 block">Additional Notes</Label>
                                     <p className="text-sm text-foreground whitespace-pre-wrap">{selectedBookingForDetailsView.notes}</p>
                                 </div>
-                            </> 
+                            </>
                         )}
-                         {(selectedBookingForDetailsView.activityLog && selectedBookingForDetailsView.activityLog.length > 0) && ( 
+                         {(selectedBookingForDetailsView.activityLog && selectedBookingForDetailsView.activityLog.length > 0) && (
                             <>
-                                <Separator /> 
+                                <Separator />
                                 <div>
-                                    <BookingActivityLog 
-                                        logs={selectedBookingForDetailsView.activityLog.slice(0,3)} 
-                                        title="Recent Activity (Last 3)" 
+                                    <BookingActivityLog
+                                        logs={selectedBookingForDetailsView.activityLog.slice(0,3)}
+                                        title="Recent Activity (Last 3)"
                                         description="A brief look at the latest updates."
                                     />
                                     {selectedBookingForDetailsView.activityLog.length > 3 && (
                                         <Button variant="link" size="sm" className="w-full mt-2" onClick={() => setSelectedBookingForLog(selectedBookingForDetailsView)}>View Full Activity Log</Button>
                                     )}
                                 </div>
-                            </> 
+                            </>
                         )}
                     </div>
                 </ScrollArea>

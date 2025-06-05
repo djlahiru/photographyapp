@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation'; // Import useRouter
 import { Button } from '@/components/ui/button';
 import { Plus, X, PlusCircle, UserPlus, DollarSign } from 'react-feather';
 import { cn } from '@/lib/utils';
@@ -10,12 +11,13 @@ interface SpeedDialAction {
   id: string;
   label: string;
   icon: React.ElementType;
-  onClick?: () => void;
+  href: string; // Add href for navigation
 }
 
 export function FloatingActionButton() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const router = useRouter(); // Initialize router
 
   useEffect(() => {
     setIsMounted(true);
@@ -28,30 +30,29 @@ export function FloatingActionButton() {
       id: 'fab-new-booking',
       label: 'New Booking',
       icon: PlusCircle,
-      onClick: () => {
-        window.dispatchEvent(new CustomEvent('fabOpenNewBookingDialog'));
-      },
+      href: '/bookings',
     },
     {
       id: 'fab-new-client',
       label: 'New Client',
       icon: UserPlus,
-      onClick: () => {
-        window.dispatchEvent(new CustomEvent('fabOpenNewClientDialog'));
-      },
+      href: '/clients',
     },
     {
       id: 'fab-new-payment',
       label: 'New Payment',
       icon: DollarSign,
-      onClick: () => {
-        window.dispatchEvent(new CustomEvent('fabOpenRecordPaymentDialog'));
-      },
+      href: '/payments',
     },
   ];
 
+  const handleActionClick = (href: string) => {
+    router.push(`${href}?openDialog=true`);
+    setIsOpen(false);
+  };
+
   if (!isMounted) {
-    return null; 
+    return null;
   }
 
   return (
@@ -68,7 +69,7 @@ export function FloatingActionButton() {
             <span
               className={cn(
                 'absolute right-full mr-3 whitespace-nowrap rounded-md bg-card px-2 py-1 text-sm text-card-foreground shadow-md opacity-0 transition-opacity group-hover:opacity-100',
-                !isOpen && 'hidden' 
+                !isOpen && 'hidden'
               )}
             >
               {action.label}
@@ -77,10 +78,7 @@ export function FloatingActionButton() {
               variant="default"
               size="icon"
               className="rounded-full h-12 w-12 shadow-lg bg-secondary text-secondary-foreground hover:bg-secondary/90"
-              onClick={() => {
-                action.onClick?.();
-                setIsOpen(false); 
-              }}
+              onClick={() => handleActionClick(action.href)}
               aria-label={action.label}
             >
               <action.icon className="h-6 w-6" />
