@@ -253,9 +253,9 @@ export default function BookingsPage() {
             </DropdownMenuContent>
             </DropdownMenu>
             <Button className="hidden sm:inline-flex" onClick={handleOpenAddBookingDialog}>
-              <PlusCircle className="mr-2 h-4 w-4" /> Schedule New
+              <PlusCircle className="mr-2 h-4 w-4" /> Schedule Booking
             </Button>
-             <Button size="icon" className="sm:hidden" onClick={handleOpenAddBookingDialog}>
+             <Button size="icon" className="sm:hidden" onClick={handleOpenAddBookingDialog} title="Schedule Booking">
               <PlusCircle className="h-4 w-4" />
             </Button>
         </div>
@@ -378,7 +378,7 @@ export default function BookingsPage() {
             </>
           )}
           <Button size="lg" onClick={handleOpenAddBookingDialog}>
-            <PlusCircle className="mr-2 h-5 w-5" /> Schedule New Booking
+            <PlusCircle className="mr-2 h-5 w-5" /> Schedule Booking
           </Button>
         </div>
       )}
@@ -399,7 +399,7 @@ export default function BookingsPage() {
       <Dialog open={isAddBookingDialogOpen} onOpenChange={setIsAddBookingDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="font-headline">Schedule New Booking</DialogTitle>
+            <DialogTitle className="font-headline">Schedule Booking</DialogTitle>
             <DialogDescription>
               Fill in the details below to create a new booking.
             </DialogDescription>

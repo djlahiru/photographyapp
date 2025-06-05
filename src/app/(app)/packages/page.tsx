@@ -18,7 +18,7 @@ import type { PhotographyPackage } from '@/types';
 import { cn } from '@/lib/utils';
 
 // Mock data for packages
-const initialMockPackages: PhotographyPackage[] = [
+export const initialMockPackages: PhotographyPackage[] = [
   { id: "1", name: "Basic Portrait Session", description: "A quick session for individual portraits, perfect for headshots or a small update.", price: 150, services: ["30 min session", "5 edited photos", "Online gallery access"], imageUrl: "https://placehold.co/600x400.png", dataAiHint: "portrait photography" },
   { id: "2", name: "Standard Wedding Package", description: "Comprehensive wedding day coverage from getting ready to the first dance.", price: 2500, services: ["8 hours coverage", "2 photographers", "Online gallery", "300+ edited photos", "Engagement session discount"], imageUrl: "https://placehold.co/600x400.png", dataAiHint: "wedding event" },
   { id: "3", name: "Family Lifestyle Shoot", description: "Capture natural family moments in a relaxed outdoor or in-home setting.", price: 350, services: ["1 hour session", "Outdoor or in-home", "50 edited photos", "Print release"], imageUrl: "https://placehold.co/600x400.png", dataAiHint: "family photoshoot" },
