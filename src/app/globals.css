@@ -144,7 +144,7 @@
   }
   .dark .theme-accent-default-blue {
     --accent: 205 70% 60%;
-    --accent-foreground: 210 30% 15%; /* This is already dark */
+    --accent-foreground: 210 30% 15%;
     --primary: hsl(var(--accent));
     --primary-foreground: hsl(var(--accent-foreground));
     --ring: 205 70% 55%;
@@ -176,7 +176,7 @@
   }
   .dark .theme-accent-violet-gradient {
     --accent: 260 70% 70%;
-    --accent-foreground: 260 30% 15%; /* This is already dark */
+    --accent-foreground: 260 30% 15%;
     --primary: hsl(var(--accent));
     --primary-foreground: hsl(var(--accent-foreground));
     --ring: 260 70% 65%;
@@ -208,7 +208,7 @@
   }
   .dark .theme-accent-green-gradient {
     --accent: 140 55% 50%;
-    --accent-foreground: 140 30% 10%; /* This is already dark */
+    --accent-foreground: 140 30% 10%;
     --primary: hsl(var(--accent));
     --primary-foreground: hsl(var(--accent-foreground));
     --ring: 140 55% 45%;
@@ -240,7 +240,7 @@
   }
   .dark .theme-accent-orange-gradient {
     --accent: 30 80% 65%;
-    --accent-foreground: 20 30% 10%; /* This is already dark */
+    --accent-foreground: 20 30% 10%;
     --primary: hsl(var(--accent));
     --primary-foreground: hsl(var(--accent-foreground));
     --ring: 30 80% 60%;
