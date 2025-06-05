@@ -113,7 +113,7 @@ export function AppHeader() {
 
     const timerId = setInterval(() => {
       setCurrentDateTime(new Date());
-    }, 1000 * 60); // Update every minute as seconds are not displayed
+    }, 1000); // Update every second for blinking colon
 
     return () => {
       window.removeEventListener('profileUpdated', handleProfileUpdate);
@@ -147,7 +147,7 @@ export function AppHeader() {
   const formattedHours = format(currentDateTime, clockFormatParts.hours);
   const formattedMinutes = format(currentDateTime, clockFormatParts.minutes);
   const amPmPart = clockFormatParts.ampm ? ` ${format(currentDateTime, clockFormatParts.ampm)}` : '';
-
+  const showBlinkingColon = currentDateTime.getSeconds() % 2 === 0;
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 backdrop-blur-sm px-4 md:px-6 relative">
@@ -219,7 +219,7 @@ export function AppHeader() {
         <p className="text-sm text-muted-foreground hidden lg:block whitespace-nowrap mr-2 tabular-nums">
           {dayOfWeekPart}, {formattedDatePart},{' '}
           <span>{formattedHours}</span>
-          <span className="mx-px">:</span>
+          <span className={cn("mx-px transition-opacity duration-300", showBlinkingColon ? "opacity-100" : "opacity-30")}>:</span>
           <span>{formattedMinutes}</span>
           {amPmPart}
         </p>
