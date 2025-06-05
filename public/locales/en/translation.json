@@ -1,9 +1,22 @@
 
 {
   "appName": "Rubo",
+  "language": "Language",
+  "english": "English",
+  "sinhala": "Sinhala (සිංහල)",
+  "tamil": "Tamil (தமிழ்)",
+  "toggleTheme": "Toggle theme",
+  "toggleNotifications": "Toggle notifications",
+  "logout": "Logout",
+  "greeting": {
+    "morning": "Good Morning",
+    "afternoon": "Good Afternoon",
+    "evening": "Good Evening",
+    "night": "Good Night"
+  },
   "nav": {
     "dashboard": "Dashboard",
-    "tasks": "Task Board",
+    "tasks": "Tasks",
     "bookings": "Bookings",
     "calendar": "Calendar",
     "clients": "Clients",
@@ -12,58 +25,54 @@
     "invoices": "Invoices",
     "settings": "Settings"
   },
-  "greeting": {
-    "morning": "Good Morning",
-    "afternoon": "Good Afternoon",
-    "evening": "Good Evening",
-    "night": "Good Night"
-  },
-  "logout": "Logout",
-  "language": "Language",
-  "english": "English",
-  "sinhala": "Sinhala",
-  "tamil": "Tamil",
-  "toggleTheme": "Toggle theme",
-  "toggleNotifications": "Toggle notifications",
   "invoices": {
-    "title": "Invoices",
-    "description": "Manage your invoice templates and issue new invoices.",
-    "templateSetup": {
-      "title": "Invoice Template Setup",
-      "description": "Define the HTML/Markdown template for your invoices. Use placeholders like {{clientName}}, {{invoiceNumber}}, {{amount}}, {{issueDate}}, {{dueDate}}.",
-      "label": "Invoice Template",
-      "placeholder": "Enter your invoice template here...",
-      "saveButton": "Save Template",
-      "saveSuccess": "Invoice template saved successfully!",
-      "saveError": "Failed to save invoice template."
-    },
+    "title": "Invoice Management",
+    "description": "Create, manage, and track client invoices.",
     "issueNew": {
       "title": "Issue New Invoice",
-      "description": "Fill in the details to generate a new invoice.",
+      "description": "Fill in the details below to record a new invoice. The PDF will be generated based on your template.",
       "clientNameLabel": "Client Name",
-      "clientNamePlaceholder": "e.g., ACME Corp",
+      "clientNamePlaceholder": "Enter client's full name",
       "invoiceNumberLabel": "Invoice Number",
       "invoiceNumberPlaceholder": "e.g., INV-2024-001",
       "issueDateLabel": "Issue Date",
       "dueDateLabel": "Due Date (Optional)",
       "amountLabel": "Invoice Amount ($)",
-      "amountPlaceholder": "e.g., 1200.50",
-      "generateButton": "Download PDF",
-      "generateSuccess": "Invoice {{number}} for {{client}} recorded. Showing history. PDF download is a placeholder.",
-      "validationError": "Please fill in all required fields (Client, Invoice #, Amount, Issue Date).",
-      "amountValidationError": "Please enter a valid positive amount for the invoice."
+      "amountPlaceholder": "e.g., 1500.00",
+      "generateButton": "Record & Download PDF",
+      "validationError": "Please fill in all required fields: Client Name, Invoice Number, Amount, and Issue Date.",
+      "amountValidationError": "Please enter a valid positive amount for the invoice.",
+      "generateSuccess": "Invoice #{{number}} for {{client}} recorded. PDF download would start here."
+    },
+    "recentHistory": {
+      "title": "Recent Invoice History",
+      "description": "A quick look at your latest recorded invoices.",
+      "viewAllButton": "View Full History"
+    },
+    "templateSetup": {
+      "title": "Invoice Template Setup",
+      "description": "Define your invoice template using HTML. Use placeholders like {{clientName}}, {{invoiceNumber}}, {{issueDate}}, {{dueDate}}, {{amount}}, {{itemsTable}}, {{companyName}}, etc. This template will be used for generating PDF invoices.",
+      "label": "Invoice HTML Template",
+      "placeholder": "Paste your HTML invoice template here...\nExample: <h1>Invoice for {{clientName}}</h1>\n<p>Invoice #: {{invoiceNumber}}</p>",
+      "saveButton": "Save Template",
+      "saveSuccess": "Invoice template saved successfully!",
+      "saveError": "Failed to save invoice template."
     },
     "history": {
-      "title": "Invoice History",
-      "description": "A log of all recorded invoices.",
-      "viewButton": "View History",
-      "noInvoices": "No invoices have been recorded yet.",
-      "saveError": "Failed to save invoice history.",
+      "title": "Full Invoice History",
+      "description": "Browse all recorded invoices.",
+      "viewButton": "View Invoice History",
       "invoiceNumber": "Invoice #",
+      "invoiceNumberShort": "Inv #",
       "client": "Client",
       "issueDate": "Issue Date",
+      "issuedOn": "Issued:",
+      "dueDate": "Due Date",
+      "dueOn": "Due:",
       "amount": "Amount",
-      "status": "Status"
+      "status": "Status",
+      "noInvoices": "No invoices have been recorded yet.",
+      "saveError": "Failed to save invoice history to local storage."
     }
   }
 }

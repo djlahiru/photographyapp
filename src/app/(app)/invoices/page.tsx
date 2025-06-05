@@ -3,14 +3,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from '@/components/ui/date-picker';
 import { toast } from 'react-toastify';
-import { FileText, Save, Download, DollarSign, User, Calendar as CalendarIcon, Eye } from 'react-feather';
+import { FileText, Save, Download, DollarSign, User, Calendar as CalendarIcon, Eye, List } from 'react-feather';
 import { INVOICE_TEMPLATE_LS_KEY, INVOICE_HISTORY_LS_KEY } from '@/lib/constants';
 import type { Invoice, InvoiceStatus } from '@/types';
 import { format, parseISO, isValid } from 'date-fns';
@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 export default function InvoicesPage() {
   const { t } = useTranslation();
@@ -39,7 +40,14 @@ export default function InvoicesPage() {
     const storedHistory = localStorage.getItem(INVOICE_HISTORY_LS_KEY);
     if (storedHistory) {
       try {
-        setInvoiceHistory(JSON.parse(storedHistory));
+        const parsedHistory: Invoice[] = JSON.parse(storedHistory);
+        // Ensure dates are valid or handled, potentially re-parse if needed
+        const validatedHistory = parsedHistory.map(inv => ({
+          ...inv,
+          issueDate: isValid(parseISO(inv.issueDate)) ? inv.issueDate : new Date().toISOString(),
+          dueDate: inv.dueDate && isValid(parseISO(inv.dueDate)) ? inv.dueDate : undefined,
+        }));
+        setInvoiceHistory(validatedHistory);
       } catch (error) {
         console.error("Error parsing invoice history from localStorage:", error);
         setInvoiceHistory([]);
@@ -96,9 +104,11 @@ export default function InvoicesPage() {
     }
     
     toast.success(t('invoices.issueNew.generateSuccess', { number: newInvoice.invoiceNumber, client: newInvoice.clientName }));
-    setIsHistoryDialogOpen(true);
+    setIsHistoryDialogOpen(true); // Open full history dialog after recording
     resetInvoiceForm();
   };
+
+  const recentInvoicesToDisplay = invoiceHistory.slice(0, 3);
 
   return (
     <div className="space-y-8">
@@ -181,6 +191,55 @@ export default function InvoicesPage() {
 
       <Card className="shadow-xl">
         <CardHeader>
+          <CardTitle className="font-headline flex items-center">
+            <List className="mr-3 h-6 w-6 text-primary" />
+            {t('invoices.recentHistory.title')}
+          </CardTitle>
+          <CardDescription>{t('invoices.recentHistory.description')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {recentInvoicesToDisplay.length > 0 ? (
+            <div className="space-y-4">
+              {recentInvoicesToDisplay.map((invoice) => (
+                <div key={invoice.id} className="p-3 border rounded-md hover:bg-muted/30 transition-colors">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                    <div>
+                      <p className="font-medium text-foreground">
+                        {t('invoices.history.invoiceNumberShort')}{invoice.invoiceNumber} - {invoice.clientName}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {t('invoices.history.issuedOn')} {isValid(parseISO(invoice.issueDate)) ? format(parseISO(invoice.issueDate), "MMM d, yyyy") : 'Invalid Date'}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                      <Badge variant={invoice.status === 'Recorded' ? 'success' : 'default'} className="text-xs">
+                        {invoice.status}
+                      </Badge>
+                      <p className="text-sm font-semibold text-primary">${invoice.amount.toFixed(2)}</p>
+                    </div>
+                  </div>
+                  {invoice.dueDate && isValid(parseISO(invoice.dueDate)) && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t('invoices.history.dueOn')} {format(parseISO(invoice.dueDate), "MMM d, yyyy")}
+                    </p>
+                  )}
+                </div>
+              ))}
+              {invoiceHistory.length > recentInvoicesToDisplay.length && (
+                <Button variant="link" onClick={() => setIsHistoryDialogOpen(true)} className="w-full mt-2">
+                  {t('invoices.recentHistory.viewAllButton')} ({invoiceHistory.length})
+                </Button>
+              )}
+            </div>
+          ) : (
+            <p className="text-center text-muted-foreground py-6">{t('invoices.history.noInvoices')}</p>
+          )}
+        </CardContent>
+      </Card>
+
+
+      <Card className="shadow-xl">
+        <CardHeader>
           <CardTitle className="font-headline">{t('invoices.templateSetup.title')}</CardTitle>
           <CardDescription>{t('invoices.templateSetup.description')}</CardDescription>
         </CardHeader>
@@ -218,6 +277,7 @@ export default function InvoicesPage() {
                       <TableHead>{t('invoices.history.invoiceNumber')}</TableHead>
                       <TableHead>{t('invoices.history.client')}</TableHead>
                       <TableHead>{t('invoices.history.issueDate')}</TableHead>
+                      <TableHead>{t('invoices.history.dueDate')}</TableHead>
                       <TableHead className="text-right">{t('invoices.history.amount')}</TableHead>
                       <TableHead className="text-center">{t('invoices.history.status')}</TableHead>
                     </TableRow>
@@ -228,6 +288,7 @@ export default function InvoicesPage() {
                         <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
                         <TableCell>{invoice.clientName}</TableCell>
                         <TableCell>{isValid(parseISO(invoice.issueDate)) ? format(parseISO(invoice.issueDate), "MMM d, yyyy") : 'Invalid Date'}</TableCell>
+                        <TableCell>{invoice.dueDate && isValid(parseISO(invoice.dueDate)) ? format(parseISO(invoice.dueDate), "MMM d, yyyy") : 'N/A'}</TableCell>
                         <TableCell className="text-right">${invoice.amount.toFixed(2)}</TableCell>
                         <TableCell className="text-center">
                           <Badge variant={invoice.status === 'Recorded' ? 'success' : 'default'}>{invoice.status}</Badge>
@@ -251,3 +312,4 @@ export default function InvoicesPage() {
     </div>
   );
 }
+

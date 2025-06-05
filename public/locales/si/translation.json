@@ -1,69 +1,78 @@
 
 {
   "appName": "Rubo",
-  "nav": {
-    "dashboard": "පාලන පුවරුව",
-    "tasks": "කාර්ය පුවරුව",
-    "bookings": "වෙන් කිරීම්",
-    "calendar": "දින දර්ශනය",
-    "clients": "සේවාලාභීන්",
-    "packages": "පැකේජ",
-    "payments": "ගෙවීම්",
-    "invoices": "ඉන්වොයිසි",
-    "settings": "සැකසුම්"
-  },
-  "greeting": {
-    "morning": "සුබ උදෑසනක්",
-    "afternoon": "සුබ දහවලක්",
-    "evening": "සුබ සන්ධ්‍යාවක්",
-    "night": "සුබ රාත්‍රියක්"
-  },
-  "logout": "ඉවත් වන්න",
   "language": "භාෂාව",
   "english": "ඉංග්‍රීසි",
   "sinhala": "සිංහල",
   "tamil": "දෙමළ",
   "toggleTheme": "තේමාව මාරු කරන්න",
   "toggleNotifications": "දැනුම්දීම් මාරු කරන්න",
+  "logout": "Logout",
+  "greeting": {
+    "morning": "සුභ උදෑසනක්",
+    "afternoon": "සුභ දහවලක්",
+    "evening": "සුභ සන්ධ්‍යාවක්",
+    "night": "සුභ රාත්‍රියක්"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "tasks": "Tasks",
+    "bookings": "Bookings",
+    "calendar": "Calendar",
+    "clients": "Clients",
+    "packages": "Packages",
+    "payments": "Payments",
+    "invoices": "Invoices",
+    "settings": "Settings"
+  },
   "invoices": {
-    "title": "ඉන්වොයිසි",
-    "description": "ඔබගේ ඉන්වොයිසි සැකිලි කළමනාකරණය කර නව ඉන්වොයිසි නිකුත් කරන්න.",
+    "title": "ඉන්වොයිස් කළමනාකරණය",
+    "description": "සේවාලාභී ඉන්වොයිස් සාදන්න, කළමනාකරණය කරන්න, සහ නිරීක්ෂණය කරන්න.",
+    "issueNew": {
+      "title": "නව ඉන්වොයිසියක් නිකුත් කරන්න",
+      "description": "නව ඉන්වොයිසියක් වාර්තා කිරීමට පහත විස්තර පුරවන්න. PDF එක ඔබේ සැකිල්ල මත පදනම්ව ජනනය වනු ඇත.",
+      "clientNameLabel": "සේවාලාභියාගේ නම",
+      "clientNamePlaceholder": "සේවාලාභියාගේ සම්පූර්ණ නම ඇතුළත් කරන්න",
+      "invoiceNumberLabel": "ඉන්වොයිස් අංකය",
+      "invoiceNumberPlaceholder": "උදා: INV-2024-001",
+      "issueDateLabel": "නිකුත් කළ දිනය",
+      "dueDateLabel": "ගෙවිය යුතු දිනය (අත්‍යවශ්‍ය නොවේ)",
+      "amountLabel": "ඉන්වොයිස් මුදල ($)",
+      "amountPlaceholder": "උදා: 1500.00",
+      "generateButton": "වාර්තා කර PDF බාගන්න",
+      "validationError": "කරුණාකර අවශ්‍ය සියලු ක්ෂේත්‍ර පුරවන්න: සේවාලාභියාගේ නම, ඉන්වොයිස් අංකය, මුදල, සහ නිකුත් කළ දිනය.",
+      "amountValidationError": "කරුණාකර ඉන්වොයිසිය සඳහා වලංගු ධන මුදලක් ඇතුළත් කරන්න.",
+      "generateSuccess": "{{client}} සඳහා ඉන්වොයිස් #{{number}} වාර්තා කරන ලදී. PDF බාගත කිරීම මෙතැනින් ආරම්භ වනු ඇත."
+    },
+    "recentHistory": {
+      "title": "මෑත ඉන්වොයිස් ඉතිහාසය",
+      "description": "ඔබගේ නවතම වාර්තාගත ඉන්වොයිස් පිළිබඳ කෙටි විමසුමක්." ,
+      "viewAllButton": "සම්පූර්ණ ඉතිහාසය බලන්න"
+    },
     "templateSetup": {
       "title": "ඉන්වොයිස් සැකිලි සැකසුම",
-      "description": "ඔබගේ ඉන්වොයිසි සඳහා HTML/Markdown සැකිල්ල නිර්වචනය කරන්න. {{clientName}}, {{invoiceNumber}}, {{amount}}, {{issueDate}}, {{dueDate}} වැනි ස්ථාන දරන්නන් භාවිතා කරන්න.",
-      "label": "ඉන්වොයිස් සැකිල්ල",
-      "placeholder": "ඔබගේ ඉන්වොයිස් සැකිල්ල මෙහි ඇතුළත් කරන්න...",
+      "description": "HTML භාවිතයෙන් ඔබේ ඉන්වොයිස් සැකිල්ල නිර්වචනය කරන්න. {{clientName}}, {{invoiceNumber}}, {{issueDate}}, {{dueDate}}, {{amount}}, {{itemsTable}}, {{companyName}} වැනි ස්ථාන දරන්නන් භාවිතා කරන්න. මෙම සැකිල්ල PDF ඉන්වොයිස් ජනනය කිරීම සඳහා භාවිතා කරනු ඇත.",
+      "label": "ඉන්වොයිස් HTML සැකිල්ල",
+      "placeholder": "ඔබේ HTML ඉන්වොයිස් සැකිල්ල මෙහි අලවන්න...\nඋදාහරණය: <h1>{{clientName}} සඳහා ඉන්වොයිසිය</h1>\n<p>ඉන්වොයිස් #: {{invoiceNumber}}</p>",
       "saveButton": "සැකිල්ල සුරකින්න",
       "saveSuccess": "ඉන්වොයිස් සැකිල්ල සාර්ථකව සුරකින ලදී!",
       "saveError": "ඉන්වොයිස් සැකිල්ල සුරැකීමට අසමත් විය."
     },
-    "issueNew": {
-      "title": "නව ඉන්වොයිසියක් නිකුත් කරන්න",
-      "description": "නව ඉන්වොයිසියක් උත්පාදනය කිරීමට විස්තර පුරවන්න.",
-      "clientNameLabel": "සේවාලාභියාගේ නම",
-      "clientNamePlaceholder": "උදා: ACME Corp",
-      "invoiceNumberLabel": "ඉන්වොයිස් අංකය",
-      "invoiceNumberPlaceholder": "උදා: INV-2024-001",
-      "issueDateLabel": "නිකුත් කළ දිනය",
-      "dueDateLabel": "නියමිත දිනය (විකල්ප)",
-      "amountLabel": "ඉන්වොයිස් මුදල ($)",
-      "amountPlaceholder": "උදා: 1200.50",
-      "generateButton": "PDF බාගන්න",
-      "generateSuccess": "{{client}} සඳහා ඉන්වොයිසිය {{number}} වාර්තා කරන ලදී. ඉතිහාසය පෙන්වයි. PDF බාගැනීම ස්ථාන දරන්නකි.",
-      "validationError": "කරුණාකර අවශ්‍ය සියලුම ක්ෂේත්‍ර පුරවන්න (සේවාලාභියා, ඉන්වොයිස් #, මුදල, නිකුත් කළ දිනය).",
-      "amountValidationError": "කරුණාකර ඉන්වොයිසිය සඳහා වලංගු ධන මුදලක් ඇතුළත් කරන්න."
-    },
     "history": {
-      "title": "ඉන්වොයිසි ඉතිහාසය",
-      "description": "වාර්තාගත සියලුම ඉන්වොයිසි ලොගය.",
-      "viewButton": "ඉතිහාසය බලන්න",
-      "noInvoices": "තවමත් ඉන්වොයිසි කිසිවක් වාර්තා කර නොමැත.",
-      "saveError": "ඉන්වොයිසි ඉතිහාසය සුරැකීමට අසමත් විය.",
+      "title": "සම්පූර්ණ ඉන්වොයිස් ඉතිහාසය",
+      "description": "වාර්තාගත සියලු ඉන්වොයිස් පිරික්සන්න.",
+      "viewButton": "ඉන්වොයිස් ඉතිහාසය බලන්න",
       "invoiceNumber": "ඉන්වොයිස් #",
+      "invoiceNumberShort": "ඉන් #",
       "client": "සේවාලාභියා",
       "issueDate": "නිකුත් කළ දිනය",
+      "issuedOn": "නිකුත් කළේ:",
+      "dueDate": "ගෙවිය යුතු දිනය",
+      "dueOn": "ගෙවිය යුත්තේ:",
       "amount": "මුදල",
-      "status": "තත්ත්වය"
+      "status": "තත්ත්වය",
+      "noInvoices": "තවමත් ඉන්වොයිස් වාර්තා කර නොමැත.",
+      "saveError": "දේශීය ආචයනයට ඉන්වොයිස් ඉතිහාසය සුරැකීමට අසමත් විය."
     }
   }
 }
