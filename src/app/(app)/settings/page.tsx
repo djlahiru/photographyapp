@@ -40,7 +40,7 @@ export default function SettingsPage() {
     avatarUrl: "https://placehold.co/100x100.png",
     bio: "Loves photography and efficient workflows!",
   });
-  const [isCalendarConnected, setIsCalendarConnected] = useState(true);
+  const [isCalendarConnected, setIsCalendarConnected] = useState(false); // Simulated state
 
   const [packageName, setPackageName] = useState('');
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
@@ -69,6 +69,12 @@ export default function SettingsPage() {
       handleFontThemeChange(storedFontTheme, false); // Apply without saving again
     }
     
+    // Simulate checking stored connection status
+    const storedCalendarConnection = localStorage.getItem('googleCalendarConnected');
+    if (storedCalendarConnection) {
+        setIsCalendarConnected(JSON.parse(storedCalendarConnection));
+    }
+
     return () => clearInterval(timer);
   }, []);
 
@@ -100,8 +106,10 @@ export default function SettingsPage() {
   };
 
   const toggleCalendarConnection = () => {
-    setIsCalendarConnected(!isCalendarConnected);
-    toast.success(isCalendarConnected ? "Google Calendar disconnected (simulated)." : "Google Calendar connected (simulated).");
+    const newConnectionState = !isCalendarConnected;
+    setIsCalendarConnected(newConnectionState);
+    localStorage.setItem('googleCalendarConnected', JSON.stringify(newConnectionState));
+    toast.success(newConnectionState ? "Google Calendar connected (simulated)." : "Google Calendar disconnected (simulated).");
   }
 
   const handleAvatarShapeChange = (shape: AvatarShape) => {
