@@ -1,5 +1,5 @@
 
-import type { PhotographyPackage, Client, Booking, BookingStatus, PaymentStatus, BookingActivityLogEntry, BookingDateTime, Task, TaskPriority, TaskStatus } from '@/types';
+import type { PhotographyPackage, Client, Booking, BookingStatus, PaymentStatus, BookingActivityLogEntry, BookingDateTime, Task, TaskPriority, TaskStatus, SpecialNote, SpecialNoteColor } from '@/types';
 
 // --- PACKAGES DATA ---
 export let mockPackagesData: PhotographyPackage[] = [
@@ -155,4 +155,27 @@ export let mockTasksData: Task[] = [
     createdBy: "Admin User",
     createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // Created yesterday
   }
+];
+
+// --- SPECIAL NOTES DATA ---
+export let mockSpecialNotesData: SpecialNote[] = [
+  {
+    id: "note-1",
+    content: "Remember to follow up with all clients from last week's expo by Friday!",
+    color: "pink",
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // Created 2 days ago
+    updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // Updated yesterday
+  },
+  {
+    id: "note-2",
+    content: "Order new batch of photo paper and ink cartridges. Running low.",
+    color: "yellow",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "note-3",
+    content: "Team meeting on Wednesday at 10 AM to discuss Q4 marketing strategy.",
+    color: "blue",
+    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+  },
 ];

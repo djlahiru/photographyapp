@@ -119,3 +119,13 @@ export interface Booking {
   payments?: Payment[];
   activityLog?: BookingActivityLogEntry[];
 }
+
+export type SpecialNoteColor = 'yellow' | 'pink' | 'blue' | 'green' | 'default';
+
+export interface SpecialNote {
+  id: string;
+  content: string;
+  color: SpecialNoteColor;
+  createdAt: string; // ISO date string
+  updatedAt?: string; // ISO date string
+}
