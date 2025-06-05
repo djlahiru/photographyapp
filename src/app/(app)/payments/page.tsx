@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, DollarSign, Users, TrendingUp, TrendingDown, List, Filter, Search, CreditCard, Briefcase, Calendar as CalendarIconFeather, Package, Save } from "react-feather";
+import { PlusCircle, DollarSign, Users, TrendingUp, TrendingDown, List, Filter, Search, CreditCard, Briefcase, Calendar as CalendarIconFeather, Package, Save, UserPlus } from "react-feather";
 import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval, isValid } from 'date-fns';
 import type { Payment, Booking, Client, PaymentStatus } from '@/types';
 import { mockBookingsData, mockClientsData } from '@/lib/mock-data';
@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'react-toastify';
+import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 
 const paymentStatusVariantMap: Record<PaymentStatus, "default" | "secondary" | "destructive" | "outline" | "success" | "warning"> = {
   Paid: "success",
@@ -38,11 +39,14 @@ interface EnrichedPayment extends Payment {
 export default function PaymentsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | 'all'>('all');
-  const [refreshKey, setRefreshKey] = useState(0); // To force re-evaluation of memoized values
+  const [refreshKey, setRefreshKey] = useState(0); 
 
   // State for Record Payment Dialog
   const [isRecordPaymentDialogOpen, setIsRecordPaymentDialogOpen] = useState(false);
-  const [selectedClientIdForPayment, setSelectedClientIdForPayment] = useState<string | undefined>(undefined);
+  const [paymentClientName, setPaymentClientName] = useState(''); // For text input
+  const [suggestedPaymentClients, setSuggestedPaymentClients] = useState<Client[]>([]);
+  const [isPaymentClientSuggestionsOpen, setIsPaymentClientSuggestionsOpen] = useState(false);
+  
   const [selectedBookingIdForPayment, setSelectedBookingIdForPayment] = useState<string | undefined>(undefined);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentDate, setPaymentDate] = useState('');
@@ -52,19 +56,31 @@ export default function PaymentsPage() {
   
   const [availableBookingsForClient, setAvailableBookingsForClient] = useState<Booking[]>([]);
 
+  // State for "Add New Client for Payment" dialog
+  const [isAddNewClientDialogForPaymentOpen, setIsAddNewClientDialogForPaymentOpen] = useState(false);
+  const [newClientForPaymentName, setNewClientForPaymentName] = useState('');
+  const [newClientForPaymentEmail, setNewClientForPaymentEmail] = useState('');
+  const [newClientForPaymentPhone, setNewClientForPaymentPhone] = useState('');
+  const [newClientForPaymentWhatsApp, setNewClientForPaymentWhatsApp] = useState('');
+  const [newClientForPaymentAddress, setNewClientForPaymentAddress] = useState('');
+  const [newClientForPaymentNotes, setNewClientForPaymentNotes] = useState('');
+  const [newClientForPaymentPhotoFile, setNewClientForPaymentPhotoFile] = useState<File | null>(null);
+  const [newClientForPaymentPhotoPreview, setNewClientForPaymentPhotoPreview] = useState<string | null>(null);
+
+
   useEffect(() => {
-    if (selectedClientIdForPayment) {
-      const client = mockClientsData.find(c => c.id === selectedClientIdForPayment);
+    if (paymentClientName.trim()) {
+      const client = mockClientsData.find(c => c.name.toLowerCase() === paymentClientName.trim().toLowerCase());
       if (client) {
         setAvailableBookingsForClient(mockBookingsData.filter(b => b.clientName === client.name && b.status !== 'Cancelled'));
       } else {
-        setAvailableBookingsForClient([]);
+        setAvailableBookingsForClient([]); // Client name typed but not matched to existing
       }
     } else {
-      setAvailableBookingsForClient([]);
+      setAvailableBookingsForClient([]); // No client name entered
     }
-    setSelectedBookingIdForPayment(undefined); // Reset booking if client changes
-  }, [selectedClientIdForPayment, mockBookingsData, mockClientsData]);
+    setSelectedBookingIdForPayment(undefined); // Reset booking if client name changes or clears
+  }, [paymentClientName, mockBookingsData, mockClientsData]);
 
 
   const allPayments: EnrichedPayment[] = useMemo(() => {
@@ -135,7 +151,9 @@ export default function PaymentsPage() {
   }, [allPayments, mockBookingsData, refreshKey]);
 
   const resetRecordPaymentForm = () => {
-    setSelectedClientIdForPayment(undefined);
+    setPaymentClientName('');
+    setSuggestedPaymentClients([]);
+    setIsPaymentClientSuggestionsOpen(false);
     setSelectedBookingIdForPayment(undefined);
     setPaymentAmount('');
     setPaymentDate('');
@@ -144,15 +162,89 @@ export default function PaymentsPage() {
     setPaymentDescription('');
     setAvailableBookingsForClient([]);
   };
+  
+  const resetNewClientForPaymentForm = () => {
+    setNewClientForPaymentName('');
+    setNewClientForPaymentEmail('');
+    setNewClientForPaymentPhone('');
+    setNewClientForPaymentWhatsApp('');
+    setNewClientForPaymentAddress('');
+    setNewClientForPaymentNotes('');
+    setNewClientForPaymentPhotoFile(null);
+    setNewClientForPaymentPhotoPreview(null);
+  };
 
   const handleOpenRecordPaymentDialog = () => {
     resetRecordPaymentForm();
     setIsRecordPaymentDialogOpen(true);
   };
+  
+  const handlePaymentClientNameChange = (name: string) => {
+    setPaymentClientName(name);
+    if (name.trim() === '') {
+      setSuggestedPaymentClients([]);
+      setIsPaymentClientSuggestionsOpen(false);
+      return;
+    }
+    const matches = mockClientsData.filter(client => 
+      client.name.toLowerCase().includes(name.toLowerCase())
+    );
+    setSuggestedPaymentClients(matches);
+    setIsPaymentClientSuggestionsOpen(matches.length > 0);
+  };
+
+  const handleClientPhotoChangeForPayment = (file: File | null) => {
+    setNewClientForPaymentPhotoFile(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setNewClientForPaymentPhotoPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      setNewClientForPaymentPhotoPreview(null);
+    }
+  };
+
+  const handleSaveNewClientForPayment = () => {
+    if (!newClientForPaymentName.trim()) {
+      toast.error("Client Name is required for the new client.");
+      return;
+    }
+
+    const existingClient = mockClientsData.find(c => c.name.toLowerCase() === newClientForPaymentName.trim().toLowerCase());
+    if (existingClient) {
+        toast.warn(`Client "${newClientForPaymentName.trim()}" already exists. Selecting existing client.`);
+        setPaymentClientName(existingClient.name);
+    } else {
+        const newClientToAdd: Client = {
+            id: `client-${Date.now()}`,
+            name: newClientForPaymentName.trim(),
+            contactDetails: {
+                email: newClientForPaymentEmail.trim() || undefined,
+                phone: newClientForPaymentPhone.trim() || undefined,
+                whatsapp: newClientForPaymentWhatsApp.trim() || undefined,
+            },
+            address: newClientForPaymentAddress.trim() || undefined,
+            notes: newClientForPaymentNotes.trim() || undefined,
+            avatarUrl: newClientForPaymentPhotoPreview || `https://placehold.co/80x80.png?text=${newClientForPaymentName.trim().split(' ').map(n=>n[0]).join('').toUpperCase()}`,
+            dataAiHint: newClientForPaymentPhotoPreview ? "person client custom" : "person client",
+            totalPayments: 0,
+            outstandingBalance: 0,
+            totalBookings: 0,
+        };
+        mockClientsData.unshift(newClientToAdd); 
+        setPaymentClientName(newClientToAdd.name);
+        toast.success(`New client "${newClientToAdd.name}" added and selected.`);
+    }
+    
+    setIsAddNewClientDialogForPaymentOpen(false);
+    resetNewClientForPaymentForm();
+    setSuggestedPaymentClients([]);
+    setIsPaymentClientSuggestionsOpen(false);
+  };
 
   const handleRecordPaymentSubmit = () => {
-    if (!selectedClientIdForPayment || !selectedBookingIdForPayment || !paymentAmount || !paymentDate || !paymentMethod || !paymentStatus) {
-      toast.error("Please fill in all required fields for the payment.");
+    if (!paymentClientName.trim() || !selectedBookingIdForPayment || !paymentAmount || !paymentDate || !paymentMethod || !paymentStatus) {
+      toast.error("Client, Booking, Amount, Date, Method, and Status are required.");
       return;
     }
     const amount = parseFloat(paymentAmount);
@@ -169,6 +261,12 @@ export default function PaymentsPage() {
     if (bookingIndex === -1) {
       toast.error("Selected booking not found. Please try again.");
       return;
+    }
+    
+    // Ensure the booking client matches the selected/entered client name
+    if (mockBookingsData[bookingIndex].clientName.toLowerCase() !== paymentClientName.trim().toLowerCase()){
+        toast.error("The selected booking does not belong to the specified client. Please verify your selection.");
+        return;
     }
 
     const newPayment: Payment = {
@@ -187,7 +285,7 @@ export default function PaymentsPage() {
     mockBookingsData[bookingIndex].payments!.unshift(newPayment);
 
     toast.success(`Payment of $${amount.toFixed(2)} recorded for booking.`);
-    setRefreshKey(prev => prev + 1); // Trigger re-calculation of memoized values
+    setRefreshKey(prev => prev + 1); 
     setIsRecordPaymentDialogOpen(false);
     resetRecordPaymentForm();
   };
@@ -205,7 +303,6 @@ export default function PaymentsPage() {
         </Button>
       </div>
 
-      {/* Summary Statistics */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -249,7 +346,6 @@ export default function PaymentsPage() {
         </Card>
       </div>
 
-      {/* Recent Payments */}
       <Card className="shadow-xl">
         <CardHeader>
           <CardTitle className="font-headline">Recent Payments</CardTitle>
@@ -298,7 +394,6 @@ export default function PaymentsPage() {
         </CardContent>
       </Card>
 
-      {/* Payment History Table */}
       <Card className="shadow-xl">
         <CardHeader>
           <CardTitle className="font-headline">Full Payment History</CardTitle>
@@ -374,7 +469,14 @@ export default function PaymentsPage() {
       </Card>
 
       {/* Record New Payment Dialog */}
-      <Dialog open={isRecordPaymentDialogOpen} onOpenChange={setIsRecordPaymentDialogOpen}>
+      <Dialog open={isRecordPaymentDialogOpen} onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          setIsRecordPaymentDialogOpen(false);
+          resetRecordPaymentForm();
+        } else {
+          setIsRecordPaymentDialogOpen(true);
+        }
+      }}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="font-headline">Record New Payment</DialogTitle>
@@ -383,26 +485,51 @@ export default function PaymentsPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
-            <div className="grid gap-2">
-              <Label htmlFor="payment-client">Client</Label>
-              <Select value={selectedClientIdForPayment} onValueChange={setSelectedClientIdForPayment}>
-                <SelectTrigger id="payment-client">
-                  <SelectValue placeholder="Select a client" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>Clients</SelectLabel>
-                    {mockClientsData.map(client => (
-                      <SelectItem key={client.id} value={client.id}>
-                        {client.name}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+            <div className="relative grid gap-2">
+              <Label htmlFor="payment-client-name">Client</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="payment-client-name"
+                  placeholder="Search clients or enter new name..."
+                  value={paymentClientName}
+                  onChange={(e) => handlePaymentClientNameChange(e.target.value)}
+                  onFocus={() => {
+                     if (paymentClientName.trim()) {
+                       const matches = mockClientsData.filter(client => 
+                         client.name.toLowerCase().includes(paymentClientName.toLowerCase())
+                       );
+                       setSuggestedPaymentClients(matches);
+                       setIsPaymentClientSuggestionsOpen(matches.length > 0);
+                     }
+                   }}
+                   onBlur={() => setTimeout(() => setIsPaymentClientSuggestionsOpen(false), 150)} 
+                  autoComplete="off"
+                  className="flex-grow"
+                />
+                <Button variant="outline" size="sm" onClick={() => { resetNewClientForPaymentForm(); setIsAddNewClientDialogForPaymentOpen(true); setIsPaymentClientSuggestionsOpen(false); }}>
+                    <UserPlus className="mr-1 h-4 w-4" /> Add New
+                </Button>
+              </div>
+              {isPaymentClientSuggestionsOpen && suggestedPaymentClients.length > 0 && (
+                <div className="absolute top-full left-0 right-0 z-10 mt-1 w-full rounded-md border bg-popover shadow-lg max-h-60 overflow-y-auto">
+                  {suggestedPaymentClients.map(client => (
+                    <div
+                      key={client.id}
+                      className="p-2 hover:bg-accent cursor-pointer text-sm"
+                      onMouseDown={() => { // Use onMouseDown to fire before onBlur of input
+                        setPaymentClientName(client.name);
+                        setIsPaymentClientSuggestionsOpen(false);
+                        setSuggestedPaymentClients([]);
+                      }}
+                    >
+                      {client.name}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {selectedClientIdForPayment && (
+            {paymentClientName.trim() && (
               <div className="grid gap-2">
                 <Label htmlFor="payment-booking">Booking</Label>
                 <Select value={selectedBookingIdForPayment} onValueChange={setSelectedBookingIdForPayment} disabled={availableBookingsForClient.length === 0}>
@@ -420,7 +547,7 @@ export default function PaymentsPage() {
                           </SelectItem>
                         )
                       })}
-                       {availableBookingsForClient.length === 0 && <SelectItem value="no-booking" disabled>No active bookings</SelectItem>}
+                       {availableBookingsForClient.length === 0 && <SelectItem value="no-booking" disabled>No active bookings for this client</SelectItem>}
                     </SelectGroup>
                   </SelectContent>
                 </Select>
@@ -510,7 +637,103 @@ export default function PaymentsPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Add New Client for Payment Dialog (Nested) */}
+      <Dialog open={isAddNewClientDialogForPaymentOpen} onOpenChange={setIsAddNewClientDialogForPaymentOpen}>
+        <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+                <DialogTitle className="font-headline">Add New Client for Payment</DialogTitle>
+                <DialogDescription>
+                    Enter the new client's details. This client will be used for the payment record.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
+                <div className="grid gap-2">
+                    <Label htmlFor="new-client-payment-photo">Client Photo</Label>
+                    <ImageUploadDropzone
+                        onFileChange={handleClientPhotoChangeForPayment}
+                        initialImageUrl={newClientForPaymentPhotoPreview || undefined}
+                        className="h-32"
+                        imageClassName="rounded-md"
+                        label="Drop photo or click to upload"
+                    />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="new-client-payment-name">Full Name</Label>
+                    <Input
+                        id="new-client-payment-name"
+                        placeholder="e.g., Jane Smith"
+                        value={newClientForPaymentName}
+                        onChange={(e) => setNewClientForPaymentName(e.target.value)}
+                    />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="new-client-payment-email">Email (Optional)</Label>
+                        <Input
+                            id="new-client-payment-email"
+                            type="email"
+                            placeholder="e.g., jane.smith@example.com"
+                            value={newClientForPaymentEmail}
+                            onChange={(e) => setNewClientForPaymentEmail(e.target.value)}
+                        />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="new-client-payment-phone">Phone (Optional)</Label>
+                        <Input
+                            id="new-client-payment-phone"
+                            type="tel"
+                            placeholder="e.g., 555-0202"
+                            value={newClientForPaymentPhone}
+                            onChange={(e) => setNewClientForPaymentPhone(e.target.value)}
+                        />
+                    </div>
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="new-client-payment-whatsapp">WhatsApp Number (Optional)</Label>
+                    <Input
+                        id="new-client-payment-whatsapp"
+                        type="tel"
+                        placeholder="e.g., +1 555-0102"
+                        value={newClientForPaymentWhatsApp}
+                        onChange={(e) => setNewClientForPaymentWhatsApp(e.target.value)}
+                    />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="new-client-payment-address">Address (Optional)</Label>
+                    <Textarea
+                        id="new-client-payment-address"
+                        placeholder="e.g., 123 Main St, Anytown, USA"
+                        value={newClientForPaymentAddress}
+                        onChange={(e) => setNewClientForPaymentAddress(e.target.value)}
+                        rows={2}
+                    />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="new-client-payment-notes">Notes (Optional)</Label>
+                    <Textarea
+                        id="new-client-payment-notes"
+                        placeholder="e.g., Prefers evening calls."
+                        value={newClientForPaymentNotes}
+                        onChange={(e) => setNewClientForPaymentNotes(e.target.value)}
+                        rows={3}
+                    />
+                </div>
+            </div>
+            <DialogFooter>
+                <DialogClose asChild>
+                    <Button type="button" variant="outline" onClick={() => { setIsAddNewClientDialogForPaymentOpen(false); resetNewClientForPaymentForm();}}>
+                        Cancel
+                    </Button>
+                </DialogClose>
+                <Button type="button" onClick={handleSaveNewClientForPayment}>
+                    <UserPlus className="mr-2 h-4 w-4" /> Add Client
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
 
+    
