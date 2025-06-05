@@ -13,9 +13,9 @@ import { mockBookings } from '@/app/(app)/bookings/page'; // Assuming mockBookin
 import type { BookingStatus } from '@/types';
 
 // Import FullCalendar styles
-// import '@fullcalendar/core/main.css'; 
-// import '@fullcalendar/daygrid/main.css'; 
-// import '@fullcalendar/list/main.css'; // Required for list views
+// import '@fullcalendar/core/main.css'; // This line is removed
+import '@fullcalendar/daygrid/main.css'; 
+import '@fullcalendar/list/main.css'; // Required for list views
 
 
 const getEventClassNames = (status: BookingStatus): string[] => {
