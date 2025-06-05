@@ -46,6 +46,20 @@ const paymentStatusVariantMap: Record<PaymentStatus, "default" | "secondary" | "
   Refunded: "outline",
 };
 
+// Local map for Feather icons used in activity logs within this page's "View Details" dialog
+const featherIconComponentsMap: Record<string, React.ElementType> = {
+  Clock,
+  CheckCircle,
+  XCircle,
+  Edit,
+  PlusCircle,
+  DollarSign,
+  Mail,
+  FilePlus,
+  // Add other icons here if they are used as log.iconName values and imported above
+};
+
+
 type LayoutMode = 'grid' | 'list';
 
 export default function BookingsPage() {
@@ -899,7 +913,7 @@ export default function BookingsPage() {
                                     <Label className="font-semibold text-muted-foreground mb-2 block">Recent Activity (Last 3)</Label>
                                     <div className="space-y-3">
                                         {selectedBookingForDetailsView.activityLog.slice(0, 3).map(log => {
-                                            const LogIcon = log.iconName ? (FeatherIcons[log.iconName as keyof typeof FeatherIcons] || Clock) : Clock;
+                                            const LogIcon = log.iconName ? (featherIconComponentsMap[log.iconName as keyof typeof featherIconComponentsMap] || Clock) : Clock;
                                             return (
                                                 <div key={log.id} className="flex items-start text-xs">
                                                     <LogIcon className="h-4 w-4 mr-2 mt-0.5 text-muted-foreground flex-shrink-0" />
@@ -939,3 +953,4 @@ export default function BookingsPage() {
 
 
     
+
