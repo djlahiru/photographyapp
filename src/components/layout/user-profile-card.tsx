@@ -105,12 +105,7 @@ export function UserProfileCard({ user: initialUser }: UserProfileCardProps) {
           )}
         </div>
       </div>
-       <Button variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" asChild>
-        <Link href={SETTINGS_NAV_ITEM.href} className="flex items-center space-x-2">
-          <SETTINGS_NAV_ITEM.icon className="h-4 w-4" />
-          <span>{t(SETTINGS_NAV_ITEM.labelKey)}</span>
-        </Link>
-      </Button>
+       {/* The Settings link button below has been removed as per user request */}
     </div>
   );
 }
