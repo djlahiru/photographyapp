@@ -1,11 +1,11 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { getGreetingParts } from '@/lib/date-utils';
 import { Button } from '@/components/ui/button';
-import { Bell, Search, Moon, Sun, Globe } from 'react-feather';
+import { Bell, Search, Moon, Sun as SunIcon, Globe, Sunrise, Sunset } from 'react-feather'; // Sun aliased to SunIcon
 import { Input } from '@/components/ui/input';
 import { useTheme } from 'next-themes';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -14,9 +14,17 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 const MOCK_USER_NAME = "Admin";
 
+const GREETING_ICON_MAP: Record<string, React.ElementType> = {
+  Sunrise: Sunrise,
+  Sun: SunIcon,
+  Sunset: Sunset,
+  Moon: Moon, // Moon icon is also used for theme toggle, can be reused
+};
+
 export function AppHeader() {
   const { t, i18n } = useTranslation();
   const [greeting, setGreeting] = useState('');
+  const [greetingIconName, setGreetingIconName] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | undefined>(undefined);
   const { setTheme, theme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -27,10 +35,11 @@ export function AppHeader() {
   }, []);
 
   useEffect(() => {
-    const { greetingKey, name } = getGreetingParts(userName);
+    const { greetingKey, name, iconName } = getGreetingParts(userName);
     const translatedGreeting = t(greetingKey);
     setGreeting(name ? `${translatedGreeting}, ${name}!` : `${translatedGreeting}!`);
-  }, [userName, t, i18n.language]); // Add i18n.language as dependency
+    setGreetingIconName(iconName);
+  }, [userName, t, i18n.language]);
 
   useEffect(() => {
     setMounted(true);
@@ -40,10 +49,13 @@ export function AppHeader() {
     i18n.changeLanguage(lng);
   };
 
+  const GreetingIconComponent = greetingIconName ? GREETING_ICON_MAP[greetingIconName] : null;
+
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 md:px-6">
       {mounted && !isMobileView && <SidebarTrigger />}
-      <div className="flex-1">
+      <div className="flex-1 flex items-center gap-2">
+        {GreetingIconComponent && <GreetingIconComponent className="h-6 w-6 text-primary" />}
         <h1 className="text-lg font-semibold text-foreground font-headline">{greeting}</h1>
       </div>
       <div className="flex items-center gap-2 md:gap-4">
@@ -80,7 +92,7 @@ export function AppHeader() {
             className="rounded-full"
           >
             {resolvedTheme === 'dark' ? (
-              <Sun className="h-5 w-5" />
+              <SunIcon className="h-5 w-5" />
             ) : (
               <Moon className="h-5 w-5" />
             )}
