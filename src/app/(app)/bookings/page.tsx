@@ -5,14 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogDesc, DialogFooter, DialogClose } from "@/components/ui/dialog"; // Aliased DialogDescription
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIconFeather, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle, Search, TrendingUp, TrendingDown, CreditCard, Save, UserPlus, Plus, Trash, FileText as FileTextIcon, Info, Grid, List as ListIcon, Eye, Edit3 } from "react-feather";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
 import type { Booking, BookingStatus, Payment, PaymentStatus, BookingActivityLogEntry, Client, BookingDateTime, BookingCategory } from "@/types";
 import { BookingActivityLog } from "@/components/bookings/booking-activity-log";
-import React, { useEffect } from "react"; // Added useEffect
+import React, { useEffect } from "react";
 import { format, parseISO, isValid } from 'date-fns';
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
@@ -97,7 +97,7 @@ export default function BookingsPage() {
         categoryNameMatch;
       return statusMatch && searchMatch;
     });
-  }, [bookings, searchTerm, selectedStatuses, mockBookingCategoriesData]);
+  }, [bookings, searchTerm, selectedStatuses]);
 
   const handleStatusUpdate = (bookingId: string, newStatus: BookingStatus) => {
     const bookingIndex = mockBookingsData.findIndex(b => b.id === bookingId);
@@ -183,7 +183,7 @@ export default function BookingsPage() {
     return () => {
       window.removeEventListener('fabOpenNewBookingDialog', openDialog);
     };
-  }, []); // Dependencies should include handleOpenAddBookingDialog if it changes, but for now it's stable.
+  }, []); 
 
   const handleOpenEditBookingDialog = (booking: Booking) => {
     resetBookingForm();
@@ -382,7 +382,7 @@ export default function BookingsPage() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="font-headline">{isEditBookingDialogOpen ? "Edit Booking" : "Schedule Booking"}</DialogTitle>
-            <DialogDescription>{isEditBookingDialogOpen ? "Update the booking details below." : "Fill in the details below to create a new booking."}</DialogDescription>
+            <DialogDesc>{isEditBookingDialogOpen ? "Update the booking details below." : "Fill in the details below to create a new booking."}</DialogDesc>
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
             <div className="relative grid gap-2">
@@ -428,9 +428,9 @@ export default function BookingsPage() {
         <DialogContent className="sm:max-w-lg">
             <DialogHeader>
                 <DialogTitle className="font-headline">Add New Client for Booking</DialogTitle>
-                <DialogDescription>
+                <DialogDesc>
                     Fill in the details for the new client. They will be available for selection in the booking form.
-                </DialogDescription>
+                </DialogDesc>
             </DialogHeader>
             <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
                 <div className="grid gap-2">
@@ -523,7 +523,7 @@ export default function BookingsPage() {
             <DialogContent className="sm:max-w-2xl">
                 <DialogHeader>
                     <DialogTitle className="font-headline text-xl">Booking Details: {selectedBookingForDetailsView.packageName}</DialogTitle>
-                    <DialogDescription>Client: {selectedBookingForDetailsView.clientName}</DialogDescription>
+                    <DialogDesc>Client: {selectedBookingForDetailsView.clientName}</DialogDesc>
                 </DialogHeader>
                 <ScrollArea className="max-h-[70vh] pr-3">
                     <div className="space-y-6 py-4">
@@ -620,3 +620,4 @@ export default function BookingsPage() {
     </div>
   );
 }
+
