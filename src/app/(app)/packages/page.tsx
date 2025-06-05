@@ -8,8 +8,8 @@ import { PlusCircle, Package as PackageIcon, Edit, Trash2, MoreVertical, DollarS
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input';
-import { Label } from "@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'react-toastify';
 
@@ -23,7 +23,7 @@ const initialMockPackages = [
 
 
 export default function PackagesPage() {
-  const [mockPackages, setMockPackages] = useState(initialMockPackages); // Use state for dynamic updates
+  const [mockPackages, setMockPackages] = useState(initialMockPackages);
   const [isAddPackageDialogOpen, setIsAddPackageDialogOpen] = useState(false);
   const [newPackageName, setNewPackageName] = useState('');
   const [newPackageDescription, setNewPackageDescription] = useState('');
@@ -45,20 +45,16 @@ export default function PackagesPage() {
     const servicesArray = newPackageServices.split('\n').map(s => s.trim()).filter(s => s.length > 0);
 
     const newPackage = {
-      id: (mockPackages.length + 1).toString(), // Simple ID generation for mock data
+      id: (mockPackages.length + 1).toString(),
       name: newPackageName,
       description: newPackageDescription,
       price: price,
       services: servicesArray,
     };
 
-    console.log("New Package Submitted:", newPackage);
-    // For demo purposes, add to the local state. In a real app, you'd send this to a backend.
-    setMockPackages(prevPackages => [...prevPackages, newPackage]); 
-
+    setMockPackages(prevPackages => [...prevPackages, newPackage]);
     toast.success(`Package "${newPackage.name}" added successfully!`);
 
-    // Reset form and close dialog
     setNewPackageName('');
     setNewPackageDescription('');
     setNewPackagePrice('');
@@ -98,12 +94,11 @@ export default function PackagesPage() {
                       <DropdownMenuItem>
                         <Edit className="mr-2 h-4 w-4" />Edit Package
                       </DropdownMenuItem>
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         className="text-destructive focus:text-destructive focus:bg-destructive/10"
                         onClick={() => {
-                           // Mock delete: filter out the package
                            setMockPackages(prev => prev.filter(p => p.id !== pkg.id));
-                           toast.info(`Package "${pkg.name}" deleted (mock).`);
+                           toast.info(`Package "${pkg.name}" deleted.`);
                         }}
                       >
                         <Trash2 className="mr-2 h-4 w-4" />Delete Package
@@ -146,7 +141,6 @@ export default function PackagesPage() {
         </div>
       )}
 
-      {/* Add New Package Dialog */}
       <Dialog open={isAddPackageDialogOpen} onOpenChange={setIsAddPackageDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
@@ -189,7 +183,7 @@ export default function PackagesPage() {
               <Label htmlFor="new-package-services">Included Services (one per line)</Label>
               <Textarea
                 id="new-package-services"
-                placeholder="e.g., Full day coverage&#10;100 edited photos&#10;Online gallery"
+                placeholder="e.g., Full day coverage\n100 edited photos\nOnline gallery"
                 value={newPackageServices}
                 onChange={(e) => setNewPackageServices(e.target.value)}
                 rows={4}
