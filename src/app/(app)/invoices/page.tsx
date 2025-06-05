@@ -8,10 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DatePicker } from '@/components/ui/date-picker'; // Assuming you have a DatePicker, if not use Input type="date"
+import { DatePicker } from '@/components/ui/date-picker';
 import { toast } from 'react-toastify';
-import { FileText, Save, Send, DollarSign, User, Calendar as CalendarIcon } from 'react-feather';
-import { INVOICE_TEMPLATE_LS_KEY } from '@/lib/constants';
+import { FileText, Save, Download, DollarSign, User, Calendar as CalendarIcon, Eye } from 'react-feather';
+import { INVOICE_TEMPLATE_LS_KEY, INVOICE_HISTORY_LS_KEY } from '@/lib/constants';
+import type { Invoice, InvoiceStatus } from '@/types';
+import { format, parseISO, isValid } from 'date-fns';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from '@/components/ui/badge';
 
 export default function InvoicesPage() {
   const { t } = useTranslation();
@@ -22,10 +28,22 @@ export default function InvoicesPage() {
   const [issueDate, setIssueDate] = useState<Date | undefined>(new Date());
   const [dueDate, setDueDate] = useState<Date | undefined>();
 
+  const [invoiceHistory, setInvoiceHistory] = useState<Invoice[]>([]);
+  const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
+
   useEffect(() => {
     const storedTemplate = localStorage.getItem(INVOICE_TEMPLATE_LS_KEY);
     if (storedTemplate) {
       setInvoiceTemplate(storedTemplate);
+    }
+    const storedHistory = localStorage.getItem(INVOICE_HISTORY_LS_KEY);
+    if (storedHistory) {
+      try {
+        setInvoiceHistory(JSON.parse(storedHistory));
+      } catch (error) {
+        console.error("Error parsing invoice history from localStorage:", error);
+        setInvoiceHistory([]);
+      }
     }
   }, []);
 
@@ -39,23 +57,47 @@ export default function InvoicesPage() {
     }
   };
 
-  const handleGenerateInvoice = () => {
-    // Placeholder for generation logic
-    console.log({
-      clientName,
-      invoiceNumber,
-      invoiceAmount,
-      issueDate,
-      dueDate,
-      template: invoiceTemplate,
-    });
-    toast.info(t('invoices.issueNew.generateSuccess'));
-    // Reset form potentially
+  const resetInvoiceForm = () => {
     setClientName('');
     setInvoiceNumber('');
     setInvoiceAmount('');
     setIssueDate(new Date());
     setDueDate(undefined);
+  }
+
+  const handleRecordAndShowHistory = () => {
+    if (!clientName.trim() || !invoiceNumber.trim() || !invoiceAmount.trim() || !issueDate) {
+      toast.error(t('invoices.issueNew.validationError'));
+      return;
+    }
+    const amount = parseFloat(invoiceAmount);
+    if (isNaN(amount) || amount <= 0) {
+        toast.error(t('invoices.issueNew.amountValidationError'));
+        return;
+    }
+
+    const newInvoice: Invoice = {
+      id: `inv-${Date.now()}`,
+      invoiceNumber: invoiceNumber.trim(),
+      clientName: clientName.trim(),
+      amount: amount,
+      issueDate: issueDate.toISOString(),
+      dueDate: dueDate ? dueDate.toISOString() : undefined,
+      status: 'Recorded' as InvoiceStatus,
+    };
+
+    const updatedHistory = [newInvoice, ...invoiceHistory];
+    setInvoiceHistory(updatedHistory);
+    try {
+      localStorage.setItem(INVOICE_HISTORY_LS_KEY, JSON.stringify(updatedHistory));
+    } catch (error) {
+        console.error("Error saving invoice history to localStorage:", error);
+        toast.error(t('invoices.history.saveError'));
+    }
+    
+    toast.success(t('invoices.issueNew.generateSuccess', { number: newInvoice.invoiceNumber, client: newInvoice.clientName }));
+    setIsHistoryDialogOpen(true);
+    resetInvoiceForm();
   };
 
   return (
@@ -68,32 +110,11 @@ export default function InvoicesPage() {
           </h1>
           <p className="text-muted-foreground">{t('invoices.description')}</p>
         </div>
+         <Button onClick={() => setIsHistoryDialogOpen(true)} variant="outline" disabled={invoiceHistory.length === 0}>
+            <Eye className="mr-2 h-4 w-4" /> {t('invoices.history.viewButton')} ({invoiceHistory.length})
+        </Button>
       </div>
-
-      <Card className="shadow-xl">
-        <CardHeader>
-          <CardTitle className="font-headline">{t('invoices.templateSetup.title')}</CardTitle>
-          <CardDescription>{t('invoices.templateSetup.description')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="invoiceTemplate" className="text-sm font-medium">
-              {t('invoices.templateSetup.label')}
-            </Label>
-            <Textarea
-              id="invoiceTemplate"
-              value={invoiceTemplate}
-              onChange={(e) => setInvoiceTemplate(e.target.value)}
-              placeholder={t('invoices.templateSetup.placeholder')}
-              className="min-h-[300px] font-mono text-sm mt-1"
-            />
-          </div>
-          <Button onClick={handleSaveTemplate}>
-            <Save className="mr-2 h-4 w-4" /> {t('invoices.templateSetup.saveButton')}
-          </Button>
-        </CardContent>
-      </Card>
-
+      
       <Card className="shadow-xl">
         <CardHeader>
           <CardTitle className="font-headline">{t('invoices.issueNew.title')}</CardTitle>
@@ -152,23 +173,81 @@ export default function InvoicesPage() {
             </div>
           </div>
           
-          {/* Placeholder for adding line items - Future enhancement */}
-          {/* 
-          <div className="space-y-2">
-            <Label>Line Items</Label>
-            <Button variant="outline" size="sm">Add Line Item</Button>
-          </div> 
-          */}
-
-          <Button onClick={handleGenerateInvoice} size="lg">
-            <Send className="mr-2 h-4 w-4" /> {t('invoices.issueNew.generateButton')}
+          <Button onClick={handleRecordAndShowHistory} size="lg">
+            <Download className="mr-2 h-4 w-4" /> {t('invoices.issueNew.generateButton')}
           </Button>
         </CardContent>
       </Card>
+
+      <Card className="shadow-xl">
+        <CardHeader>
+          <CardTitle className="font-headline">{t('invoices.templateSetup.title')}</CardTitle>
+          <CardDescription>{t('invoices.templateSetup.description')}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="invoiceTemplate" className="text-sm font-medium">
+              {t('invoices.templateSetup.label')}
+            </Label>
+            <Textarea
+              id="invoiceTemplate"
+              value={invoiceTemplate}
+              onChange={(e) => setInvoiceTemplate(e.target.value)}
+              placeholder={t('invoices.templateSetup.placeholder')}
+              className="min-h-[300px] font-mono text-sm mt-1"
+            />
+          </div>
+          <Button onClick={handleSaveTemplate}>
+            <Save className="mr-2 h-4 w-4" /> {t('invoices.templateSetup.saveButton')}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
+        <DialogContent className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="font-headline">{t('invoices.history.title')}</DialogTitle>
+            <DialogDescription>{t('invoices.history.description')}</DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            {invoiceHistory.length > 0 ? (
+              <ScrollArea className="h-[400px] pr-3">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t('invoices.history.invoiceNumber')}</TableHead>
+                      <TableHead>{t('invoices.history.client')}</TableHead>
+                      <TableHead>{t('invoices.history.issueDate')}</TableHead>
+                      <TableHead className="text-right">{t('invoices.history.amount')}</TableHead>
+                      <TableHead className="text-center">{t('invoices.history.status')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {invoiceHistory.map((invoice) => (
+                      <TableRow key={invoice.id}>
+                        <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
+                        <TableCell>{invoice.clientName}</TableCell>
+                        <TableCell>{isValid(parseISO(invoice.issueDate)) ? format(parseISO(invoice.issueDate), "MMM d, yyyy") : 'Invalid Date'}</TableCell>
+                        <TableCell className="text-right">${invoice.amount.toFixed(2)}</TableCell>
+                        <TableCell className="text-center">
+                          <Badge variant={invoice.status === 'Recorded' ? 'success' : 'default'}>{invoice.status}</Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+            ) : (
+              <p className="text-center text-muted-foreground py-10">{t('invoices.history.noInvoices')}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Close</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
-
-// Basic DatePicker component definition and its assignment to `DatePicker` have been removed to resolve the name collision.
-// It is assumed that `import { DatePicker } from '@/components/ui/date-picker';` provides the necessary component.
-

@@ -129,3 +129,16 @@ export interface SpecialNote {
   createdAt: string; // ISO date string
   updatedAt?: string; // ISO date string
 }
+
+export type InvoiceStatus = 'Draft' | 'Sent' | 'Paid' | 'Overdue' | 'Recorded';
+
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  clientName: string;
+  amount: number;
+  issueDate: string; // ISO string
+  dueDate?: string; // ISO string
+  status: InvoiceStatus;
+}
+

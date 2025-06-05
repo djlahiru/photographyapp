@@ -37,4 +37,5 @@ export const GOOGLE_CALENDAR_CONNECTED_LS_KEY = 'googleCalendarConnected';
 export const GOOGLE_CALENDAR_ID_LS_KEY = 'googleCalendarIdToSync';
 export const GOOGLE_CALENDAR_AUTO_SYNC_LS_KEY = 'googleCalendarAutoSync';
 export const INVOICE_TEMPLATE_LS_KEY = 'invoiceTemplateHtml';
+export const INVOICE_HISTORY_LS_KEY = 'invoiceHistory';
 
