@@ -8,7 +8,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIconSettings, Eye, Droplet, Edit3, Square, Circle as CircleIcon, Image as ImageIconFeather, Save, Trash2, AlertTriangle, Tag, Plus, DollarSign as DollarSignIcon, Sun as SunIcon, Moon as MoonIcon, RefreshCw } from "react-feather";
+import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIconSettings, Eye, Droplet, Edit3, Square, Circle as CircleIcon, Image as ImageIconFeather, Save, Trash2, AlertTriangle, Tag, Plus, DollarSign as DollarSignIcon, Sun as SunIcon, Moon as MoonIcon, RefreshCw, ApplyWindow } from "react-feather";
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 import { format } from 'date-fns';
@@ -99,8 +99,16 @@ export default function SettingsPage() {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
 
   const [avatarShape, setAvatarShape] = useState<AvatarShape>('circle');
+  
+  // Active themes
   const [currentFontTheme, setCurrentFontTheme] = useState<FontTheme>('default-sans');
   const [currentAccentTheme, setCurrentAccentTheme] = useState<AccentThemeValue>(DEFAULT_ACCENT_THEME_VALUE);
+
+  // Pending themes (before apply)
+  const [pendingNextTheme, setPendingNextTheme] = useState<string | undefined>(undefined);
+  const [pendingFontTheme, setPendingFontTheme] = useState<FontTheme>('default-sans');
+  const [pendingAccentTheme, setPendingAccentTheme] = useState<AccentThemeValue>(DEFAULT_ACCENT_THEME_VALUE);
+
 
   const [dashboardCoverPhotoFile, setDashboardCoverPhotoFile] = useState<File | null>(null);
   const [dashboardCoverPhotoPreview, setDashboardCoverPhotoPreview] = useState<string | null>(null);
@@ -121,7 +129,7 @@ export default function SettingsPage() {
 
   const applyThemeClass = (themeType: 'font' | 'accent', themeValue: FontTheme | AccentThemeValue) => {
     const classPrefix = themeType === 'font' ? 'font-theme-' : 'theme-accent-';
-    const themesToIterate = themeType === 'font' ? FONT_THEMES.map(f => f.value) : ACCENT_THEMES.map(a => a.value);
+    // const themesToIterate = themeType === 'font' ? FONT_THEMES.map(f => f.value) : ACCENT_THEMES.map(a => a.value);
 
     document.documentElement.classList.forEach(cls => {
         if (cls.startsWith(classPrefix)) {
@@ -129,7 +137,6 @@ export default function SettingsPage() {
         }
     });
     
-    // For fonts, default-sans means no specific class. For accents, default-blue is the class.
     if (themeType === 'font' && themeValue !== 'default-sans') {
       document.documentElement.classList.add(`${classPrefix}${themeValue}`);
     } else if (themeType === 'accent') {
@@ -140,7 +147,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     setMounted(true);
-    const timer = setInterval(() => setCurrentDateTime(new Date()), 1000 * 60); // Updates every minute
+    const timer = setInterval(() => setCurrentDateTime(new Date()), 1000 * 60);
     setCurrentSelectedDateFormat(getSelectedDateFormat());
     setCurrentSelectedClockFormat(getSelectedClockFormatValue());
 
@@ -173,19 +180,18 @@ export default function SettingsPage() {
     const storedShape = localStorage.getItem(AVATAR_SHAPE_LS_KEY) as AvatarShape | null;
     if (storedShape) setAvatarShape(storedShape);
 
-    const storedFontTheme = localStorage.getItem(FONT_THEME_LS_KEY) as FontTheme | null;
-    if (storedFontTheme) {
-        setCurrentFontTheme(storedFontTheme);
-        applyThemeClass('font', storedFontTheme);
-    }
+    // Initialize active and pending themes
+    const activeFontTheme = localStorage.getItem(FONT_THEME_LS_KEY) as FontTheme | null || 'default-sans';
+    setCurrentFontTheme(activeFontTheme);
+    setPendingFontTheme(activeFontTheme);
+    // applyThemeClass('font', activeFontTheme); // Apply on initial load too
 
-    const storedAccentTheme = localStorage.getItem(ACCENT_THEME_LS_KEY) as AccentThemeValue | null;
-    if (storedAccentTheme) {
-        setCurrentAccentTheme(storedAccentTheme);
-        applyThemeClass('accent', storedAccentTheme);
-    } else {
-        applyThemeClass('accent', DEFAULT_ACCENT_THEME_VALUE); // Apply default if nothing stored
-    }
+    const activeAccentTheme = localStorage.getItem(ACCENT_THEME_LS_KEY) as AccentThemeValue | null || DEFAULT_ACCENT_THEME_VALUE;
+    setCurrentAccentTheme(activeAccentTheme);
+    setPendingAccentTheme(activeAccentTheme);
+    // applyThemeClass('accent', activeAccentTheme); // Apply on initial load too
+
+    setPendingNextTheme(nextTheme);
 
 
     const storedCalendarConnection = localStorage.getItem(GOOGLE_CALENDAR_CONNECTED_LS_KEY);
@@ -201,15 +207,16 @@ export default function SettingsPage() {
     if (storedBlurIntensity) setDashboardBlurIntensity(parseInt(storedBlurIntensity, 10));
 
     return () => clearInterval(timer);
-  }, []);
+  }, []); // Removed nextTheme from dependencies as it's handled by useTheme
 
-  const handleRequestPackage = () => {
-    if (!packageName.trim()) {
-      toast.error("Package Name Required: Please enter a package name first.");
-      return;
+
+  useEffect(() => {
+    // Ensure pendingNextTheme is initialized after 'nextTheme' is available
+    if (mounted && pendingNextTheme === undefined) {
+      setPendingNextTheme(nextTheme);
     }
-    toast.info(`To install "${packageName}", please tell the AI assistant: "Add package: ${packageName}"`, { autoClose: 9000 });
-  };
+  }, [mounted, nextTheme, pendingNextTheme]);
+
 
   const handleProfileImageChange = (file: File | null) => {
     setProfileImageFile(file);
@@ -280,19 +287,24 @@ export default function SettingsPage() {
     window.dispatchEvent(new CustomEvent('avatarShapeChange', { detail: shape }));
   };
 
-  const handleFontThemeChange = (themeValue: FontTheme) => {
-    setCurrentFontTheme(themeValue);
-    localStorage.setItem(FONT_THEME_LS_KEY, themeValue);
-    applyThemeClass('font', themeValue);
+  const handleApplyThemeChanges = () => {
+    if (pendingNextTheme) {
+      setTheme(pendingNextTheme); // This also persists it via next-themes
+    }
+
+    localStorage.setItem(FONT_THEME_LS_KEY, pendingFontTheme);
+    applyThemeClass('font', pendingFontTheme);
+    setCurrentFontTheme(pendingFontTheme);
     window.dispatchEvent(new CustomEvent('fontThemeChanged'));
-  };
-  
-  const handleAccentThemeChange = (themeValue: AccentThemeValue) => {
-    setCurrentAccentTheme(themeValue);
-    localStorage.setItem(ACCENT_THEME_LS_KEY, themeValue);
-    applyThemeClass('accent', themeValue);
+
+    localStorage.setItem(ACCENT_THEME_LS_KEY, pendingAccentTheme);
+    applyThemeClass('accent', pendingAccentTheme);
+    setCurrentAccentTheme(pendingAccentTheme);
     window.dispatchEvent(new CustomEvent('accentThemeChanged'));
+
+    toast.success("Theme preferences applied.");
   };
+
 
   const handleDashboardCoverPhotoSelected = (file: File | null) => {
     setDashboardCoverPhotoFile(file);
@@ -399,6 +411,14 @@ export default function SettingsPage() {
     if (idx !== -1) mockBookingCategoriesData.splice(idx, 1);
     toast.info("Category deleted.");
   };
+  
+  const handleRequestPackage = () => {
+    if (!packageName.trim()) {
+      toast.error("Package Name Required: Please enter a package name first.");
+      return;
+    }
+    toast.info(`To install "${packageName}", please tell the AI assistant: "Add package: ${packageName}"`, { autoClose: 9000 });
+  };
 
   const handleResetApplicationData = () => {
     resetAllMockData();
@@ -412,7 +432,6 @@ export default function SettingsPage() {
         document.documentElement.classList.remove(cls);
       }
     });
-    // Re-apply default accent theme after clearing
     document.documentElement.classList.add(`theme-accent-${DEFAULT_ACCENT_THEME_VALUE}`);
 
 
@@ -531,28 +550,34 @@ export default function SettingsPage() {
             <div>
                 <Label>Light/Dark Mode</Label>
                 <p className="text-sm text-muted-foreground">
-                Current mode: <span className="capitalize font-medium">{nextTheme}</span>.
+                Current mode: <span className="capitalize font-medium">{resolvedTheme}</span>. Select new:
                 </p>
             </div>
             {mounted && (
-                <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-                    aria-label="Toggle theme"
+                <RadioGroup
+                  value={pendingNextTheme || resolvedTheme}
+                  onValueChange={(value) => setPendingNextTheme(value)}
+                  className="flex space-x-2"
                 >
-                    {resolvedTheme === 'dark' ? (
+                  <Label htmlFor="theme-light" className={cn(buttonVariants({variant: "outline", size: "icon"}), pendingNextTheme === 'light' && "border-primary ring-2 ring-primary")}>
+                    <RadioGroupItem value="light" id="theme-light" className="sr-only" />
                     <SunIcon className="h-5 w-5" />
-                    ) : (
+                  </Label>
+                  <Label htmlFor="theme-dark" className={cn(buttonVariants({variant: "outline", size: "icon"}), pendingNextTheme === 'dark' && "border-primary ring-2 ring-primary")}>
+                     <RadioGroupItem value="dark" id="theme-dark" className="sr-only" />
                     <MoonIcon className="h-5 w-5" />
-                    )}
-                </Button>
+                  </Label>
+                   <Label htmlFor="theme-system" className={cn(buttonVariants({variant: "outline", size: "icon"}), pendingNextTheme === 'system' && "border-primary ring-2 ring-primary")}>
+                     <RadioGroupItem value="system" id="theme-system" className="sr-only" />
+                     <SettingsIcon className="h-5 w-5" />
+                  </Label>
+                </RadioGroup>
             )}
           </div>
 
            <div>
             <Label className="flex items-center"><Edit3 className="mr-1.5 h-4 w-4" /> Font Style</Label>
-            <RadioGroup value={currentFontTheme} onValueChange={(value) => handleFontThemeChange(value as FontTheme)} className="grid grid-cols-1 gap-4 mt-2 sm:grid-cols-2">
+            <RadioGroup value={pendingFontTheme} onValueChange={(value) => setPendingFontTheme(value as FontTheme)} className="grid grid-cols-1 gap-4 mt-2 sm:grid-cols-2">
               {FONT_THEMES.map(item => (
                 <Label
                   key={item.value}
@@ -570,7 +595,7 @@ export default function SettingsPage() {
 
           <div>
             <Label className="flex items-center"><Droplet className="mr-1.5 h-4 w-4" /> Accent Gradient</Label>
-            <RadioGroup value={currentAccentTheme} onValueChange={(value) => handleAccentThemeChange(value as AccentThemeValue)} className="grid grid-cols-1 gap-4 mt-2 sm:grid-cols-2">
+            <RadioGroup value={pendingAccentTheme} onValueChange={(value) => setPendingAccentTheme(value as AccentThemeValue)} className="grid grid-cols-1 gap-4 mt-2 sm:grid-cols-2">
               {ACCENT_THEMES.map(themeOption => (
                 <Label
                   key={themeOption.value}
@@ -580,10 +605,6 @@ export default function SettingsPage() {
                   <RadioGroupItem
                     value={themeOption.value}
                     id={`accent-${themeOption.value}`}
-                    className={cn(
-                      'border-border data-[state=checked]:border-ring',
-                      `data-[state=checked]:bg-[${themeOption.lightColors.accent}]` // This might need specific class for HSL
-                    )}
                   />
                   <div className="flex items-center gap-2">
                      <span className="h-4 w-4 rounded-sm border" style={{ background: themeOption.gradientPreview }}></span>
@@ -593,7 +614,9 @@ export default function SettingsPage() {
               ))}
             </RadioGroup>
           </div>
-
+          <Button onClick={handleApplyThemeChanges} className="w-full sm:w-auto">
+             Apply Theme Changes
+          </Button>
         </CardContent>
       </Card>
 
@@ -743,7 +766,7 @@ export default function SettingsPage() {
               </p>
               <p>
                 <span className="font-medium text-muted-foreground w-20 inline-block">Relative:</span>
-                <span className="text-foreground">{format(new Date(Date.now() - 1000 * 60 * 5), `PPP ${getActualClockFormatString()}`)} (5 mins ago)</span>
+                <span className="text-foreground">{format(new Date(Date.now() - 1000 * 60 * 5), `PPP ${getActualClockFormatString(currentSelectedClockFormat)}`)} (5 mins ago)</span>
               </p>
             </div>
             <div className="flex gap-2 mt-3">
@@ -927,3 +950,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+
