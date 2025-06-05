@@ -5,7 +5,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { PlusCircle, Edit2, Trash2, StickyNote, Info } from 'react-feather';
+import { PlusCircle, Edit2, Trash2, FileText as NoteIcon, Info } from 'react-feather'; // Changed StickyNote to FileText and aliased as NoteIcon
 import type { SpecialNote, SpecialNoteColor } from '@/types';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -31,7 +31,7 @@ export function SpecialNotesSection({ notes, onAddNote, onEditNote, onDeleteNote
     <Card className="shadow-lg mb-6">
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="flex items-center">
-          <StickyNote className="h-6 w-6 mr-2 text-primary" />
+          <NoteIcon className="h-6 w-6 mr-2 text-primary" /> {/* Used NoteIcon (FileText) */}
           <CardTitle className="font-headline text-xl">Special Notes</CardTitle>
         </div>
         <Button variant="outline" size="sm" onClick={onAddNote}>
