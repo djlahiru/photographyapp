@@ -2,12 +2,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIconSettings, Eye, Droplet, Edit3, Square, Circle as CircleIcon, Image as ImageIconFeather, Save, Trash2, AlertTriangle, Tag, Plus, DollarSign as DollarSignIcon, Sun as SunIcon, Moon } from "react-feather"; // Renamed Calendar to CalendarIconSettings, Added SunIcon, Moon
+import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIconSettings, Eye, Droplet, Edit3, Square, Circle as CircleIcon, Image as ImageIconFeather, Save, Trash2, AlertTriangle, Tag, Plus, DollarSign as DollarSignIcon, Sun as SunIcon, Moon, RefreshCw } from "react-feather";
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 import { format } from 'date-fns';
@@ -17,11 +18,12 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
 import type { UserProfile, AvatarShape, BookingCategory, Booking, CurrencyCode } from '@/types';
 import { Switch } from '@/components/ui/switch';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogDesc, DialogFooter, DialogClose } from "@/components/ui/dialog"; 
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { mockBookingCategoriesData, mockBookingsData } from '@/lib/mock-data'; 
+import { mockBookingCategoriesData, mockBookingsData, resetAllMockData } from '@/lib/mock-data'; 
 import {
   USER_PROFILE_LS_KEY,
   AVATAR_SHAPE_LS_KEY,
@@ -34,6 +36,7 @@ import {
   SELECTED_CURRENCY_LS_KEY,
   AVAILABLE_CURRENCIES,
   type CurrencyDefinition,
+  ALL_LOCAL_STORAGE_KEYS, // Import the new constant
 } from '@/lib/constants';
 
 
@@ -68,6 +71,7 @@ const defaultUser: UserProfile = {
 
 export default function SettingsPage() {
   const { theme: nextTheme, setTheme, resolvedTheme } = useTheme(); 
+  const router = useRouter();
   const [user, setUser] = useState<UserProfile>(defaultUser);
   
   const [isCalendarConnected, setIsCalendarConnected] = useState(false);
@@ -208,7 +212,7 @@ export default function SettingsPage() {
   };
 
   const applyThemeClass = (themeType: 'font', themeValue: FontTheme) => {
-    const classPrefix = 'font-theme-';
+    const classPrefix = themeType === 'font' ? 'font-theme-' : '';
     
     document.documentElement.classList.forEach(cls => {
         if (cls.startsWith(classPrefix)) {
@@ -216,7 +220,7 @@ export default function SettingsPage() {
         }
     });
 
-    if (themeValue !== 'default-sans') {
+    if (themeValue !== 'default-sans') { // default-sans is the base, no class needed for it
       document.documentElement.classList.add(`${classPrefix}${themeValue}`);
     }
   };
@@ -332,6 +336,31 @@ export default function SettingsPage() {
     const idx = mockBookingCategoriesData.findIndex(c => c.id === categoryId);
     if (idx !== -1) mockBookingCategoriesData.splice(idx, 1);
     toast.info("Category deleted.");
+  };
+
+  const handleResetApplicationData = () => {
+    resetAllMockData(); // Reset the in-memory mock data arrays
+
+    ALL_LOCAL_STORAGE_KEYS.forEach(key => {
+      localStorage.removeItem(key);
+    });
+
+    // Reset font theme class on HTML element
+    document.documentElement.classList.forEach(cls => {
+      if (cls.startsWith('font-theme-')) {
+        document.documentElement.classList.remove(cls);
+      }
+    });
+    // Default accent theme will be reapplied on load by RootLayout if no other theme is set.
+    // No need to explicitly set it here if relying on RootLayout's logic.
+
+    toast.success("Application data has been reset. Logging out...");
+    
+    // Redirect to login page and force reload to ensure all state is fresh
+    // A slight delay might be good for the toast to be seen.
+    setTimeout(() => {
+        window.location.href = '/login'; 
+    }, 1500);
   };
 
 
@@ -738,9 +767,47 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
+      <Separator />
+
+      <Card className="border-destructive/50">
+        <CardHeader>
+          <CardTitle className="flex items-center text-destructive"><AlertTriangle className="mr-2 h-5 w-5"/> Danger Zone</CardTitle>
+          <CardDescription>Be careful with actions in this section as they can be irreversible.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <h4 className="font-medium text-foreground">Reset Application Data</h4>
+            <p className="text-sm text-muted-foreground mb-2">
+              This will clear all your bookings, clients, payments, invoices, tasks, notes, and settings.
+              The application will be reset to its initial state. This action cannot be undone.
+            </p>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">
+                  <RefreshCw className="mr-2 h-4 w-4" /> Reset Application Data
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete all your application data,
+                    including settings, bookings, clients, payments, invoices, tasks, and notes, and log you out.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleResetApplicationData} className={cn(buttonVariants({ variant: "destructive" }))}>
+                    Confirm Reset
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </CardContent>
+      </Card>
+
     </div>
   );
 }
-    
-
     

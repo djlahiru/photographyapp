@@ -38,8 +38,8 @@ export const GOOGLE_CALENDAR_ID_LS_KEY = 'googleCalendarIdToSync';
 export const GOOGLE_CALENDAR_AUTO_SYNC_LS_KEY = 'googleCalendarAutoSync';
 export const INVOICE_TEMPLATE_LS_KEY = 'invoiceTemplateHtml';
 export const INVOICE_HISTORY_LS_KEY = 'invoiceHistory';
-export const SELECTED_CURRENCY_LS_KEY = 'selectedCurrency'; // New key for selected currency
-export const AUTH_STATUS_LS_KEY = 'ruboAuthStatus'; // Key for authentication status
+export const SELECTED_CURRENCY_LS_KEY = 'selectedCurrency';
+export const AUTH_STATUS_LS_KEY = 'ruboAuthStatus';
 
 export interface CurrencyDefinition {
   code: CurrencyCode;
@@ -53,3 +53,18 @@ export const AVAILABLE_CURRENCIES: CurrencyDefinition[] = [
   { code: 'EUR', symbol: '€', label: 'Euro (€)' },
 ];
 
+export const ALL_LOCAL_STORAGE_KEYS: string[] = [
+  USER_PROFILE_LS_KEY,
+  DASHBOARD_COVER_PHOTO_LS_KEY,
+  DASHBOARD_COVER_PHOTO_BLUR_LS_KEY,
+  AVATAR_SHAPE_LS_KEY,
+  FONT_THEME_LS_KEY,
+  GOOGLE_CALENDAR_CONNECTED_LS_KEY,
+  GOOGLE_CALENDAR_ID_LS_KEY,
+  GOOGLE_CALENDAR_AUTO_SYNC_LS_KEY,
+  INVOICE_TEMPLATE_LS_KEY,
+  INVOICE_HISTORY_LS_KEY,
+  SELECTED_CURRENCY_LS_KEY,
+  AUTH_STATUS_LS_KEY,
+  // Add any new localStorage keys here for them to be included in the reset
+];

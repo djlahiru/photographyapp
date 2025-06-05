@@ -1,8 +1,9 @@
 
 import type { PhotographyPackage, Client, Booking, BookingStatus, PaymentStatus, BookingActivityLogEntry, BookingDateTime, Task, TaskPriority, TaskStatus, SpecialNote, SpecialNoteColor, BookingCategory } from '@/types';
 
-// --- BOOKING CATEGORIES DATA ---
-export let mockBookingCategoriesData: BookingCategory[] = [
+// --- INITIAL MOCK DATA (DEEP COPIED & FROZEN) ---
+
+const initialMockBookingCategoriesData: ReadonlyArray<BookingCategory> = Object.freeze(JSON.parse(JSON.stringify([
   { id: "cat-wedding", name: "Wedding", gradientClasses: "bg-gradient-to-br from-pink-400 to-red-500", textColorClass: "text-white" },
   { id: "cat-portrait", name: "Portrait", gradientClasses: "bg-gradient-to-br from-sky-400 to-cyan-500", textColorClass: "text-white" },
   { id: "cat-family", name: "Family", gradientClasses: "bg-gradient-to-br from-emerald-400 to-teal-500", textColorClass: "text-white" },
@@ -10,26 +11,23 @@ export let mockBookingCategoriesData: BookingCategory[] = [
   { id: "cat-commercial", name: "Commercial", gradientClasses: "bg-gradient-to-br from-slate-500 to-gray-600", textColorClass: "text-white" },
   { id: "cat-maternity", name: "Maternity", gradientClasses: "bg-gradient-to-br from-purple-400 to-indigo-500", textColorClass: "text-white" },
   { id: "cat-newborn", name: "Newborn", gradientClasses: "bg-gradient-to-br from-rose-300 to-pink-300", textColorClass: "text-black" },
-];
+])));
 
-// --- PACKAGES DATA ---
-export let mockPackagesData: PhotographyPackage[] = [
+const initialMockPackagesData: ReadonlyArray<PhotographyPackage> = Object.freeze(JSON.parse(JSON.stringify([
   { id: "1", name: "Basic Portrait Session", description: "A quick session for individual portraits, perfect for headshots or a small update.", price: 150, services: ["30 min session", "5 edited photos", "Online gallery access"], imageUrl: "https://placehold.co/600x400.png", dataAiHint: "portrait photography" },
   { id: "2", name: "Standard Wedding Package", description: "Comprehensive wedding day coverage from getting ready to the first dance.", price: 2500, services: ["8 hours coverage", "2 photographers", "Online gallery", "300+ edited photos", "Engagement session discount"], imageUrl: "https://placehold.co/600x400.png", dataAiHint: "wedding event" },
   { id: "3", name: "Family Lifestyle Shoot", description: "Capture natural family moments in a relaxed outdoor or in-home setting.", price: 350, services: ["1 hour session", "Outdoor or in-home", "50 edited photos", "Print release"], imageUrl: "https://placehold.co/600x400.png", dataAiHint: "family photoshoot" },
   { id: "4", name: "Event Photography", description: "Coverage for corporate events, parties, or other special occasions.", price: 600, services: ["Up to 3 hours coverage", "Online gallery", "All usable photos delivered"], imageUrl: "https://placehold.co/600x400.png", dataAiHint: "corporate event" },
-];
+])));
 
-// --- CLIENTS DATA ---
-export let mockClientsData: Client[] = [
+const initialMockClientsData: ReadonlyArray<Client> = Object.freeze(JSON.parse(JSON.stringify([
   { id: "client-1", name: "Alice Wonderland", contactDetails: { email: "alice@example.com", phone: "555-1234", whatsapp: "555-1234" }, address: "123 Storybook Lane", totalPayments: 0, outstandingBalance: 0, totalBookings: 0, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "female person", notes: "Prefers morning shoots. Allergic to cats." },
   { id: "client-2", name: "Bob The Builder", contactDetails: { email: "bob@example.com", phone: "555-5678" }, address: "456 Construction Rd", totalPayments: 0, outstandingBalance: 0, totalBookings: 0, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "male person", notes: "Needs invoices sent to accounting@bobcorp.com." },
   { id: "client-3", name: "Charlie Chaplin", contactDetails: { email: "charlie@example.com" }, totalPayments: 0, outstandingBalance: 0, totalBookings: 0, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "classic actor", notes: "" },
   { id: "client-4", name: "Diana Prince", contactDetails: { email: "diana@example.com" }, totalPayments: 0, outstandingBalance: 0, totalBookings: 0, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "heroine woman", notes: "" },
-];
+])));
 
-// --- BOOKINGS DATA ---
-export let mockBookingsData: Booking[] = [
+const initialMockBookingsData: ReadonlyArray<Booking> = Object.freeze(JSON.parse(JSON.stringify([
   {
     id: "booking-1",
     clientName: "Alice Wonderland",
@@ -119,10 +117,9 @@ export let mockBookingsData: Booking[] = [
       { id: "log5a", timestamp: "2024-09-25T10:00:00Z", action: "Booking created.", actor: "Admin", iconName: "PlusCircle" },
     ]
   }
-];
+])));
 
-// --- TASKS DATA ---
-export let mockTasksData: Task[] = [
+const initialMockTasksData: ReadonlyArray<Task> = Object.freeze(JSON.parse(JSON.stringify([
   {
     id: "task-1",
     title: "Edit Album - Johnson Wedding",
@@ -132,7 +129,7 @@ export let mockTasksData: Task[] = [
     startDate: new Date().toISOString(),
     priority: "High" as TaskPriority,
     status: "In Progress" as TaskStatus,
-    relatedClientId: "client-2", // Assuming Bob is Johnson for this example
+    relatedClientId: "client-2",
     relatedBookingId: "booking-2",
     category: "Editing,Post-Production",
     subtasks: "1. Cull images\n2. Color correction\n3. Retouching\n4. Album layout",
@@ -160,33 +157,52 @@ export let mockTasksData: Task[] = [
     description: "Find a suitable outdoor location for Charlie Chaplin's portrait session. Consider good lighting for late afternoon.",
     assignee: "Admin User",
     priority: "Medium" as TaskPriority,
-    status: "Waiting" as TaskStatus, // Waiting for client feedback on preferences
+    status: "Waiting" as TaskStatus,
     relatedClientId: "client-3",
     category: "Pre-Production,Location Scouting",
     createdBy: "Admin User",
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // Created yesterday
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
   }
-];
+])));
 
-// --- SPECIAL NOTES DATA ---
-export let mockSpecialNotesData: SpecialNote[] = [
+const initialMockSpecialNotesData: ReadonlyArray<SpecialNote> = Object.freeze(JSON.parse(JSON.stringify([
   {
     id: "note-1",
     content: "Remember to follow up with all clients from last week's expo by Friday!",
-    color: "pink",
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // Created 2 days ago
-    updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // Updated yesterday
+    color: "pink" as SpecialNoteColor,
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: "note-2",
     content: "Order new batch of photo paper and ink cartridges. Running low.",
-    color: "yellow",
+    color: "yellow" as SpecialNoteColor,
     createdAt: new Date().toISOString(),
   },
   {
     id: "note-3",
     content: "Team meeting on Wednesday at 10 AM to discuss Q4 marketing strategy.",
-    color: "blue",
+    color: "blue" as SpecialNoteColor,
     createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
   },
-];
+])));
+
+
+// --- EXPORTED MUTABLE MOCK DATA ---
+export let mockBookingCategoriesData: BookingCategory[] = JSON.parse(JSON.stringify(initialMockBookingCategoriesData));
+export let mockPackagesData: PhotographyPackage[] = JSON.parse(JSON.stringify(initialMockPackagesData));
+export let mockClientsData: Client[] = JSON.parse(JSON.stringify(initialMockClientsData));
+export let mockBookingsData: Booking[] = JSON.parse(JSON.stringify(initialMockBookingsData));
+export let mockTasksData: Task[] = JSON.parse(JSON.stringify(initialMockTasksData));
+export let mockSpecialNotesData: SpecialNote[] = JSON.parse(JSON.stringify(initialMockSpecialNotesData));
+
+// --- RESET FUNCTION ---
+export function resetAllMockData() {
+  mockBookingCategoriesData = JSON.parse(JSON.stringify(initialMockBookingCategoriesData));
+  mockPackagesData = JSON.parse(JSON.stringify(initialMockPackagesData));
+  mockClientsData = JSON.parse(JSON.stringify(initialMockClientsData));
+  mockBookingsData = JSON.parse(JSON.stringify(initialMockBookingsData));
+  mockTasksData = JSON.parse(JSON.stringify(initialMockTasksData));
+  mockSpecialNotesData = JSON.parse(JSON.stringify(initialMockSpecialNotesData));
+  console.log("All mock data has been reset to initial state.");
+}
