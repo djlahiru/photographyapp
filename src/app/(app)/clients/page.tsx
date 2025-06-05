@@ -4,13 +4,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Users, Edit, Trash2, Phone, Mail, MessageCircle, Briefcase, TrendingUp, TrendingDown, FileText, Edit2, DollarSign, Calendar as CalendarIconFeather, Package, Save, Grid, List as ListIcon, Search } from "react-feather";
+import { PlusCircle, Users, Edit, Trash2, Phone, Mail, MessageCircle, Briefcase, TrendingUp, TrendingDown, FileText, Edit2, DollarSign, Calendar as CalendarIconFeather, Package, Save, Grid, List as ListIcon, Search, Eye } from "react-feather";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { initialMockBookings } from '@/app/(app)/bookings/page'; // Changed from mockBookings
-import type { Payment, PaymentStatus, Client } from '@/types';
-import { format } from 'date-fns';
+import { initialMockBookings } from '@/app/(app)/bookings/page';
+import type { Payment, PaymentStatus, Client, Booking, BookingStatus } from '@/types';
+import { format, parseISO, isValid } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,13 +18,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'react-toastify';
 import { cn } from '@/lib/utils';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
-// Export initialMockClients so it can be imported elsewhere if needed
 export const initialMockClients: Client[] = [
-  { id: "1", name: "Alice Wonderland", contactDetails: { email: "alice@example.com", phone: "555-1234", whatsapp: "555-1234" }, address: "123 Storybook Lane", totalPayments: 150, outstandingBalance: 0, totalBookings: 1, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "female person", notes: "Prefers morning shoots. Allergic to cats." },
-  { id: "2", name: "Bob The Builder", contactDetails: { email: "bob@example.com", phone: "555-5678" }, address: "456 Construction Rd", totalPayments: 2500, outstandingBalance: 0, totalBookings: 1, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "male person", notes: "Needs invoices sent to accounting@bobcorp.com." },
-  { id: "3", name: "Charlie Chaplin", contactDetails: { email: "charlie@example.com" }, totalPayments: 0, outstandingBalance: 100, totalBookings: 1, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "classic actor", notes: "" },
-  { id: "4", name: "Diana Prince", contactDetails: { email: "diana@example.com" }, totalPayments: 0, outstandingBalance: 0, totalBookings: 1, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "heroine woman", notes: "" },
+  { id: "1", name: "Alice Wonderland", contactDetails: { email: "alice@example.com", phone: "555-1234", whatsapp: "555-1234" }, address: "123 Storybook Lane", totalPayments: 0, outstandingBalance: 0, totalBookings: 0, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "female person", notes: "Prefers morning shoots. Allergic to cats." },
+  { id: "2", name: "Bob The Builder", contactDetails: { email: "bob@example.com", phone: "555-5678" }, address: "456 Construction Rd", totalPayments: 0, outstandingBalance: 0, totalBookings: 0, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "male person", notes: "Needs invoices sent to accounting@bobcorp.com." },
+  { id: "3", name: "Charlie Chaplin", contactDetails: { email: "charlie@example.com" }, totalPayments: 0, outstandingBalance: 0, totalBookings: 0, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "classic actor", notes: "" },
+  { id: "4", name: "Diana Prince", contactDetails: { email: "diana@example.com" }, totalPayments: 0, outstandingBalance: 0, totalBookings: 0, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "heroine woman", notes: "" },
 ];
 
 const paymentStatusVariantMap: Record<PaymentStatus, "default" | "secondary" | "destructive" | "outline" | "success" | "warning"> = {
@@ -32,6 +32,13 @@ const paymentStatusVariantMap: Record<PaymentStatus, "default" | "secondary" | "
   Pending: "warning",
   Failed: "destructive",
   Refunded: "outline",
+};
+
+const bookingStatusVariantMap: Record<BookingStatus, "default" | "secondary" | "destructive" | "outline" | "success" | "warning"> = {
+  Pending: "warning",
+  Confirmed: "default",
+  Completed: "success",
+  Cancelled: "destructive",
 };
 
 type LayoutMode = 'grid' | 'list';
@@ -59,25 +66,24 @@ export default function ClientsPage() {
   const [editClientNotes, setEditClientNotes] = useState('');
   const [editClientPhotoFile, setEditClientPhotoFile] = useState<File | null>(null);
   const [editClientPhotoPreview, setEditClientPhotoPreview] = useState<string | null>(null);
-
-
+  
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('grid');
   const [searchTerm, setSearchTerm] = useState('');
+
+  const [selectedClientForBookings, setSelectedClientForBookings] = useState<Client | null>(null);
+  const [isClientBookingsDialogOpen, setIsClientBookingsDialogOpen] = useState(false);
 
   const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase();
 
   const handleEditNote = (clientName: string) => {
-    console.log(`Edit note for ${clientName} clicked.`);
-    // This could open a smaller, dedicated note editing modal if desired.
-    // For now, the main edit dialog will handle notes.
     const clientToEdit = mockClients.find(c => c.name === clientName);
     if (clientToEdit) {
-      handleOpenEditDialog(clientToEdit); // Open full edit dialog
+      handleOpenEditDialog(clientToEdit);
     }
   };
 
   const getClientPayments = (clientName: string): Payment[] => {
-    const clientBookings = initialMockBookings.filter(b => b.clientName === clientName); // Changed from mockBookings
+    const clientBookings = initialMockBookings.filter(b => b.clientName === clientName);
     const allPayments: Payment[] = [];
     clientBookings.forEach(booking => {
       if (booking.payments) {
@@ -86,6 +92,21 @@ export default function ClientsPage() {
     });
     return allPayments.sort((a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime());
   };
+  
+  const getClientBookingsList = (clientName: string): Booking[] => {
+    return initialMockBookings.filter(booking => booking.clientName === clientName)
+                              .sort((a,b) => {
+                                const dateA = a.bookingDates[0]?.dateTime ? new Date(a.bookingDates[0].dateTime) : new Date(0);
+                                const dateB = b.bookingDates[0]?.dateTime ? new Date(b.bookingDates[0].dateTime) : new Date(0);
+                                return dateB.getTime() - dateA.getTime();
+                              });
+  };
+
+  const handleOpenClientBookingsDialog = (client: Client) => {
+    setSelectedClientForBookings(client);
+    setIsClientBookingsDialogOpen(true);
+  };
+
 
   const resetNewClientForm = () => {
     setNewClientName('');
@@ -115,7 +136,7 @@ export default function ClientsPage() {
         reader.onloadend = () => setEditClientPhotoPreview(reader.result as string);
         reader.readAsDataURL(file);
       } else {
-        setEditClientPhotoPreview(editingClient?.avatarUrl || null); // Revert to original or clear
+        setEditClientPhotoPreview(editingClient?.avatarUrl || null);
       }
     }
   };
@@ -127,7 +148,7 @@ export default function ClientsPage() {
     }
 
     const newClient: Client = {
-      id: (mockClients.length + Date.now()).toString(), // More unique ID
+      id: (mockClients.length + Date.now()).toString(),
       name: newClientName,
       contactDetails: {
         email: newClientEmail.trim() || undefined,
@@ -138,9 +159,9 @@ export default function ClientsPage() {
       notes: newClientNotes.trim() || undefined,
       avatarUrl: newClientPhotoPreview || `https://placehold.co/80x80.png?text=${getInitials(newClientName)}`,
       dataAiHint: newClientPhotoPreview ? "person client custom" : "person client",
-      totalPayments: 0,
-      outstandingBalance: 0,
-      totalBookings: 0,
+      totalPayments: 0, // Will be dynamically calculated
+      outstandingBalance: 0, // Will be dynamically calculated
+      totalBookings: 0, // Will be dynamically calculated
     };
 
     setMockClients(prevClients => [...prevClients, newClient]);
@@ -178,7 +199,7 @@ export default function ClientsPage() {
       },
       address: editClientAddress.trim() || undefined,
       notes: editClientNotes.trim() || undefined,
-      avatarUrl: editClientPhotoPreview || editingClient.avatarUrl, // Keep original if no new preview
+      avatarUrl: editClientPhotoPreview || editingClient.avatarUrl,
       dataAiHint: editClientPhotoPreview && editClientPhotoPreview !== editingClient.avatarUrl ? "person client custom" : editingClient.dataAiHint,
     };
 
@@ -195,9 +216,26 @@ export default function ClientsPage() {
     toast.info(`Client "${clientName}" deleted.`);
   };
 
+  const clientsWithDynamicData = useMemo(() => {
+    return mockClients.map(client => {
+        const clientBookings = initialMockBookings.filter(b => b.clientName === client.name);
+        const totalPaidForClient = clientBookings.reduce((sum, booking) => {
+            return sum + (booking.payments?.filter(p => p.status === 'Paid').reduce((acc, p) => acc + p.amount, 0) || 0);
+        }, 0);
+        const totalPricedForClient = clientBookings.reduce((sum, booking) => sum + booking.price, 0);
+        const outstandingBalance = totalPricedForClient - totalPaidForClient;
+
+        return {
+            ...client,
+            totalBookings: clientBookings.length,
+            totalPayments: totalPaidForClient,
+            outstandingBalance: outstandingBalance < 0 ? 0 : outstandingBalance,
+        };
+    });
+  }, [mockClients, initialMockBookings]); // Add initialMockBookings to dependency array
 
   const filteredClients = useMemo(() => {
-    let clientsToDisplay = [...mockClients];
+    let clientsToDisplay = [...clientsWithDynamicData];
     if (searchTerm.trim() !== '') {
       clientsToDisplay = clientsToDisplay.filter(client =>
         client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -205,7 +243,7 @@ export default function ClientsPage() {
       );
     }
     return clientsToDisplay;
-  }, [mockClients, searchTerm]);
+  }, [clientsWithDynamicData, searchTerm]);
   
 
   return (
@@ -269,6 +307,9 @@ export default function ClientsPage() {
                   <span className="font-medium text-foreground">{client.name}</span>
                 </div>
                 <div className="flex items-center gap-1">
+                  <Button variant="ghost" size="icon" title="View Bookings" onClick={() => handleOpenClientBookingsDialog(client)}>
+                    <Eye className="h-4 w-4" />
+                  </Button>
                   <Button variant="ghost" size="icon" title="Edit Client" onClick={() => handleOpenEditDialog(client)}>
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -406,6 +447,9 @@ export default function ClientsPage() {
                   </div>
                 </CardContent>
                 <CardFooter className="p-4 border-t flex justify-end gap-2">
+                  <Button variant="ghost" size="icon" title="View Client Bookings" onClick={() => handleOpenClientBookingsDialog(client)}>
+                      <Eye className="h-4 w-4" />
+                  </Button>
                   <Button variant="ghost" size="icon" title="Edit Note" onClick={() => handleEditNote(client.name)}>
                       <Edit2 className="h-4 w-4" />
                   </Button>
@@ -426,7 +470,7 @@ export default function ClientsPage() {
       ) : (
          <div className="flex flex-col items-center justify-center py-20 text-center rounded-lg border border-dashed">
           <Users className="h-20 w-20 text-muted-foreground mb-6" />
-          {initialMockClients.length === 0 && searchTerm.trim() === '' ? ( 
+          {clientsWithDynamicData.length === 0 && searchTerm.trim() === '' ? ( 
             <>
               <h3 className="text-2xl font-semibold mb-3 font-headline">No Clients Yet</h3>
               <p className="text-muted-foreground mb-6 max-w-sm">You haven&apos;t added any clients. Click the button below to add your first client and start managing their bookings.</p>
@@ -452,7 +496,7 @@ export default function ClientsPage() {
               Fill in the details below to create a new client profile.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
             <div className="grid gap-2">
               <Label htmlFor="new-client-photo">Client Photo</Label>
               <ImageUploadDropzone
@@ -548,7 +592,7 @@ export default function ClientsPage() {
                 Update the client's profile information.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
               <div className="grid gap-2">
                 <Label htmlFor="edit-client-photo">Client Photo</Label>
                 <ImageUploadDropzone
@@ -628,6 +672,59 @@ export default function ClientsPage() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Client Bookings Dialog */}
+      {selectedClientForBookings && (
+        <Dialog open={isClientBookingsDialogOpen} onOpenChange={setIsClientBookingsDialogOpen}>
+          <DialogContent className="sm:max-w-xl">
+            <DialogHeader>
+              <DialogTitle className="font-headline">Bookings for {selectedClientForBookings.name}</DialogTitle>
+              <DialogDescription>
+                Showing all bookings associated with {selectedClientForBookings.name}.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <ScrollArea className="h-[400px] pr-3">
+                {getClientBookingsList(selectedClientForBookings.name).length > 0 ? (
+                  <div className="space-y-3">
+                    {getClientBookingsList(selectedClientForBookings.name).map(booking => {
+                       const firstBookingDate = booking.bookingDates && booking.bookingDates.length > 0 && booking.bookingDates[0].dateTime ? parseISO(booking.bookingDates[0].dateTime) : null;
+                      return (
+                        <Card key={booking.id} className="bg-card/70 border">
+                          <CardHeader className="p-3">
+                            <CardTitle className="text-base font-semibold">{booking.packageName}</CardTitle>
+                            {firstBookingDate && isValid(firstBookingDate) ? (
+                                <CardDescription className="text-xs">
+                                    {format(firstBookingDate, "eee, MMM d, yyyy 'at' h:mm a")}
+                                    {booking.bookingDates.length > 1 && ` (+${booking.bookingDates.length -1} more)`}
+                                </CardDescription>
+                            ) : (
+                                <CardDescription className="text-xs">No date set</CardDescription>
+                            )}
+                          </CardHeader>
+                          <CardFooter className="p-3 border-t">
+                            <Badge variant={bookingStatusVariantMap[booking.status]} className="text-xs">
+                              {booking.status}
+                            </Badge>
+                            <span className="ml-auto text-sm font-medium text-foreground">${booking.price.toFixed(2)}</span>
+                          </CardFooter>
+                        </Card>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-center text-muted-foreground py-10">No bookings found for {selectedClientForBookings.name}.</p>
+                )}
+              </ScrollArea>
+            </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Close</Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
@@ -635,3 +732,4 @@ export default function ClientsPage() {
 
       
 
+    
