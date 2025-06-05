@@ -7,21 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Calendar as CalendarIconFeather, Eye, EyeOff } from "react-feather";
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import interactionPlugin from '@fullcalendar/interaction'; // for eventClick
-import listPlugin from '@fullcalendar/list'; 
-import timeGridPlugin from '@fullcalendar/timegrid'; // for timeGrid views
+import interactionPlugin from '@fullcalendar/interaction';
+import listPlugin from '@fullcalendar/list';
+import timeGridPlugin from '@fullcalendar/timegrid';
 import type { EventClickArg, EventSourceInput, EventInput } from '@fullcalendar/core';
-import { initialMockBookings } from '@/app/(app)/bookings/page'; 
-import type { BookingStatus } from '@/types';
-
-// Removed direct CSS imports as they were causing module resolution issues.
-// FullCalendar might inject some base styles, or rely on component-level styling.
-// If styling issues persist, further investigation into CSS bundling might be needed.
+import { initialMockBookings } from '@/app/(app)/bookings/page';
+import type { BookingStatus, BookingDateTime } from '@/types';
 
 
 const getEventClassNames = (status: BookingStatus): string[] => {
   let classNames = ['p-1', 'text-xs', 'rounded', 'border', 'cursor-pointer', 'hover:opacity-80'];
-  // Using theme-based colors where possible
   switch (status) {
     case 'Pending':
       classNames.push('bg-accent', 'border-accent', 'text-accent-foreground');
@@ -41,196 +36,62 @@ const getEventClassNames = (status: BookingStatus): string[] => {
   return classNames;
 };
 
-// Sample Sri Lankan Holidays for 2024-2027 (demonstration)
 const sriLankanHolidays: EventInput[] = [
   // 2024
-  {
-    title: 'Thaipongal Day',
-    start: '2024-01-15',
-    allDay: true,
-    backgroundColor: 'hsl(var(--muted))',
-    borderColor: 'hsl(var(--border))',
-    textColor: 'hsl(var(--muted-foreground))',
-    classNames: ['opacity-80']
-  },
-  {
-    title: 'National Day',
-    start: '2024-02-04',
-    allDay: true,
-    backgroundColor: 'hsl(var(--muted))',
-    borderColor: 'hsl(var(--border))',
-    textColor: 'hsl(var(--muted-foreground))',
-    classNames: ['opacity-80']
-  },
-  {
-    title: 'Sinhala & Tamil New Year\'s Day',
-    start: '2024-04-13',
-    allDay: true,
-    backgroundColor: 'hsl(var(--muted))',
-    borderColor: 'hsl(var(--border))',
-    textColor: 'hsl(var(--muted-foreground))',
-    classNames: ['opacity-80']
-  },
-  {
-    title: 'Vesak Full Moon Poya Day',
-    start: '2024-05-23',
-    allDay: true,
-    backgroundColor: 'hsl(var(--muted))',
-    borderColor: 'hsl(var(--border))',
-    textColor: 'hsl(var(--muted-foreground))',
-    classNames: ['opacity-80']
-  },
+  { title: 'Thaipongal Day', start: '2024-01-15', allDay: true, backgroundColor: 'hsl(var(--muted))', borderColor: 'hsl(var(--border))', textColor: 'hsl(var(--muted-foreground))', classNames: ['opacity-80'] },
+  { title: 'National Day', start: '2024-02-04', allDay: true, backgroundColor: 'hsl(var(--muted))', borderColor: 'hsl(var(--border))', textColor: 'hsl(var(--muted-foreground))', classNames: ['opacity-80'] },
+  { title: 'Sinhala & Tamil New Year\'s Day', start: '2024-04-13', allDay: true, backgroundColor: 'hsl(var(--muted))', borderColor: 'hsl(var(--border))', textColor: 'hsl(var(--muted-foreground))', classNames: ['opacity-80'] },
+  { title: 'Vesak Full Moon Poya Day', start: '2024-05-23', allDay: true, backgroundColor: 'hsl(var(--muted))', borderColor: 'hsl(var(--border))', textColor: 'hsl(var(--muted-foreground))', classNames: ['opacity-80'] },
   // 2025
-  {
-    title: 'Thaipongal Day',
-    start: '2025-01-15',
-    allDay: true,
-    backgroundColor: 'hsl(var(--muted))',
-    borderColor: 'hsl(var(--border))',
-    textColor: 'hsl(var(--muted-foreground))',
-    classNames: ['opacity-80']
-  },
-  {
-    title: 'National Day',
-    start: '2025-02-04',
-    allDay: true,
-    backgroundColor: 'hsl(var(--muted))',
-    borderColor: 'hsl(var(--border))',
-    textColor: 'hsl(var(--muted-foreground))',
-    classNames: ['opacity-80']
-  },
-  {
-    title: 'Sinhala & Tamil New Year\'s Day',
-    start: '2025-04-14', // Adjusted for 2025
-    allDay: true,
-    backgroundColor: 'hsl(var(--muted))',
-    borderColor: 'hsl(var(--border))',
-    textColor: 'hsl(var(--muted-foreground))',
-    classNames: ['opacity-80']
-  },
-  {
-    title: 'Vesak Full Moon Poya Day',
-    start: '2025-05-12', // Adjusted for 2025
-    allDay: true,
-    backgroundColor: 'hsl(var(--muted))',
-    borderColor: 'hsl(var(--border))',
-    textColor: 'hsl(var(--muted-foreground))',
-    classNames: ['opacity-80']
-  },
-  {
-    title: 'Christmas Day',
-    start: '2025-12-25',
-    allDay: true,
-    backgroundColor: 'hsl(var(--muted))',
-    borderColor: 'hsl(var(--border))',
-    textColor: 'hsl(var(--muted-foreground))',
-    classNames: ['opacity-80']
-  },
+  { title: 'Thaipongal Day', start: '2025-01-15', allDay: true, backgroundColor: 'hsl(var(--muted))', borderColor: 'hsl(var(--border))', textColor: 'hsl(var(--muted-foreground))', classNames: ['opacity-80'] },
+  { title: 'National Day', start: '2025-02-04', allDay: true, backgroundColor: 'hsl(var(--muted))', borderColor: 'hsl(var(--border))', textColor: 'hsl(var(--muted-foreground))', classNames: ['opacity-80'] },
+  { title: 'Sinhala & Tamil New Year\'s Day', start: '2025-04-14', allDay: true, backgroundColor: 'hsl(var(--muted))', borderColor: 'hsl(var(--border))', textColor: 'hsl(var(--muted-foreground))', classNames: ['opacity-80'] },
+  { title: 'Vesak Full Moon Poya Day', start: '2025-05-12', allDay: true, backgroundColor: 'hsl(var(--muted))', borderColor: 'hsl(var(--border))', textColor: 'hsl(var(--muted-foreground))', classNames: ['opacity-80'] },
+  { title: 'Christmas Day', start: '2025-12-25', allDay: true, backgroundColor: 'hsl(var(--muted))', borderColor: 'hsl(var(--border))', textColor: 'hsl(var(--muted-foreground))', classNames: ['opacity-80'] },
   // 2026
-  {
-    title: 'National Day',
-    start: '2026-02-04',
-    allDay: true,
-    backgroundColor: 'hsl(var(--muted))',
-    borderColor: 'hsl(var(--border))',
-    textColor: 'hsl(var(--muted-foreground))',
-    classNames: ['opacity-80']
-  },
-  {
-    title: 'May Day',
-    start: '2026-05-01',
-    allDay: true,
-    backgroundColor: 'hsl(var(--muted))',
-    borderColor: 'hsl(var(--border))',
-    textColor: 'hsl(var(--muted-foreground))',
-    classNames: ['opacity-80']
-  },
-  {
-    title: 'Vesak Full Moon Poya Day',
-    start: '2026-05-31', // Adjusted for 2026
-    allDay: true,
-    backgroundColor: 'hsl(var(--muted))',
-    borderColor: 'hsl(var(--border))',
-    textColor: 'hsl(var(--muted-foreground))',
-    classNames: ['opacity-80']
-  },
-  {
-    title: 'Christmas Day',
-    start: '2026-12-25',
-    allDay: true,
-    backgroundColor: 'hsl(var(--muted))',
-    borderColor: 'hsl(var(--border))',
-    textColor: 'hsl(var(--muted-foreground))',
-    classNames: ['opacity-80']
-  },
+  { title: 'National Day', start: '2026-02-04', allDay: true, backgroundColor: 'hsl(var(--muted))', borderColor: 'hsl(var(--border))', textColor: 'hsl(var(--muted-foreground))', classNames: ['opacity-80'] },
+  { title: 'May Day', start: '2026-05-01', allDay: true, backgroundColor: 'hsl(var(--muted))', borderColor: 'hsl(var(--border))', textColor: 'hsl(var(--muted-foreground))', classNames: ['opacity-80'] },
+  { title: 'Vesak Full Moon Poya Day', start: '2026-05-31', allDay: true, backgroundColor: 'hsl(var(--muted))', borderColor: 'hsl(var(--border))', textColor: 'hsl(var(--muted-foreground))', classNames: ['opacity-80'] },
+  { title: 'Christmas Day', start: '2026-12-25', allDay: true, backgroundColor: 'hsl(var(--muted))', borderColor: 'hsl(var(--border))', textColor: 'hsl(var(--muted-foreground))', classNames: ['opacity-80'] },
   // 2027
-   {
-    title: 'National Day',
-    start: '2027-02-04',
-    allDay: true,
-    backgroundColor: 'hsl(var(--muted))',
-    borderColor: 'hsl(var(--border))',
-    textColor: 'hsl(var(--muted-foreground))',
-    classNames: ['opacity-80']
-  },
-  {
-    title: 'Sinhala & Tamil New Year\'s Day',
-    start: '2027-04-14',
-    allDay: true,
-    backgroundColor: 'hsl(var(--muted))',
-    borderColor: 'hsl(var(--border))',
-    textColor: 'hsl(var(--muted-foreground))',
-    classNames: ['opacity-80']
-  },
-  {
-    title: 'Vesak Full Moon Poya Day',
-    start: '2027-05-20', // Adjusted for 2027
-    allDay: true,
-    backgroundColor: 'hsl(var(--muted))',
-    borderColor: 'hsl(var(--border))',
-    textColor: 'hsl(var(--muted-foreground))',
-    classNames: ['opacity-80']
-  },
-  {
-    title: 'Christmas Day',
-    start: '2027-12-25',
-    allDay: true,
-    backgroundColor: 'hsl(var(--muted))',
-    borderColor: 'hsl(var(--border))',
-    textColor: 'hsl(var(--muted-foreground))',
-    classNames: ['opacity-80']
-  },
+   { title: 'National Day', start: '2027-02-04', allDay: true, backgroundColor: 'hsl(var(--muted))', borderColor: 'hsl(var(--border))', textColor: 'hsl(var(--muted-foreground))', classNames: ['opacity-80'] },
+  { title: 'Sinhala & Tamil New Year\'s Day', start: '2027-04-14', allDay: true, backgroundColor: 'hsl(var(--muted))', borderColor: 'hsl(var(--border))', textColor: 'hsl(var(--muted-foreground))', classNames: ['opacity-80'] },
+  { title: 'Vesak Full Moon Poya Day', start: '2027-05-20', allDay: true, backgroundColor: 'hsl(var(--muted))', borderColor: 'hsl(var(--border))', textColor: 'hsl(var(--muted-foreground))', classNames: ['opacity-80'] },
+  { title: 'Christmas Day', start: '2027-12-25', allDay: true, backgroundColor: 'hsl(var(--muted))', borderColor: 'hsl(var(--border))', textColor: 'hsl(var(--muted-foreground))', classNames: ['opacity-80'] },
 ];
 
 
 export default function CalendarPage() {
   const [weekendsVisible, setWeekendsVisible] = React.useState(true);
 
-  const bookingEvents: EventSourceInput = initialMockBookings.map(booking => ({
-    id: booking.id,
-    title: `${booking.packageName} (${booking.clientName})`,
-    start: booking.bookingDate,
-    allDay: false, 
-    extendedProps: {
-      clientName: booking.clientName,
-      packageName: booking.packageName,
-      status: booking.status,
-      category: booking.category,
-      price: booking.price
-    },
-    classNames: getEventClassNames(booking.status),
-  }));
+  const bookingEvents: EventSourceInput = initialMockBookings.flatMap(booking =>
+    booking.bookingDates.map((bookingDateItem: BookingDateTime) => ({
+      id: `${booking.id}_${bookingDateItem.id}`, // Ensure unique event ID for each date instance
+      title: `${booking.packageName} (${booking.clientName})`,
+      start: bookingDateItem.dateTime,
+      allDay: false,
+      extendedProps: {
+        bookingId: booking.id, // Store original booking ID
+        clientName: booking.clientName,
+        packageName: booking.packageName,
+        status: booking.status,
+        category: booking.category,
+        price: booking.price
+      },
+      classNames: getEventClassNames(booking.status),
+    }))
+  );
 
   const handleEventClick = (clickInfo: EventClickArg) => {
     console.log('Event clicked:', clickInfo.event);
-    // Check if it's a holiday event (by checking if extendedProps are missing clientName, for this example)
-    if (!clickInfo.event.extendedProps.clientName) { 
+    if (!clickInfo.event.extendedProps.clientName) { // Holiday event
        alert(`Holiday: ${clickInfo.event.title}\nDate: ${clickInfo.event.start ? clickInfo.event.start.toLocaleDateString() : 'N/A'}`);
        return;
     }
     alert(
       `Booking Details:\n
-      ID: ${clickInfo.event.id}\n
+      Event ID: ${clickInfo.event.id}\n
+      Booking ID: ${clickInfo.event.extendedProps.bookingId}\n
       Title: ${clickInfo.event.title}\n
       Status: ${clickInfo.event.extendedProps.status}\n
       Client: ${clickInfo.event.extendedProps.clientName}\n
@@ -270,21 +131,21 @@ export default function CalendarPage() {
             <FullCalendar
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
               initialView="dayGridMonth"
-              events={[bookingEvents, sriLankanHolidays]} // Pass multiple event sources
+              events={[bookingEvents, sriLankanHolidays]}
               eventClick={handleEventClick}
               weekends={weekendsVisible}
-              height="auto" 
-              aspectRatio={1.8} 
+              height="auto"
+              aspectRatio={1.8}
               headerToolbar={{
                 left: 'prevYear,prev,next,nextYear today',
                 center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek' 
+                right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
               }}
-              editable={false} 
-              selectable={false} 
-              dayMaxEvents={true} 
-              slotDuration={'00:30:00'} 
-              eventTimeFormat={{ 
+              editable={false}
+              selectable={false}
+              dayMaxEvents={true}
+              slotDuration={'00:30:00'}
+              eventTimeFormat={{
                 hour: 'numeric',
                 minute: '2-digit',
                 meridiem: 'short'
@@ -296,4 +157,3 @@ export default function CalendarPage() {
     </div>
   );
 }
-

@@ -7,15 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup, SelectLabel } from "@/components/ui/select";
-import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIconFeather, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle, Search, TrendingUp, TrendingDown, CreditCard, Save, UserPlus } from "react-feather";
+import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIconFeather, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle, Search, TrendingUp, TrendingDown, CreditCard, Save, UserPlus, Plus, Trash } from "react-feather";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
-import type { Booking, BookingStatus, Payment, PaymentStatus, BookingActivityLogEntry, Client } from "@/types"; // Added Client
+import type { Booking, BookingStatus, Payment, PaymentStatus, BookingActivityLogEntry, Client, BookingDateTime } from "@/types";
 import { BookingActivityLog } from "@/components/bookings/booking-activity-log";
 import React from "react";
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import { toast } from 'react-toastify';
-import { initialMockPackages } from '@/app/(app)/packages/page'; 
+import { initialMockPackages } from '@/app/(app)/packages/page';
 // Assuming initialMockClients is exported from clients/page.tsx for populating client selection if needed in future
 // import { initialMockClients } from '@/app/(app)/clients/page.tsx';
 
@@ -26,7 +26,7 @@ export const initialMockBookings: Booking[] = [
     clientName: "Alice Wonderland",
     packageName: "Basic Portrait Session",
     packageId: "1",
-    bookingDate: "2024-08-15T14:00:00Z",
+    bookingDates: [{ id: 'dt1_1', dateTime: "2024-08-15T14:00:00Z" }],
     category: "Portrait",
     status: "Confirmed" as BookingStatus,
     price: 150,
@@ -42,14 +42,14 @@ export const initialMockBookings: Booking[] = [
       { id: "log1e", timestamp: "2024-08-14T10:00:00Z", action: "Final payment of $75 received.", actor: "System", iconName: "DollarSign" },
     ]
   },
-  { 
-    id: "2", 
-    clientName: "Bob The Builder", 
-    packageName: "Standard Wedding Package", 
+  {
+    id: "2",
+    clientName: "Bob The Builder",
+    packageName: "Standard Wedding Package",
     packageId: "2",
-    bookingDate: "2024-09-20T10:30:00Z", 
-    category: "Wedding", 
-    status: "Completed" as BookingStatus, 
+    bookingDates: [{ id: 'dt2_1', dateTime: "2024-09-20T10:30:00Z" }],
+    category: "Wedding",
+    status: "Completed" as BookingStatus,
     price: 2500,
     payments: [
       { id: "p2a", bookingId: "2", amount: 1000, paymentDate: "2024-07-10T10:00:00Z", method: "Bank Transfer", status: "Paid" as PaymentStatus, description: "Initial Deposit" },
@@ -62,14 +62,14 @@ export const initialMockBookings: Booking[] = [
         { id: "log2d", timestamp: "2024-09-21T10:00:00Z", action: "Booking status changed to Completed.", actor: "Admin", iconName: "CheckCircle" },
     ]
   },
-  { 
-    id: "3", 
-    clientName: "Charlie Chaplin", 
-    packageName: "Family Lifestyle Shoot", 
+  {
+    id: "3",
+    clientName: "Charlie Chaplin",
+    packageName: "Family Lifestyle Shoot",
     packageId: "3",
-    bookingDate: "2024-07-30T16:00:00Z", 
-    category: "Family", 
-    status: "Pending" as BookingStatus, 
+    bookingDates: [{ id: 'dt3_1', dateTime: "2024-07-30T16:00:00Z" }],
+    category: "Family",
+    status: "Pending" as BookingStatus,
     price: 350,
     payments: [
       { id: "p3a", bookingId: "3", amount: 100, paymentDate: "2024-07-20T12:00:00Z", method: "PayPal", status: "Pending" as PaymentStatus, description: "Deposit" }
@@ -77,16 +77,16 @@ export const initialMockBookings: Booking[] = [
     activityLog: [
         { id: "log3a", timestamp: "2024-07-19T10:00:00Z", action: "Booking created.", actor: "Charlie Chaplin", iconName: "PlusCircle" },
         { id: "log3b", timestamp: "2024-07-20T12:00:00Z", action: "Deposit payment of $100 initiated.", actor: "System", iconName: "DollarSign" },
-    ] 
+    ]
   },
   {
-    id: "4", 
-    clientName: "Diana Prince", 
-    packageName: "Basic Portrait Session", 
+    id: "4",
+    clientName: "Diana Prince",
+    packageName: "Basic Portrait Session",
     packageId: "1",
-    bookingDate: "2024-08-05T09:00:00Z", 
-    category: "Portrait", 
-    status: "Cancelled" as BookingStatus, 
+    bookingDates: [{ id: 'dt4_1', dateTime: "2024-08-05T09:00:00Z" }],
+    category: "Portrait",
+    status: "Cancelled" as BookingStatus,
     price: 150,
     activityLog: [
        { id: "log4a", timestamp: "2024-07-20T10:00:00Z", action: "Booking requested.", actor: "Diana Prince", iconName: "FilePlus" },
@@ -107,8 +107,8 @@ const statusVariantMap: Record<BookingStatus, "default" | "secondary" | "destruc
 const statusIconMap: Record<BookingStatus, React.ElementType> = {
   Pending: Clock,
   Confirmed: CheckCircle,
-  Completed: CheckCircle, 
-  Cancelled: XCircle, 
+  Completed: CheckCircle,
+  Cancelled: XCircle,
 };
 
 
@@ -118,17 +118,15 @@ export default function BookingsPage() {
   const [selectedStatuses, setSelectedStatuses] = React.useState<BookingStatus[]>([]);
   const [selectedBookingForLog, setSelectedBookingForLog] = React.useState<Booking | null>(null);
 
-  // State for Add/Edit Booking Dialogs
   const [isAddBookingDialogOpen, setIsAddBookingDialogOpen] = React.useState(false);
   const [isEditBookingDialogOpen, setIsEditBookingDialogOpen] = React.useState(false);
   const [editingBookingId, setEditingBookingId] = React.useState<string | null>(null);
 
   const [bookingClientName, setBookingClientName] = React.useState('');
   const [bookingPackageId, setBookingPackageId] = React.useState<string | undefined>(undefined);
-  const [bookingDate, setBookingDate] = React.useState(''); 
+  const [dialogBookingDates, setDialogBookingDates] = React.useState<BookingDateTime[]>([{ id: 'dt_new_' + Date.now(), dateTime: '' }]);
   const [bookingCategory, setBookingCategory] = React.useState('');
 
-  // State for "Add New Client" sub-dialog
   const [isAddNewClientDialogForBookingOpen, setIsAddNewClientDialogForBookingOpen] = React.useState(false);
   const [newClientForBookingName, setNewClientForBookingName] = React.useState('');
   const [newClientForBookingEmail, setNewClientForBookingEmail] = React.useState('');
@@ -154,13 +152,13 @@ export default function BookingsPage() {
             id: `log-${booking.id}-${Date.now()}`,
             timestamp: new Date().toISOString(),
             action: `Booking status changed to ${newStatus}.`,
-            actor: "Admin", 
+            actor: "Admin",
             iconName: statusIconMap[newStatus] === Clock ? 'Clock' :
                       statusIconMap[newStatus] === CheckCircle ? 'CheckCircle' :
                       statusIconMap[newStatus] === XCircle ? 'XCircle' : 'Edit',
           };
-          return { 
-            ...booking, 
+          return {
+            ...booking,
             status: newStatus,
             activityLog: booking.activityLog ? [newLogEntry, ...booking.activityLog] : [newLogEntry]
           };
@@ -174,15 +172,31 @@ export default function BookingsPage() {
   const resetBookingForm = () => {
     setBookingClientName('');
     setBookingPackageId(undefined);
-    setBookingDate('');
+    setDialogBookingDates([{ id: 'dt_reset_' + Date.now(), dateTime: '' }]);
     setBookingCategory('');
     setEditingBookingId(null);
   };
-  
+
   const resetNewClientForBookingForm = () => {
     setNewClientForBookingName('');
     setNewClientForBookingEmail('');
     setNewClientForBookingPhone('');
+  };
+
+  const handleAddBookingDate = () => {
+    setDialogBookingDates(prev => [...prev, { id: 'dt_add_' + Date.now(), dateTime: '' }]);
+  };
+
+  const handleRemoveBookingDate = (idToRemove: string) => {
+    if (dialogBookingDates.length <= 1) {
+      toast.error("A booking must have at least one date and time.");
+      return;
+    }
+    setDialogBookingDates(prev => prev.filter(dt => dt.id !== idToRemove));
+  };
+
+  const handleBookingDateChange = (idToChange: string, newDateTime: string) => {
+    setDialogBookingDates(prev => prev.map(dt => dt.id === idToChange ? { ...dt, dateTime: newDateTime } : dt));
   };
 
   const handleOpenAddBookingDialog = () => {
@@ -195,29 +209,21 @@ export default function BookingsPage() {
     setEditingBookingId(booking.id);
     setBookingClientName(booking.clientName);
     setBookingPackageId(booking.packageId);
-    // Format date for datetime-local input: YYYY-MM-DDTHH:mm
-    try {
-        setBookingDate(booking.bookingDate ? format(parseISO(booking.bookingDate), "yyyy-MM-dd'T'HH:mm") : '');
-    } catch (error) {
-        console.error("Error formatting booking date for edit:", error);
-        setBookingDate(''); // Fallback to empty if date is invalid
-    }
+    const formattedDates = booking.bookingDates.map(bd => ({
+        ...bd,
+        dateTime: bd.dateTime && isValid(parseISO(bd.dateTime)) ? format(parseISO(bd.dateTime), "yyyy-MM-dd'T'HH:mm") : ''
+    }));
+    setDialogBookingDates(formattedDates.length > 0 ? formattedDates : [{ id: 'dt_edit_empty_' + Date.now(), dateTime: '' }]);
     setBookingCategory(booking.category || '');
     setIsEditBookingDialogOpen(true);
   };
-  
+
   const handleSaveNewClientForBooking = () => {
     if (!newClientForBookingName.trim()) {
       toast.error("Client Name is required for the new client.");
       return;
     }
-    // Here, we are just capturing the name for the current booking operation.
-    // A real app would add this client to a central store.
-    if (isEditBookingDialogOpen && editingBookingId) {
-        setBookingClientName(newClientForBookingName.trim());
-    } else {
-        setBookingClientName(newClientForBookingName.trim());
-    }
+    setBookingClientName(newClientForBookingName.trim());
     toast.success(`Client "${newClientForBookingName.trim()}" details captured for this booking.`);
     setIsAddNewClientDialogForBookingOpen(false);
     resetNewClientForBookingForm();
@@ -225,8 +231,8 @@ export default function BookingsPage() {
 
 
   const handleSaveBooking = () => {
-    if (!bookingClientName.trim() || !bookingPackageId || !bookingDate) {
-      toast.error("Client Name, Package, and Booking Date are required.");
+    if (!bookingClientName.trim() || !bookingPackageId || dialogBookingDates.some(dt => !dt.dateTime.trim())) {
+      toast.error("Client Name, Package, and at least one valid Booking Date & Time are required.");
       return;
     }
 
@@ -236,17 +242,25 @@ export default function BookingsPage() {
       return;
     }
 
+    const validBookingDates = dialogBookingDates
+        .filter(dt => dt.dateTime.trim() !== '')
+        .map(dt => ({ ...dt, dateTime: new Date(dt.dateTime).toISOString() }));
+
+    if (validBookingDates.length === 0) {
+        toast.error("Please provide at least one valid booking date and time.");
+        return;
+    }
+
     const bookingData = {
       clientName: bookingClientName.trim(),
       packageId: selectedPackage.id,
       packageName: selectedPackage.name,
-      bookingDate: new Date(bookingDate).toISOString(),
+      bookingDates: validBookingDates,
       category: bookingCategory.trim() || undefined,
       price: selectedPackage.price,
     };
 
     if (isEditBookingDialogOpen && editingBookingId) {
-      // Update existing booking
       setBookings(prevBookings =>
         prevBookings.map(b => {
           if (b.id === editingBookingId) {
@@ -269,7 +283,6 @@ export default function BookingsPage() {
       toast.success(`Booking for ${bookingData.clientName} updated!`);
       setIsEditBookingDialogOpen(false);
     } else {
-      // Add new booking
       const newBooking: Booking = {
         id: `booking-${Date.now()}`,
         ...bookingData,
@@ -348,6 +361,7 @@ export default function BookingsPage() {
                 const StatusIcon = statusIconMap[booking.status];
                 const totalPaid = booking.payments?.filter(p => p.status === 'Paid').reduce((sum, p) => sum + p.amount, 0) || 0;
                 const remainingAmount = booking.price - totalPaid;
+                const firstBookingDate = booking.bookingDates && booking.bookingDates.length > 0 && booking.bookingDates[0].dateTime ? parseISO(booking.bookingDates[0].dateTime) : null;
 
                 return (
                 <Card key={booking.id} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -367,7 +381,7 @@ export default function BookingsPage() {
                                     <DropdownMenuItem onClick={() => handleOpenEditBookingDialog(booking)}>
                                         <Edit className="mr-2 h-4 w-4" />Edit Booking
                                     </DropdownMenuItem>
-                                    
+
                                     <DropdownMenuSub>
                                       <DropdownMenuSubTrigger>
                                         <CheckCircle className="mr-2 h-4 w-4" />
@@ -376,8 +390,8 @@ export default function BookingsPage() {
                                       <DropdownMenuPortal>
                                         <DropdownMenuSubContent>
                                           {ALL_STATUSES.map((statusOption) => (
-                                            <DropdownMenuItem 
-                                              key={statusOption} 
+                                            <DropdownMenuItem
+                                              key={statusOption}
                                               onClick={() => handleStatusUpdate(booking.id, statusOption)}
                                               disabled={booking.status === statusOption}
                                             >
@@ -398,7 +412,7 @@ export default function BookingsPage() {
                                       </DropdownMenuItem>
                                     )}
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem 
+                                    <DropdownMenuItem
                                       className="text-destructive focus:text-destructive focus:bg-destructive/10"
                                       onClick={() => handleStatusUpdate(booking.id, "Cancelled" as BookingStatus)}
                                       disabled={booking.status === "Cancelled"}
@@ -412,7 +426,14 @@ export default function BookingsPage() {
                     <CardContent className="p-4 flex-grow space-y-3 text-sm">
                         <div className="flex items-center">
                             <CalendarIconFeather className="h-4 w-4 mr-2 text-muted-foreground" />
-                            <span>{format(new Date(booking.bookingDate), "eee, MMM d, yyyy 'at' h:mm a")}</span>
+                            {firstBookingDate && isValid(firstBookingDate) ? (
+                                <>
+                                    <span>{format(firstBookingDate, "eee, MMM d, yyyy 'at' h:mm a")}</span>
+                                    {booking.bookingDates.length > 1 && <span className="ml-2 text-xs text-muted-foreground">(+{booking.bookingDates.length -1} more)</span>}
+                                </>
+                            ) : (
+                                <span>No date set</span>
+                            )}
                         </div>
                         {booking.category && (
                             <div className="flex items-center">
@@ -447,7 +468,7 @@ export default function BookingsPage() {
       ) : (
         <div className="flex flex-col items-center justify-center py-20 text-center rounded-lg border border-dashed">
           <BookOpen className="h-20 w-20 text-muted-foreground mb-6" />
-           {bookings.length === 0 && searchTerm.trim() === '' && selectedStatuses.length === 0 ? ( 
+           {bookings.length === 0 && searchTerm.trim() === '' && selectedStatuses.length === 0 ? (
             <>
               <h3 className="text-2xl font-semibold mb-3 font-headline">No Bookings Yet</h3>
               <p className="text-muted-foreground mb-6 max-w-sm">You haven&apos;t scheduled any bookings. Click the button to create your first one.</p>
@@ -467,8 +488,8 @@ export default function BookingsPage() {
       {selectedBookingForLog && selectedBookingForLog.activityLog && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center p-4" onClick={() => setSelectedBookingForLog(null)}>
             <div className="bg-card rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
-                <BookingActivityLog 
-                    logs={selectedBookingForLog.activityLog} 
+                <BookingActivityLog
+                    logs={selectedBookingForLog.activityLog}
                     title={`Activity Log for ${selectedBookingForLog.clientName}'s Booking`}
                     description={`Timeline of events for booking ID: ${selectedBookingForLog.id}. Click outside to close.`}
                 />
@@ -476,7 +497,6 @@ export default function BookingsPage() {
         </div>
       )}
 
-      {/* Add/Edit Booking Dialog */}
       <Dialog open={isAddBookingDialogOpen || isEditBookingDialogOpen} onOpenChange={(isOpen) => {
         if (!isOpen) {
           setIsAddBookingDialogOpen(false);
@@ -525,15 +545,34 @@ export default function BookingsPage() {
                 </SelectContent>
               </Select>
             </div>
+
             <div className="grid gap-2">
-              <Label htmlFor="booking-date">Booking Date & Time</Label>
-              <Input
-                id="booking-date"
-                type="datetime-local"
-                value={bookingDate}
-                onChange={(e) => setBookingDate(e.target.value)}
-              />
+                <Label>Booking Dates & Times</Label>
+                {dialogBookingDates.map((dt, index) => (
+                    <div key={dt.id} className="flex items-center gap-2">
+                        <Input
+                            type="datetime-local"
+                            value={dt.dateTime}
+                            onChange={(e) => handleBookingDateChange(dt.id, e.target.value)}
+                            className="flex-grow"
+                        />
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleRemoveBookingDate(dt.id)}
+                            disabled={dialogBookingDates.length <= 1}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            title="Remove date/time"
+                        >
+                            <Trash className="h-4 w-4" />
+                        </Button>
+                    </div>
+                ))}
+                <Button variant="outline" size="sm" onClick={handleAddBookingDate} className="mt-1">
+                    <Plus className="mr-1 h-4 w-4" /> Add Another Date/Time
+                </Button>
             </div>
+
             <div className="grid gap-2">
               <Label htmlFor="booking-category">Category (Optional)</Label>
               <Input
@@ -557,7 +596,6 @@ export default function BookingsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Add New Client Sub-Dialog (for bookings) */}
       <Dialog open={isAddNewClientDialogForBookingOpen} onOpenChange={setIsAddNewClientDialogForBookingOpen}>
         <DialogContent className="sm:max-w-md">
             <DialogHeader>
