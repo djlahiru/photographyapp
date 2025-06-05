@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Package as PackageIcon, Edit, Trash2, MoreVertical, DollarSign, CheckSquare, Save } from "react-feather";
+import { PlusCircle, Package as PackageIcon, Edit, Trash2, MoreVertical, DollarSign, CheckSquare, Save, Grid, List as ListIcon } from "react-feather";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 import type { PhotographyPackage } from '@/types';
+import { cn } from '@/lib/utils';
 
 // Mock data for packages
 const initialMockPackages: PhotographyPackage[] = [
@@ -24,9 +25,11 @@ const initialMockPackages: PhotographyPackage[] = [
   { id: "4", name: "Event Photography", description: "Coverage for corporate events, parties, or other special occasions.", price: 600, services: ["Up to 3 hours coverage", "Online gallery", "All usable photos delivered"], imageUrl: "https://placehold.co/600x400.png", dataAiHint: "corporate event" },
 ];
 
+type LayoutMode = 'grid' | 'list';
 
 export default function PackagesPage() {
   const [mockPackages, setMockPackages] = useState<PhotographyPackage[]>(initialMockPackages);
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>('grid');
   
   // State for Add Package Dialog
   const [isAddPackageDialogOpen, setIsAddPackageDialogOpen] = useState(false);
@@ -97,7 +100,7 @@ export default function PackagesPage() {
       description: newPackageDescription,
       price: price,
       services: servicesArray,
-      imageUrl: newPackageImagePreview || undefined,
+      imageUrl: newPackageImagePreview || "https://placehold.co/600x400.png",
       dataAiHint: newPackageImagePreview ? "custom package" : "package photography",
     };
 
@@ -136,8 +139,8 @@ export default function PackagesPage() {
       description: editPackageDescription,
       price: price,
       services: servicesArray,
-      imageUrl: editPackageImagePreview || editingPackage.imageUrl,
-      dataAiHint: editPackageImagePreview && editPackageImagePreview !== editingPackage.imageUrl ? "custom package" : editingPackage.dataAiHint,
+      imageUrl: editPackageImagePreview || editingPackage.imageUrl || "https://placehold.co/600x400.png",
+      dataAiHint: editPackageImagePreview && editPackageImagePreview !== editingPackage.imageUrl ? "custom package" : editingPackage.dataAiHint || "package photography",
     };
 
     setMockPackages(prevPackages => 
@@ -161,19 +164,45 @@ export default function PackagesPage() {
           <h1 className="text-3xl font-bold tracking-tight font-headline">Photography Packages</h1>
           <p className="text-muted-foreground">Create, view, edit, and manage your service packages.</p>
         </div>
-        <Button onClick={() => setIsAddPackageDialogOpen(true)}>
-          <PlusCircle className="mr-2 h-4 w-4" /> Add New Package
-        </Button>
+        <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto justify-end flex-wrap">
+            <div className="flex items-center gap-2">
+              <Button 
+                variant={layoutMode === 'grid' ? 'default' : 'outline'} 
+                size="icon" 
+                onClick={() => setLayoutMode('grid')}
+                aria-label="Grid View"
+                title="Grid View"
+              >
+                <Grid className="h-5 w-5" />
+              </Button>
+              <Button 
+                variant={layoutMode === 'list' ? 'default' : 'outline'} 
+                size="icon" 
+                onClick={() => setLayoutMode('list')}
+                aria-label="List View"
+                title="List View"
+              >
+                <ListIcon className="h-5 w-5" />
+              </Button>
+            </div>
+            <Button onClick={() => setIsAddPackageDialogOpen(true)}>
+              <PlusCircle className="mr-2 h-4 w-4" /> Add New Package
+            </Button>
+        </div>
       </div>
 
       {mockPackages.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className={cn(
+          layoutMode === 'grid'
+            ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+            : "flex flex-col gap-4" 
+        )}>
           {mockPackages.map((pkg) => (
             <Card key={pkg.id} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300">
-              {pkg.imageUrl && (
+              {(pkg.imageUrl || "https://placehold.co/600x400.png") && (
                 <div className="relative w-full h-48">
                   <Image 
-                    src={pkg.imageUrl} 
+                    src={pkg.imageUrl || "https://placehold.co/600x400.png"}
                     alt={pkg.name} 
                     layout="fill" 
                     objectFit="cover" 
@@ -182,7 +211,7 @@ export default function PackagesPage() {
                   />
                 </div>
               )}
-              <CardHeader className={pkg.imageUrl ? "pt-4 pb-4" : "pb-4"}>
+              <CardHeader className={(pkg.imageUrl || "https://placehold.co/600x400.png") ? "pt-4 pb-4" : "pb-4"}>
                 <div className="flex justify-between items-start">
                   <div>
                     <CardTitle className="text-lg font-semibold font-headline leading-tight">{pkg.name}</CardTitle>
@@ -390,3 +419,4 @@ export default function PackagesPage() {
     </div>
   );
 }
+
