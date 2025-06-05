@@ -10,16 +10,16 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default: // For 'Confirmed' status
-          "border-transparent bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white hover:from-blue-600 hover:to-blue-800",
+          "border-transparent bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white shadow-sm hover:from-blue-600 hover:to-blue-800",
         secondary:
           "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
         destructive: // For 'Cancelled' status
-          "border-transparent bg-gradient-to-r from-red-500 via-red-600 to-red-700 text-white hover:from-red-600 hover:to-red-800",
+          "border-transparent bg-gradient-to-r from-red-500 via-red-600 to-red-700 text-white shadow-sm hover:from-red-600 hover:to-red-800",
         outline: "text-foreground",
         success: // For 'Completed' status
-          "border-transparent bg-gradient-to-r from-green-500 via-green-600 to-green-700 text-white hover:from-green-600 hover:to-green-800",
+          "border-transparent bg-gradient-to-r from-green-500 via-green-600 to-green-700 text-white shadow-sm hover:from-green-600 hover:to-green-800",
         warning: // For 'Pending' status
-          "border-transparent bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 text-neutral-800 hover:from-yellow-500 hover:to-orange-600",
+          "border-transparent bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 text-neutral-800 shadow-sm hover:from-yellow-500 hover:to-orange-600",
       },
     },
     defaultVariants: {
