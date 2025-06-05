@@ -7,9 +7,11 @@ import { cn } from '@/lib/utils';
 import { ImageIcon as ImageIconFeather } from 'react-feather'; // Placeholder icon
 
 const DASHBOARD_COVER_PHOTO_LS_KEY = 'dashboardCoverPhotoUrl';
+const DASHBOARD_COVER_PHOTO_BLUR_LS_KEY = 'dashboardCoverPhotoBlur'; // New key for blur intensity
 
 export function DashboardCoverPhotoDisplay() {
   const [coverPhotoUrl, setCoverPhotoUrl] = useState<string | null>(null);
+  const [blurIntensity, setBlurIntensity] = useState<number>(8); // Default blur
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -18,36 +20,37 @@ export function DashboardCoverPhotoDisplay() {
     if (storedUrl) {
       setCoverPhotoUrl(storedUrl);
     }
-
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === DASHBOARD_COVER_PHOTO_LS_KEY) {
-        setCoverPhotoUrl(event.newValue);
-      }
-    };
-
-    const handleCoverPhotoCustomEvent = () => {
-        const newUrl = localStorage.getItem(DASHBOARD_COVER_PHOTO_LS_KEY);
-        setCoverPhotoUrl(newUrl);
+    const storedBlur = localStorage.getItem(DASHBOARD_COVER_PHOTO_BLUR_LS_KEY);
+    if (storedBlur) {
+      setBlurIntensity(parseInt(storedBlur, 10));
     }
 
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('coverPhotoChange', handleCoverPhotoCustomEvent);
+    const handleStyleChange = () => {
+        const newUrl = localStorage.getItem(DASHBOARD_COVER_PHOTO_LS_KEY);
+        setCoverPhotoUrl(newUrl);
+        const newBlur = localStorage.getItem(DASHBOARD_COVER_PHOTO_BLUR_LS_KEY);
+        setBlurIntensity(newBlur ? parseInt(newBlur, 10) : 8);
+    }
+
+    // Listen for direct storage changes (e.g. from other tabs, not ideal for immediate same-tab updates)
+    // window.addEventListener('storage', handleStyleChange);
+    // Listen for custom event dispatched from settings page for immediate update
+    window.addEventListener('dashboardCoverPhotoStyleChange', handleStyleChange);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('coverPhotoChange', handleCoverPhotoCustomEvent);
+      // window.removeEventListener('storage', handleStyleChange);
+      window.removeEventListener('dashboardCoverPhotoStyleChange', handleStyleChange);
     };
   }, []);
 
   if (!mounted) {
-    // To prevent hydration mismatch, render a placeholder or nothing until client-side check
     return (
       <div className="w-full h-48 md:h-64 bg-muted rounded-lg mb-8 shadow-inner animate-pulse"></div>
     );
   }
 
   if (!coverPhotoUrl) {
-    return null; // Don't render anything if no photo is set
+    return null; 
   }
 
   return (
@@ -61,14 +64,16 @@ export function DashboardCoverPhotoDisplay() {
         alt="Dashboard Cover Photo"
         layout="fill"
         objectFit="cover"
-        priority // Consider adding priority if it's LCP
+        priority 
       />
-      {/* Glassmorphism overlay */}
-      <div className="absolute inset-0 bg-background/10 backdrop-blur-sm transition-opacity duration-300 md:group-hover:bg-background/5 md:group-hover:backdrop-blur-md"></div>
-      {/* Optional: Gradient for text legibility if text were overlaid at bottom */}
-      {/* <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-background/50 to-transparent"></div> */}
+      <div 
+        className="absolute inset-0 bg-background/5 transition-opacity duration-300 md:group-hover:bg-background/[0.02]"
+        style={{ backdropFilter: `blur(${blurIntensity}px)` }}
+      ></div>
     </div>
   );
 }
+
+    
 
     

@@ -14,6 +14,7 @@ import { format } from 'date-fns';
 import { useTheme } from 'next-themes';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Slider } from '@/components/ui/slider'; // Import Slider
 
 type AvatarShape = 'circle' | 'square';
 type AccentTheme = 'default' | 'oceanic' | 'forest' | 'sunset';
@@ -33,6 +34,7 @@ const FONT_THEMES: { value: FontTheme; label: string }[] = [
 ];
 
 const DASHBOARD_COVER_PHOTO_LS_KEY = 'dashboardCoverPhotoUrl';
+const DASHBOARD_COVER_PHOTO_BLUR_LS_KEY = 'dashboardCoverPhotoBlur';
 
 export default function SettingsPage() {
   const { theme: nextTheme } = useTheme();
@@ -54,6 +56,7 @@ export default function SettingsPage() {
 
   const [dashboardCoverPhotoFile, setDashboardCoverPhotoFile] = useState<File | null>(null);
   const [dashboardCoverPhotoPreview, setDashboardCoverPhotoPreview] = useState<string | null>(null);
+  const [dashboardBlurIntensity, setDashboardBlurIntensity] = useState<number>(8); // Default blur intensity
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentDateTime(new Date()), 1000 * 60);
@@ -81,6 +84,11 @@ export default function SettingsPage() {
     const storedCoverPhotoUrl = localStorage.getItem(DASHBOARD_COVER_PHOTO_LS_KEY);
     if (storedCoverPhotoUrl) {
         setDashboardCoverPhotoPreview(storedCoverPhotoUrl);
+    }
+
+    const storedBlurIntensity = localStorage.getItem(DASHBOARD_COVER_PHOTO_BLUR_LS_KEY);
+    if (storedBlurIntensity) {
+        setDashboardBlurIntensity(parseInt(storedBlurIntensity, 10));
     }
 
     return () => clearInterval(timer);
@@ -163,7 +171,6 @@ export default function SettingsPage() {
       };
       reader.readAsDataURL(file);
     } else {
-      // If file is null (cleared), keep preview unless it was from localStorage
       const storedUrl = localStorage.getItem(DASHBOARD_COVER_PHOTO_LS_KEY);
       if (!storedUrl) {
         setDashboardCoverPhotoPreview(null);
@@ -175,14 +182,10 @@ export default function SettingsPage() {
     if (dashboardCoverPhotoPreview) {
       localStorage.setItem(DASHBOARD_COVER_PHOTO_LS_KEY, dashboardCoverPhotoPreview);
       toast.success("Dashboard cover photo saved!");
-      window.dispatchEvent(new CustomEvent('coverPhotoChange'));
+      window.dispatchEvent(new CustomEvent('dashboardCoverPhotoStyleChange'));
     } else if (dashboardCoverPhotoFile === null && !localStorage.getItem(DASHBOARD_COVER_PHOTO_LS_KEY)) {
        toast.info("No cover photo to save.");
     } else {
-      // This case can happen if preview is null but user clicks save.
-      // Or if they've cleared the selection and there was an old one.
-      // We can decide to remove it or just inform them.
-      // For now, let's inform. If they want to remove, use remove button.
       toast.info("Select an image first or use 'Remove' to clear existing.");
     }
   };
@@ -192,7 +195,14 @@ export default function SettingsPage() {
     setDashboardCoverPhotoFile(null);
     setDashboardCoverPhotoPreview(null);
     toast.success("Dashboard cover photo removed.");
-    window.dispatchEvent(new CustomEvent('coverPhotoChange'));
+    window.dispatchEvent(new CustomEvent('dashboardCoverPhotoStyleChange'));
+  };
+
+  const handleBlurIntensityChange = (value: number[]) => {
+    const newIntensity = value[0];
+    setDashboardBlurIntensity(newIntensity);
+    localStorage.setItem(DASHBOARD_COVER_PHOTO_BLUR_LS_KEY, newIntensity.toString());
+    window.dispatchEvent(new CustomEvent('dashboardCoverPhotoStyleChange'));
   };
 
 
@@ -355,6 +365,21 @@ export default function SettingsPage() {
               </Button>
             )}
           </div>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+                <Label htmlFor="dashboardBlurIntensity">Glass Effect Intensity (Blur)</Label>
+                <span className="text-sm text-muted-foreground">{dashboardBlurIntensity}px</span>
+            </div>
+            <Slider
+              id="dashboardBlurIntensity"
+              min={0}
+              max={24} // Max blur-xl like effect
+              step={1}
+              value={[dashboardBlurIntensity]}
+              onValueChange={handleBlurIntensityChange}
+            />
+            <p className="text-xs text-muted-foreground">Adjust the blur level for the cover photo's glassmorphism effect. 0px means no blur.</p>
+          </div>
         </CardContent>
       </Card>
       
@@ -453,6 +478,8 @@ export default function SettingsPage() {
     </div>
   );
 }
+    
+
     
 
     
