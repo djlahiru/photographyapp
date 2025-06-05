@@ -32,9 +32,9 @@ import {
   GOOGLE_CALENDAR_CONNECTED_LS_KEY,
   GOOGLE_CALENDAR_ID_LS_KEY,
   GOOGLE_CALENDAR_AUTO_SYNC_LS_KEY,
-  SELECTED_CURRENCY_LS_KEY, // Import new constant
-  AVAILABLE_CURRENCIES, // Import new constant
-  type CurrencyDefinition, // Import new type
+  SELECTED_CURRENCY_LS_KEY,
+  AVAILABLE_CURRENCIES,
+  type CurrencyDefinition,
 } from '@/lib/constants';
 
 
@@ -72,7 +72,7 @@ const defaultUser: UserProfile = {
   email: "admin@rubo.com",
   avatarUrl: "https://placehold.co/100x100.png",
   bio: "Loves photography and efficient workflows!",
-  selectedCurrency: 'USD', // Default currency
+  selectedCurrency: 'USD',
 };
 
 export default function SettingsPage() {
@@ -102,25 +102,45 @@ export default function SettingsPage() {
   const [categoryDialogGradient, setCategoryDialogGradient] = useState(PREDEFINED_GRADIENTS[0].value);
   const [categoryDialogTextColor, setCategoryDialogTextColor] = useState(PREDEFINED_GRADIENTS[0].textColor);
 
+  // State for the RadioGroup controlling currency selection
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>('USD');
 
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentDateTime(new Date()), 1000 * 60);
     
-    const storedProfile = localStorage.getItem(USER_PROFILE_LS_KEY);
-    let profileToUse = defaultUser;
-    if (storedProfile) {
+    // Load User Profile (which includes selectedCurrency)
+    const storedProfileString = localStorage.getItem(USER_PROFILE_LS_KEY);
+    let profileFromStorage: UserProfile | null = null;
+    if (storedProfileString) {
       try {
-        const parsedProfile: UserProfile = JSON.parse(storedProfile);
-        profileToUse = { ...defaultUser, ...parsedProfile };
-        setUser(profileToUse);
+        profileFromStorage = JSON.parse(storedProfileString);
       } catch (e) {
-        setUser(defaultUser); 
+        console.error("Failed to parse user profile from localStorage for settings page", e);
       }
-    } else {
-      setUser(defaultUser); 
     }
+    const effectiveUser = profileFromStorage ? { ...defaultUser, ...profileFromStorage } : defaultUser;
+    setUser(effectiveUser);
+
+    // Initialize RadioGroup state for currency
+    // Priority: 1. From loaded effectiveUser.selectedCurrency. 2. From dedicated LS key. 3. Default.
+    let currencyForRadioGroupInit: CurrencyCode = 'USD';
+    if (effectiveUser.selectedCurrency && AVAILABLE_CURRENCIES.some(c => c.code === effectiveUser.selectedCurrency)) {
+      currencyForRadioGroupInit = effectiveUser.selectedCurrency;
+    } else {
+      const storedCurrencyKey = localStorage.getItem(SELECTED_CURRENCY_LS_KEY) as CurrencyCode | null;
+      if (storedCurrencyKey && AVAILABLE_CURRENCIES.some(c => c.code === storedCurrencyKey)) {
+        currencyForRadioGroupInit = storedCurrencyKey;
+      }
+    }
+    setSelectedCurrency(currencyForRadioGroupInit);
+    // Ensure user object is in sync if it was derived differently
+    if (effectiveUser.selectedCurrency !== currencyForRadioGroupInit) {
+      setUser(prev => ({...prev, selectedCurrency: currencyForRadioGroupInit}));
+      // Optionally re-save profile if it was just synced from SELECTED_CURRENCY_LS_KEY
+      // localStorage.setItem(USER_PROFILE_LS_KEY, JSON.stringify({...effectiveUser, selectedCurrency: currencyForRadioGroupInit}));
+    }
+
 
     const storedShape = localStorage.getItem(AVATAR_SHAPE_LS_KEY) as AvatarShape | null;
     if (storedShape) setAvatarShape(storedShape);
@@ -142,15 +162,6 @@ export default function SettingsPage() {
     if (storedCoverPhotoUrl) setDashboardCoverPhotoPreview(storedCoverPhotoUrl);
     const storedBlurIntensity = localStorage.getItem(DASHBOARD_COVER_PHOTO_BLUR_LS_KEY);
     if (storedBlurIntensity) setDashboardBlurIntensity(parseInt(storedBlurIntensity, 10));
-
-    const storedCurrency = localStorage.getItem(SELECTED_CURRENCY_LS_KEY) as CurrencyCode | null;
-    if (storedCurrency && AVAILABLE_CURRENCIES.some(c => c.code === storedCurrency)) {
-      setSelectedCurrency(storedCurrency);
-      setUser(prev => ({...prev, selectedCurrency: storedCurrency}));
-    } else {
-      setSelectedCurrency(profileToUse.selectedCurrency || 'USD');
-    }
-
 
     return () => clearInterval(timer);
   }, []);
@@ -175,8 +186,9 @@ export default function SettingsPage() {
   };
   
   const handleSaveChanges = () => {
-    const userToSave = { ...user, selectedCurrency }; // Ensure selectedCurrency is part of the saved user object
-    localStorage.setItem(USER_PROFILE_LS_KEY, JSON.stringify(userToSave));
+    // The `user` state already contains the `selectedCurrency`
+    // because `handleCurrencyChange` updates the `user` state.
+    localStorage.setItem(USER_PROFILE_LS_KEY, JSON.stringify(user));
     toast.success("Profile changes saved.");
     window.dispatchEvent(new CustomEvent('profileUpdated'));
     if (profileImageFile) {
@@ -185,14 +197,13 @@ export default function SettingsPage() {
   };
 
   const handleCurrencyChange = (newCurrency: CurrencyCode) => {
-    setSelectedCurrency(newCurrency);
+    setSelectedCurrency(newCurrency); // Update RadioGroup state
     const updatedUser = { ...user, selectedCurrency: newCurrency };
-    setUser(updatedUser);
-    localStorage.setItem(SELECTED_CURRENCY_LS_KEY, newCurrency);
-    localStorage.setItem(USER_PROFILE_LS_KEY, JSON.stringify(updatedUser)); // Also save to main profile
+    setUser(updatedUser); // Update the main 'user' object for the page
+    localStorage.setItem(SELECTED_CURRENCY_LS_KEY, newCurrency); // Save to dedicated currency key (can be for convenience)
+    localStorage.setItem(USER_PROFILE_LS_KEY, JSON.stringify(updatedUser)); // CRITICAL: Save the updated user profile
     toast.success(`Currency changed to ${AVAILABLE_CURRENCIES.find(c=>c.code === newCurrency)?.label || newCurrency}.`);
-    // Dispatch event if other components need to react immediately
-    // window.dispatchEvent(new CustomEvent('currencyChanged', { detail: newCurrency }));
+    window.dispatchEvent(new CustomEvent('profileUpdated')); // Notify other components if they listen
   };
 
   const toggleCalendarConnection = () => {
@@ -771,4 +782,6 @@ export default function SettingsPage() {
     </div>
   );
 }
+    
+
     
