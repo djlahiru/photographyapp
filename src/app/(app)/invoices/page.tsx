@@ -169,54 +169,6 @@ export default function InvoicesPage() {
   );
 }
 
-// Basic DatePicker component if not already existing (can be moved to ui/date-picker.tsx)
-// For simplicity, placing a basic one here. You might have a more robust one.
-const BasicDatePicker: React.FC<{ date: Date | undefined; setDate: (date: Date | undefined) => void; placeholder?: string }> = ({ date, setDate, placeholder }) => {
-  return (
-    <Input
-      type="date"
-      value={date ? date.toISOString().split('T')[0] : ''}
-      onChange={(e) => setDate(e.target.value ? new Date(e.target.value) : undefined)}
-      placeholder={placeholder}
-    />
-  );
-};
-
-// If you have a shadcn/ui DatePicker, it would look more like this:
-// import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-// import { Calendar } from "@/components/ui/calendar";
-// import { format } from "date-fns";
-// import { cn } from "@/lib/utils";
-
-// const ShadcnDatePicker: React.FC<{ date: Date | undefined; setDate: (date: Date | undefined) => void; buttonClassName?: string }> = ({ date, setDate, buttonClassName }) => {
-//   return (
-//     <Popover>
-//       <PopoverTrigger asChild>
-//         <Button
-//           variant={"outline"}
-//           className={cn(
-//             "w-full justify-start text-left font-normal",
-//             !date && "text-muted-foreground",
-//             buttonClassName
-//           )}
-//         >
-//           <CalendarIcon className="mr-2 h-4 w-4" />
-//           {date ? format(date, "PPP") : <span>Pick a date</span>}
-//         </Button>
-//       </PopoverTrigger>
-//       <PopoverContent className="w-auto p-0">
-//         <Calendar
-//           mode="single"
-//           selected={date}
-//           onSelect={setDate}
-//           initialFocus
-//         />
-//       </PopoverContent>
-//     </Popover>
-//   );
-// };
-
-// Using basic Input type="date" for now to avoid dependency on a specific DatePicker not provided in context.
-// Replace `BasicDatePicker` with your actual `DatePicker` component if you have one.
-const DatePicker = BasicDatePicker;
+// Basic DatePicker component definition and its assignment to `DatePicker` have been removed to resolve the name collision.
+// It is assumed that `import { DatePicker } from '@/components/ui/date-picker';` provides the necessary component.
 
