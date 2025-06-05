@@ -3,23 +3,36 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from 'react-toastify';
-import { LogIn, Lock, User } from 'react-feather';
-import { AUTH_STATUS_LS_KEY, APP_NAME_KEY } from '@/lib/constants';
-import Image from 'next/image';
+import { LogIn } from 'react-feather';
+import { AUTH_STATUS_LS_KEY, USER_PROFILE_LS_KEY, APP_NAME_KEY } from '@/lib/constants';
+import type { UserProfile } from '@/types';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 
+const defaultLoginUser: UserProfile = {
+  id: 'login-placeholder-user',
+  name: 'Welcome Back!',
+  avatarUrl: 'https://placehold.co/100x100.png', // Generic placeholder
+};
+
+const getInitials = (name: string = "User") => {
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase() || "U";
+};
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [currentUser, setCurrentUser] = useState<UserProfile>(defaultLoginUser);
   const { t } = useTranslation();
   const appName = t(APP_NAME_KEY);
 
@@ -28,6 +41,21 @@ export default function LoginPage() {
     // Check if user is already authenticated
     if (localStorage.getItem(AUTH_STATUS_LS_KEY) === 'true') {
       router.replace('/dashboard');
+      return;
+    }
+
+    // Load last user profile
+    const storedProfile = localStorage.getItem(USER_PROFILE_LS_KEY);
+    if (storedProfile) {
+      try {
+        const parsedProfile: UserProfile = JSON.parse(storedProfile);
+        setCurrentUser(parsedProfile);
+      } catch (e) {
+        console.error("Failed to parse user profile for login page", e);
+        setCurrentUser(defaultLoginUser);
+      }
+    } else {
+      setCurrentUser(defaultLoginUser);
     }
   }, [router]);
 
@@ -35,30 +63,21 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
+    // Simulate API call / successful login
     setTimeout(() => {
-      // For this basic setup, we'll just check if email and password are not empty
-      // In a real app, you'd validate credentials against a backend.
-      if (email.trim() && password.trim()) {
-        localStorage.setItem(AUTH_STATUS_LS_KEY, 'true');
-        toast.success(`Welcome back to ${appName}!`);
-        router.replace('/dashboard');
-      } else {
-        toast.error('Please enter both email and password.');
-        setIsLoading(false);
-      }
+      localStorage.setItem(AUTH_STATUS_LS_KEY, 'true');
+      toast.success(`Welcome back to ${appName}, ${currentUser.name === defaultLoginUser.name ? 'User' : currentUser.name}!`);
+      router.replace('/dashboard');
     }, 1000);
   };
   
   if (!mounted) {
     return (
        <div className="flex min-h-screen items-center justify-center bg-background content-area-gradient">
-        {/* Optional: Add a loading spinner here */}
         <p className="text-lg text-primary">Loading Login...</p>
       </div>
     );
   }
-
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 content-area-gradient">
@@ -71,54 +90,35 @@ export default function LoginPage() {
                 priority
             />
         </div>
-      <Card className="w-full max-w-md shadow-2xl">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold font-headline">Login</CardTitle>
+      <Card className="w-full max-w-sm shadow-2xl">
+        <CardHeader className="text-center items-center">
+           <Avatar className={cn(
+            "h-24 w-24 mb-4",
+            // Assuming default shape or add shape loading logic if needed from settings
+           )}>
+            <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} data-ai-hint="user avatar" />
+            <AvatarFallback className="text-3xl">
+                {getInitials(currentUser.name)}
+            </AvatarFallback>
+          </Avatar>
+          <CardTitle className="text-2xl font-bold font-headline">
+            {currentUser.name !== defaultLoginUser.name ? currentUser.name : "Welcome Back!"}
+          </CardTitle>
           <CardDescription className="text-md">
-            Sign in to access your {appName} dashboard.
+            Click below to log in to your {appName} account.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="flex items-center">
-                <User className="mr-2 h-4 w-4 text-muted-foreground" />
-                Email Address
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="user@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
-                autoComplete="email"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password" className="flex items-center">
-                <Lock className="mr-2 h-4 w-4 text-muted-foreground" />
-                Password
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
-                autoComplete="current-password"
-              />
-            </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               <LogIn className="mr-2 h-4 w-4" />
-              {isLoading ? 'Logging In...' : 'Login'}
+              {isLoading ? 'Logging In...' : 'Log In'}
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="text-center block">
+         <CardFooter className="text-center block mt-4">
             <p className="text-xs text-muted-foreground">
-                For demonstration purposes, any non-empty email/password will work.
+                Not {currentUser.name !== defaultLoginUser.name ? currentUser.name : "you"}? <a href="#" onClick={() => { localStorage.removeItem(USER_PROFILE_LS_KEY); localStorage.removeItem(AUTH_STATUS_LS_KEY); router.refresh(); }} className="underline hover:text-primary">Log in with a different account.</a>
             </p>
         </CardFooter>
       </Card>
