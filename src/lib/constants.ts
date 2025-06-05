@@ -145,7 +145,7 @@ export const ACCENT_THEMES: AccentTheme[] = [
   },
 ];
 export type AccentThemeValue = typeof ACCENT_THEMES[number]['value'];
-export const DEFAULT_ACCENT_THEME_VALUE: AccentThemeValue = 'default-blue';
+export const DEFAULT_ACCENT_THEME_VALUE: AccentThemeValue = 'orange-gradient';
 
 
 export const ALL_LOCAL_STORAGE_KEYS: string[] = [
