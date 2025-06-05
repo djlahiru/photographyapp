@@ -193,7 +193,7 @@ export function AppHeader() {
       <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
         <Link href="/dashboard" aria-label={`${t(APP_NAME_KEY)} Dashboard`}>
             <Image
-              src="/images/new-company-logo.png"
+              src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj30D3MJKJVq6fF6F2E8bOPhD3osgIrrESDnONbWzfN8WQ6BG6PX4d3ne80pu8RWdU85RoZxGbEFbXiPMSVMcDhW9h3DFNQdsrPlnc3UohL5qOu2xK6nJ2iWHewEtHbFiqCRxHCNXZWwSx1yDEAQe-rSGHRnQh_NAbWapbgWi-NOlTkbXTq_J_uN68mYYk/s320/your-logo.png"
               alt={`${t(APP_NAME_KEY)} Logo`}
               width={160}
               height={27}
@@ -201,7 +201,7 @@ export function AppHeader() {
               className="hidden sm:block"
             />
              <Image
-              src="/images/new-company-logo.png"
+              src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj30D3MJKJVq6fF6F2E8bOPhD3osgIrrESDnONbWzfN8WQ6BG6PX4d3ne80pu8RWdU85RoZxGbEFbXiPMSVMcDhW9h3DFNQdsrPlnc3UohL5qOu2xK6nJ2iWHewEtHbFiqCRxHCNXZWwSx1yDEAQe-rSGHRnQh_NAbWapbgWi-NOlTkbXTq_J_uN68mYYk/s320/your-logo.png"
               alt={`${t(APP_NAME_KEY)} Logo`}
               width={80}
               height={14}
