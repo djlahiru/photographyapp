@@ -115,7 +115,7 @@ export default function CalendarPage() {
               headerToolbar={{
                 left: 'prevYear,prev,next,nextYear today',
                 center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek,listDay,listMonth' 
+                right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek' 
               }}
               editable={false} 
               selectable={false} 
