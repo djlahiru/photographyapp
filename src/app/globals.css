@@ -11,8 +11,9 @@
     --gradient-bg-start-hsl: 210 40% 96%; /* Lighter Sky Blue */
     --gradient-bg-end-hsl: 230 50% 92%;   /* Slightly Deeper, Cool Lavender */
     
-    --sidebar-gradient-bg-start-hsl: 212 35% 92%;
-    --sidebar-gradient-bg-end-hsl: 225 40% 88%;
+    /* Updated Sidebar Gradient */
+    --sidebar-gradient-bg-start-hsl: 220 30% 94%; /* Cooler, lighter gray-blue */
+    --sidebar-gradient-bg-end-hsl: 220 35% 88%;   /* Slightly deeper cool gray-blue */
 
     /* Core Colors */
     --background: 215 30% 97%;             /* Fallback/Solid BG - Very Light Blue-Gray */
@@ -54,7 +55,7 @@
     --radius: 0.5rem;
 
     /* Sidebar specific theme (base, can be overridden by accent themes) */
-    --sidebar-background: 212 35% 92%;      /* Fallback from sidebar-gradient-bg-start-hsl */
+    --sidebar-background: hsl(var(--sidebar-gradient-bg-start-hsl)); /* Fallback from sidebar-gradient-bg-start-hsl */
     --sidebar-foreground: 220 20% 25%;
     --sidebar-primary: 195 80% 42%;         /* Slightly deeper primary for sidebar */
     --sidebar-primary-foreground: 210 60% 98%;
@@ -74,8 +75,9 @@
     --gradient-bg-start-hsl: 220 25% 12%; 
     --gradient-bg-end-hsl: 240 30% 18%;  
 
-    --sidebar-gradient-bg-start-hsl: 222 20% 18%;
-    --sidebar-gradient-bg-end-hsl: 235 25% 22%;
+    /* Updated Sidebar Gradient */
+    --sidebar-gradient-bg-start-hsl: 225 20% 16%; /* Slightly darker, more purplish-blue */
+    --sidebar-gradient-bg-end-hsl: 230 25% 20%;   /* A bit more contrast */
 
     /* Core Colors */
     --background: 225 20% 15%;             
@@ -115,7 +117,7 @@
     --ring: 195 75% 50%; 
     
     /* Sidebar specific theme */
-    --sidebar-background: 222 20% 18%;      
+    --sidebar-background: hsl(var(--sidebar-gradient-bg-start-hsl));      
     --sidebar-foreground: 210 25% 85%;
     --sidebar-primary: 195 70% 52%;
     --sidebar-primary-foreground: 210 40% 10%;

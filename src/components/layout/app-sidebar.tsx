@@ -61,18 +61,18 @@ export function AppSidebar() {
                 <Link href={item.href} passHref legacyBehavior>
                   <SidebarMenuButton
                     asChild
-                    isActive={isActive} // This prop might not be directly used by SidebarMenuButton for styling anymore
+                    isActive={isActive} 
                     tooltip={t(item.labelKey)}
                     className={cn(
-                      "justify-start",
+                      "justify-start py-3", // Added py-3 for more vertical padding
                       isActive
-                        ? "sidebar-menu-button--active" // Custom class for gradient
-                        : "sidebar-menu-button--inactive text-sidebar-foreground" // Ensures correct hover and text for inactive
+                        ? "sidebar-menu-button--active" 
+                        : "sidebar-menu-button--inactive text-sidebar-foreground" 
                     )}
                   >
                     <a>
-                      <item.icon className="h-5 w-5" />
-                      <span>{t(item.labelKey)}</span>
+                      <item.icon className="h-6 w-6" /> {/* Increased icon size */}
+                      <span className="text-base font-semibold">{t(item.labelKey)}</span> {/* Increased text size & bold */}
                     </a>
                   </SidebarMenuButton>
                 </Link>
@@ -90,15 +90,15 @@ export function AppSidebar() {
                 isActive={pathname === SETTINGS_NAV_ITEM.href || pathname.startsWith(SETTINGS_NAV_ITEM.href)}
                 tooltip={t(SETTINGS_NAV_ITEM.labelKey)}
                 className={cn(
-                  "justify-start",
+                  "justify-start py-3", // Added py-3 for more vertical padding
                   (pathname === SETTINGS_NAV_ITEM.href || pathname.startsWith(SETTINGS_NAV_ITEM.href))
                     ? "sidebar-menu-button--active"
                     : "sidebar-menu-button--inactive text-sidebar-foreground"
                 )}
               >
                 <a>
-                  <SETTINGS_NAV_ITEM.icon className="h-5 w-5" />
-                  <span>{t(SETTINGS_NAV_ITEM.labelKey)}</span>
+                  <SETTINGS_NAV_ITEM.icon className="h-6 w-6" /> {/* Increased icon size */}
+                  <span className="text-base font-semibold">{t(SETTINGS_NAV_ITEM.labelKey)}</span> {/* Increased text size & bold */}
                 </a>
               </SidebarMenuButton>
             </Link>
@@ -107,9 +107,9 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
          <div className="p-2">
-            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-                <LogOut className="h-5 w-5 mr-2" />
-                <span>{t('logout')}</span>
+            <Button variant="ghost" className="w-full justify-start py-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"> {/* Added py-3 */}
+                <LogOut className="h-6 w-6 mr-2" /> {/* Increased icon size */}
+                <span className="text-base font-semibold">{t('logout')}</span> {/* Increased text size & bold */}
             </Button>
          </div>
       </SidebarFooter>
