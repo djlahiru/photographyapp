@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIcon, Eye, Droplet, Edit3, Square, Circle as CircleIcon } from "react-feather";
+import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIcon, Eye, Droplet, Edit3, Square, Circle as CircleIcon, Image as ImageIconFeather, Save, Trash2 } from "react-feather";
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 import { format } from 'date-fns';
@@ -32,6 +32,8 @@ const FONT_THEMES: { value: FontTheme; label: string }[] = [
   { value: 'modern-mono', label: 'Modern Mono' },
 ];
 
+const DASHBOARD_COVER_PHOTO_LS_KEY = 'dashboardCoverPhotoUrl';
+
 export default function SettingsPage() {
   const { theme: nextTheme } = useTheme();
   const [user, setUser] = useState({
@@ -40,7 +42,7 @@ export default function SettingsPage() {
     avatarUrl: "https://placehold.co/100x100.png",
     bio: "Loves photography and efficient workflows!",
   });
-  const [isCalendarConnected, setIsCalendarConnected] = useState(false); // Simulated state
+  const [isCalendarConnected, setIsCalendarConnected] = useState(false);
 
   const [packageName, setPackageName] = useState('');
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
@@ -49,6 +51,9 @@ export default function SettingsPage() {
   const [avatarShape, setAvatarShape] = useState<AvatarShape>('circle');
   const [currentAccentTheme, setCurrentAccentTheme] = useState<AccentTheme>('default');
   const [currentFontTheme, setCurrentFontTheme] = useState<FontTheme>('default-sans');
+
+  const [dashboardCoverPhotoFile, setDashboardCoverPhotoFile] = useState<File | null>(null);
+  const [dashboardCoverPhotoPreview, setDashboardCoverPhotoPreview] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentDateTime(new Date()), 1000 * 60);
@@ -59,20 +64,23 @@ export default function SettingsPage() {
     const storedAccentTheme = localStorage.getItem('accentTheme') as AccentTheme | null;
     if (storedAccentTheme) {
       setCurrentAccentTheme(storedAccentTheme);
-      // Accent theme application is handled in RootLayout
+      handleAccentThemeChange(storedAccentTheme, false);
     }
 
     const storedFontTheme = localStorage.getItem('fontTheme') as FontTheme | null;
     if (storedFontTheme) {
       setCurrentFontTheme(storedFontTheme);
-      // Font theme application is handled in RootLayout initially, then here for dynamic changes
-      handleFontThemeChange(storedFontTheme, false); // Apply without saving again
+      handleFontThemeChange(storedFontTheme, false);
     }
     
-    // Simulate checking stored connection status
     const storedCalendarConnection = localStorage.getItem('googleCalendarConnected');
     if (storedCalendarConnection) {
         setIsCalendarConnected(JSON.parse(storedCalendarConnection));
+    }
+
+    const storedCoverPhotoUrl = localStorage.getItem(DASHBOARD_COVER_PHOTO_LS_KEY);
+    if (storedCoverPhotoUrl) {
+        setDashboardCoverPhotoPreview(storedCoverPhotoUrl);
     }
 
     return () => clearInterval(timer);
@@ -115,11 +123,12 @@ export default function SettingsPage() {
   const handleAvatarShapeChange = (shape: AvatarShape) => {
     setAvatarShape(shape);
     localStorage.setItem('avatarShape', shape);
+     window.dispatchEvent(new CustomEvent('avatarShapeChange', { detail: shape }));
   };
 
-  const handleAccentThemeChange = (themeValue: AccentTheme) => {
+  const handleAccentThemeChange = (themeValue: AccentTheme, save: boolean = true) => {
     setCurrentAccentTheme(themeValue);
-    localStorage.setItem('accentTheme', themeValue);
+    if (save) localStorage.setItem('accentTheme', themeValue);
     
     ACCENT_THEMES.forEach(t => {
         if (t.value !== 'default') {
@@ -133,9 +142,7 @@ export default function SettingsPage() {
 
   const handleFontThemeChange = (themeValue: FontTheme, save: boolean = true) => {
     setCurrentFontTheme(themeValue);
-    if (save) {
-      localStorage.setItem('fontTheme', themeValue);
-    }
+    if (save) localStorage.setItem('fontTheme', themeValue);
     
     FONT_THEMES.forEach(t => {
       if (t.value !== 'default-sans') {
@@ -145,6 +152,47 @@ export default function SettingsPage() {
     if (themeValue !== 'default-sans') {
       document.documentElement.classList.add(`font-theme-${themeValue}`);
     }
+  };
+
+  const handleDashboardCoverPhotoSelected = (file: File | null) => {
+    setDashboardCoverPhotoFile(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setDashboardCoverPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // If file is null (cleared), keep preview unless it was from localStorage
+      const storedUrl = localStorage.getItem(DASHBOARD_COVER_PHOTO_LS_KEY);
+      if (!storedUrl) {
+        setDashboardCoverPhotoPreview(null);
+      }
+    }
+  };
+
+  const handleSaveDashboardCoverPhoto = () => {
+    if (dashboardCoverPhotoPreview) {
+      localStorage.setItem(DASHBOARD_COVER_PHOTO_LS_KEY, dashboardCoverPhotoPreview);
+      toast.success("Dashboard cover photo saved!");
+      window.dispatchEvent(new CustomEvent('coverPhotoChange'));
+    } else if (dashboardCoverPhotoFile === null && !localStorage.getItem(DASHBOARD_COVER_PHOTO_LS_KEY)) {
+       toast.info("No cover photo to save.");
+    } else {
+      // This case can happen if preview is null but user clicks save.
+      // Or if they've cleared the selection and there was an old one.
+      // We can decide to remove it or just inform them.
+      // For now, let's inform. If they want to remove, use remove button.
+      toast.info("Select an image first or use 'Remove' to clear existing.");
+    }
+  };
+
+  const handleRemoveDashboardCoverPhoto = () => {
+    localStorage.removeItem(DASHBOARD_COVER_PHOTO_LS_KEY);
+    setDashboardCoverPhotoFile(null);
+    setDashboardCoverPhotoPreview(null);
+    toast.success("Dashboard cover photo removed.");
+    window.dispatchEvent(new CustomEvent('coverPhotoChange'));
   };
 
 
@@ -279,6 +327,38 @@ export default function SettingsPage() {
       </Card>
       
       <Separator />
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center"><ImageIconFeather className="mr-2 h-5 w-5" /> Dashboard Customization</CardTitle>
+          <CardDescription>Personalize your dashboard's appearance.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="dashboardCoverPhoto">Dashboard Cover Photo</Label>
+            <ImageUploadDropzone
+              initialImageUrl={dashboardCoverPhotoPreview || undefined}
+              onFileChange={handleDashboardCoverPhotoSelected}
+              className="h-48 w-full" 
+              imageClassName="rounded-md"
+              label="Drop a wide image or click to upload (e.g., 1200x300)"
+            />
+            <p className="text-xs text-muted-foreground">Recommended: A wide, landscape-oriented image.</p>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={handleSaveDashboardCoverPhoto} disabled={!dashboardCoverPhotoFile && !dashboardCoverPhotoPreview}>
+              <Save className="mr-2 h-4 w-4" /> Save Cover Photo
+            </Button>
+            {dashboardCoverPhotoPreview && (
+              <Button variant="outline" onClick={handleRemoveDashboardCoverPhoto}>
+                <Trash2 className="mr-2 h-4 w-4" /> Remove Cover Photo
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Separator />
       
       <Card>
         <CardHeader>
@@ -373,7 +453,6 @@ export default function SettingsPage() {
     </div>
   );
 }
-
     
 
     
