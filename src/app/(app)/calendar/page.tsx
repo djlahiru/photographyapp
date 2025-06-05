@@ -7,13 +7,15 @@ import { Calendar as CalendarIconFeather } from "react-feather";
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction'; // for eventClick
+import listPlugin from '@fullcalendar/list'; // for list views
 import type { EventClickArg, EventSourceInput } from '@fullcalendar/core';
 import { mockBookings } from '@/app/(app)/bookings/page'; // Assuming mockBookings is exported
 import type { BookingStatus } from '@/types';
 
 // Import FullCalendar styles
-// import '@fullcalendar/core/main.css'; // This line was causing the "Module not found" error
-// import '@fullcalendar/daygrid/main.css'; // This line was also causing a "Module not found" error
+// import '@fullcalendar/core/main.css'; 
+// import '@fullcalendar/daygrid/main.css'; 
+// import '@fullcalendar/list/main.css'; // Required for list views
 
 
 const getEventClassNames = (status: BookingStatus): string[] => {
@@ -71,7 +73,7 @@ export default function CalendarPage() {
        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
             <h1 className="text-3xl font-bold tracking-tight font-headline">Booking Calendar</h1>
-            <p className="text-muted-foreground">Visualize your bookings. Events are color-coded by status.</p>
+            <p className="text-muted-foreground">Visualize your bookings. Events are color-coded by status. Includes diary view.</p>
         </div>
       </div>
 
@@ -82,31 +84,34 @@ export default function CalendarPage() {
             In-App Calendar
           </CardTitle>
           <CardDescription>
-            This calendar displays your bookings. Click on an event to view more details.
+            This calendar displays your bookings. Use the toolbar to change views (e.g., month, week, day, list) and navigate years. Click an event for details.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="min-h-[700px] rounded-md text-sm">
             <FullCalendar
-              plugins={[dayGridPlugin, interactionPlugin]}
+              plugins={[dayGridPlugin, interactionPlugin, listPlugin]}
               initialView="dayGridMonth"
               events={calendarEvents}
               eventClick={handleEventClick}
-              height="auto" // Or a fixed pixel value like "700px"
-              aspectRatio={1.8} // Adjust as needed
+              height="auto" 
+              aspectRatio={1.8} 
               headerToolbar={{
-                left: 'prev,next today',
+                left: 'prevYear,prev,next,nextYear today',
                 center: 'title',
-                right: 'dayGridMonth,dayGridWeek,dayGridDay' // Add more views if needed
+                right: 'dayGridMonth,dayGridWeek,dayGridDay,listWeek' 
               }}
-              editable={false} // Set to true for drag-and-drop, resizing
-              selectable={false} // Set to true to allow selecting date ranges
-              dayMaxEvents={true} // Or a number, e.g., 3, to limit events per day cell
-              eventTimeFormat={{ // Optional: format time display on events
+              editable={false} 
+              selectable={false} 
+              dayMaxEvents={true} 
+              eventTimeFormat={{ 
                 hour: 'numeric',
                 minute: '2-digit',
                 meridiem: 'short'
               }}
+              // Ensure list views have appropriate styling if needed
+              // listDayFormat={{ month: 'long', day: 'numeric', year: 'numeric' }} // Example for list day format
+              // listDaySideFormat={{ month: 'long', day: 'numeric', year: 'numeric' }} // Example
             />
           </div>
         </CardContent>
