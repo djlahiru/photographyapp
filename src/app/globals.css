@@ -292,9 +292,8 @@
     background-color: hsl(var(--gradient-bg-start-hsl)); 
   }
   .sidebar-area-gradient {
-    /* UPDATED: Use sidebar-accent-gradient variables */
-    background-image: linear-gradient(145deg, hsl(var(--sidebar-accent-gradient-start-hsl)), hsl(var(--sidebar-accent-gradient-end-hsl)));
-    background-color: hsl(var(--sidebar-accent-gradient-start-hsl)); 
+    background-image: linear-gradient(145deg, hsl(var(--sidebar-gradient-bg-start-hsl)), hsl(var(--sidebar-gradient-bg-end-hsl)));
+    background-color: hsl(var(--sidebar-gradient-bg-start-hsl)); 
   }
 }
 
