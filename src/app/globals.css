@@ -31,6 +31,8 @@
     --accent-foreground: 210 60% 98%;
     --ring: 205 75% 45%;
     --chart-2: 205 75% 50%; /* Default chart-2 */
+    --gradient-start-hsl: 205 75% 50%; /* Fallback gradient start */
+    --gradient-end-hsl: 195 85% 45%; /* Fallback gradient end */
 
     --secondary: 210 25% 90%;              /* Light Gray-Blue */
     --secondary-foreground: 220 15% 35%;    /* Medium-Dark Gray-Blue */
@@ -90,6 +92,9 @@
     --accent-foreground: 210 30% 15%;
     --ring: 205 70% 55%;
     --chart-2: 205 70% 60%;
+    --gradient-start-hsl: 205 70% 60%; /* Fallback gradient start for dark */
+    --gradient-end-hsl: 195 80% 55%; /* Fallback gradient end for dark */
+
 
     --secondary: 220 20% 25%;
     --secondary-foreground: 210 25% 75%;
@@ -125,81 +130,128 @@
   .theme-accent-default-blue {
     --accent: 205 75% 50%;
     --accent-foreground: 210 60% 98%;
+    --primary: hsl(var(--accent));
+    --primary-foreground: hsl(var(--accent-foreground));
     --ring: 205 75% 45%;
     --chart-2: 205 75% 50%;
+    --gradient-start-hsl: 205 75% 50%;
+    --gradient-end-hsl: 195 85% 45%;
     --sidebar-accent: hsl(var(--accent));
     --sidebar-accent-foreground: hsl(var(--accent-foreground));
     --sidebar-ring: hsl(var(--ring));
-    /* Primary will use fallback or be themed if accent also themes primary */
+    --sidebar-primary: hsl(var(--primary));
+    --sidebar-primary-foreground: hsl(var(--primary-foreground));
   }
   .dark .theme-accent-default-blue {
     --accent: 205 70% 60%;
     --accent-foreground: 210 30% 15%;
+    --primary: hsl(var(--accent));
+    --primary-foreground: hsl(var(--accent-foreground));
     --ring: 205 70% 55%;
     --chart-2: 205 70% 60%;
+    --gradient-start-hsl: 205 70% 60%;
+    --gradient-end-hsl: 195 80% 55%;
     --sidebar-accent: hsl(var(--accent));
     --sidebar-accent-foreground: hsl(var(--accent-foreground));
     --sidebar-ring: hsl(var(--ring));
+    --sidebar-primary: hsl(var(--primary));
+    --sidebar-primary-foreground: hsl(var(--primary-foreground));
   }
 
   /* Vibrant Violet Gradient */
   .theme-accent-violet-gradient {
     --accent: 260 75% 60%;
     --accent-foreground: 260 60% 98%;
+    --primary: hsl(var(--accent));
+    --primary-foreground: hsl(var(--accent-foreground));
     --ring: 260 75% 55%;
     --chart-2: 260 75% 60%;
+    --gradient-start-hsl: 260 75% 60%;
+    --gradient-end-hsl: 270 80% 55%;
     --sidebar-accent: hsl(var(--accent));
     --sidebar-accent-foreground: hsl(var(--accent-foreground));
     --sidebar-ring: hsl(var(--ring));
+    --sidebar-primary: hsl(var(--primary));
+    --sidebar-primary-foreground: hsl(var(--primary-foreground));
   }
   .dark .theme-accent-violet-gradient {
     --accent: 260 70% 70%;
     --accent-foreground: 260 30% 15%;
+    --primary: hsl(var(--accent));
+    --primary-foreground: hsl(var(--accent-foreground));
     --ring: 260 70% 65%;
     --chart-2: 260 70% 70%;
+    --gradient-start-hsl: 260 70% 70%;
+    --gradient-end-hsl: 270 75% 65%;
     --sidebar-accent: hsl(var(--accent));
     --sidebar-accent-foreground: hsl(var(--accent-foreground));
     --sidebar-ring: hsl(var(--ring));
+    --sidebar-primary: hsl(var(--primary));
+    --sidebar-primary-foreground: hsl(var(--primary-foreground));
   }
 
   /* Forest Green Gradient */
   .theme-accent-green-gradient {
     --accent: 140 60% 40%;
     --accent-foreground: 140 60% 95%;
+    --primary: hsl(var(--accent));
+    --primary-foreground: hsl(var(--accent-foreground));
     --ring: 140 60% 35%;
     --chart-2: 140 60% 40%;
+    --gradient-start-hsl: 140 60% 40%;
+    --gradient-end-hsl: 150 65% 35%;
     --sidebar-accent: hsl(var(--accent));
     --sidebar-accent-foreground: hsl(var(--accent-foreground));
     --sidebar-ring: hsl(var(--ring));
+    --sidebar-primary: hsl(var(--primary));
+    --sidebar-primary-foreground: hsl(var(--primary-foreground));
   }
   .dark .theme-accent-green-gradient {
     --accent: 140 55% 50%;
     --accent-foreground: 140 30% 10%;
+    --primary: hsl(var(--accent));
+    --primary-foreground: hsl(var(--accent-foreground));
     --ring: 140 55% 45%;
     --chart-2: 140 55% 50%;
+    --gradient-start-hsl: 140 55% 50%;
+    --gradient-end-hsl: 150 60% 45%;
     --sidebar-accent: hsl(var(--accent));
     --sidebar-accent-foreground: hsl(var(--accent-foreground));
     --sidebar-ring: hsl(var(--ring));
+    --sidebar-primary: hsl(var(--primary));
+    --sidebar-primary-foreground: hsl(var(--primary-foreground));
   }
 
   /* Sunset Orange Gradient */
   .theme-accent-orange-gradient {
     --accent: 30 90% 55%;
     --accent-foreground: 20 60% 98%;
+    --primary: hsl(var(--accent));
+    --primary-foreground: hsl(var(--accent-foreground));
     --ring: 30 90% 50%;
     --chart-2: 30 90% 55%;
+    --gradient-start-hsl: 30 90% 55%;
+    --gradient-end-hsl: 40 95% 50%;
     --sidebar-accent: hsl(var(--accent));
     --sidebar-accent-foreground: hsl(var(--accent-foreground));
     --sidebar-ring: hsl(var(--ring));
+    --sidebar-primary: hsl(var(--primary));
+    --sidebar-primary-foreground: hsl(var(--primary-foreground));
   }
   .dark .theme-accent-orange-gradient {
     --accent: 30 80% 65%;
     --accent-foreground: 20 30% 10%;
+    --primary: hsl(var(--accent));
+    --primary-foreground: hsl(var(--accent-foreground));
     --ring: 30 80% 60%;
     --chart-2: 30 80% 65%;
+    --gradient-start-hsl: 30 80% 65%;
+    --gradient-end-hsl: 40 85% 60%;
     --sidebar-accent: hsl(var(--accent));
     --sidebar-accent-foreground: hsl(var(--accent-foreground));
     --sidebar-ring: hsl(var(--ring));
+    --sidebar-primary: hsl(var(--primary));
+    --sidebar-primary-foreground: hsl(var(--primary-foreground));
   }
 
   /* --- Font Themes --- */
