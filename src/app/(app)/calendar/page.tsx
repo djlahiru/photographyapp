@@ -41,8 +41,9 @@ const getEventClassNames = (status: BookingStatus): string[] => {
   return classNames;
 };
 
-// Sample Sri Lankan Holidays for 2024 (demonstration)
+// Sample Sri Lankan Holidays for 2024-2027 (demonstration)
 const sriLankanHolidays: EventInput[] = [
+  // 2024
   {
     title: 'Thaipongal Day',
     start: '2024-01-15',
@@ -79,6 +80,126 @@ const sriLankanHolidays: EventInput[] = [
     textColor: 'hsl(var(--muted-foreground))',
     classNames: ['opacity-80']
   },
+  // 2025
+  {
+    title: 'Thaipongal Day',
+    start: '2025-01-15',
+    allDay: true,
+    backgroundColor: 'hsl(var(--muted))',
+    borderColor: 'hsl(var(--border))',
+    textColor: 'hsl(var(--muted-foreground))',
+    classNames: ['opacity-80']
+  },
+  {
+    title: 'National Day',
+    start: '2025-02-04',
+    allDay: true,
+    backgroundColor: 'hsl(var(--muted))',
+    borderColor: 'hsl(var(--border))',
+    textColor: 'hsl(var(--muted-foreground))',
+    classNames: ['opacity-80']
+  },
+  {
+    title: 'Sinhala & Tamil New Year\'s Day',
+    start: '2025-04-14', // Adjusted for 2025
+    allDay: true,
+    backgroundColor: 'hsl(var(--muted))',
+    borderColor: 'hsl(var(--border))',
+    textColor: 'hsl(var(--muted-foreground))',
+    classNames: ['opacity-80']
+  },
+  {
+    title: 'Vesak Full Moon Poya Day',
+    start: '2025-05-12', // Adjusted for 2025
+    allDay: true,
+    backgroundColor: 'hsl(var(--muted))',
+    borderColor: 'hsl(var(--border))',
+    textColor: 'hsl(var(--muted-foreground))',
+    classNames: ['opacity-80']
+  },
+  {
+    title: 'Christmas Day',
+    start: '2025-12-25',
+    allDay: true,
+    backgroundColor: 'hsl(var(--muted))',
+    borderColor: 'hsl(var(--border))',
+    textColor: 'hsl(var(--muted-foreground))',
+    classNames: ['opacity-80']
+  },
+  // 2026
+  {
+    title: 'National Day',
+    start: '2026-02-04',
+    allDay: true,
+    backgroundColor: 'hsl(var(--muted))',
+    borderColor: 'hsl(var(--border))',
+    textColor: 'hsl(var(--muted-foreground))',
+    classNames: ['opacity-80']
+  },
+  {
+    title: 'May Day',
+    start: '2026-05-01',
+    allDay: true,
+    backgroundColor: 'hsl(var(--muted))',
+    borderColor: 'hsl(var(--border))',
+    textColor: 'hsl(var(--muted-foreground))',
+    classNames: ['opacity-80']
+  },
+  {
+    title: 'Vesak Full Moon Poya Day',
+    start: '2026-05-31', // Adjusted for 2026
+    allDay: true,
+    backgroundColor: 'hsl(var(--muted))',
+    borderColor: 'hsl(var(--border))',
+    textColor: 'hsl(var(--muted-foreground))',
+    classNames: ['opacity-80']
+  },
+  {
+    title: 'Christmas Day',
+    start: '2026-12-25',
+    allDay: true,
+    backgroundColor: 'hsl(var(--muted))',
+    borderColor: 'hsl(var(--border))',
+    textColor: 'hsl(var(--muted-foreground))',
+    classNames: ['opacity-80']
+  },
+  // 2027
+   {
+    title: 'National Day',
+    start: '2027-02-04',
+    allDay: true,
+    backgroundColor: 'hsl(var(--muted))',
+    borderColor: 'hsl(var(--border))',
+    textColor: 'hsl(var(--muted-foreground))',
+    classNames: ['opacity-80']
+  },
+  {
+    title: 'Sinhala & Tamil New Year\'s Day',
+    start: '2027-04-14',
+    allDay: true,
+    backgroundColor: 'hsl(var(--muted))',
+    borderColor: 'hsl(var(--border))',
+    textColor: 'hsl(var(--muted-foreground))',
+    classNames: ['opacity-80']
+  },
+  {
+    title: 'Vesak Full Moon Poya Day',
+    start: '2027-05-20', // Adjusted for 2027
+    allDay: true,
+    backgroundColor: 'hsl(var(--muted))',
+    borderColor: 'hsl(var(--border))',
+    textColor: 'hsl(var(--muted-foreground))',
+    classNames: ['opacity-80']
+  },
+  {
+    title: 'Christmas Day',
+    start: '2027-12-25',
+    allDay: true,
+    backgroundColor: 'hsl(var(--muted))',
+    borderColor: 'hsl(var(--border))',
+    textColor: 'hsl(var(--muted-foreground))',
+    classNames: ['opacity-80']
+  },
 ];
 
 
@@ -102,7 +223,7 @@ export default function CalendarPage() {
 
   const handleEventClick = (clickInfo: EventClickArg) => {
     console.log('Event clicked:', clickInfo.event);
-    // Check if it's a holiday event (by checking if extendedProps are missing, for this example)
+    // Check if it's a holiday event (by checking if extendedProps are missing clientName, for this example)
     if (!clickInfo.event.extendedProps.clientName) { 
        alert(`Holiday: ${clickInfo.event.title}\nDate: ${clickInfo.event.start ? clickInfo.event.start.toLocaleDateString() : 'N/A'}`);
        return;
