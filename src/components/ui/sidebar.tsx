@@ -186,7 +186,7 @@ const Sidebar = React.forwardRef<
       return (
         <div
           className={cn(
-            "flex h-full w-[--sidebar-width] flex-col sidebar-area-gradient text-sidebar-foreground",
+            "flex h-full w-[--sidebar-width] flex-col sidebar-area-gradient text-sidebar-foreground ml-4", // Added ml-4 for space
             className
           )}
           ref={ref}
@@ -198,9 +198,6 @@ const Sidebar = React.forwardRef<
     }
 
     if (isMobile) {
-      // For mobile, SheetContent already uses sidebar-area-gradient and is client-rendered primarily.
-      // No change needed here if it's not causing hydration issues itself.
-      // If SheetContent also had issues, a similar pattern could be applied.
       return (
         <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
           <SheetContent
@@ -236,15 +233,16 @@ const Sidebar = React.forwardRef<
             "group-data-[side=right]:rotate-180",
             variant === "floating" || variant === "inset"
               ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
-              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
+              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]",
+            "ml-4" // Added ml-4 to the spacer div
           )}
         />
         <div
           className={cn(
             "duration-200 fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] ease-linear md:flex",
             side === "left"
-              ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
-              : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
+              ? "left-4 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]" // Changed left-0 to left-4
+              : "right-4 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]", // Changed right-0 to right-4
             variant === "floating" || variant === "inset"
               ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]"
               : "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l",
@@ -254,7 +252,7 @@ const Sidebar = React.forwardRef<
         >
           <div
             data-sidebar="sidebar"
-            className={dynamicInnerDivClassName} // Use the state-controlled class name here
+            className={dynamicInnerDivClassName} 
           >
             {children}
           </div>
@@ -366,7 +364,7 @@ const SidebarHeader = React.forwardRef<
       data-sidebar="header"
       className={cn(
         "flex flex-col gap-2 p-2",
-        "group-data-[collapsible=icon]:hidden", // Hide header when sidebar is icon-collapsed
+        "group-data-[collapsible=icon]:hidden",
         className
       )}
       {...props}
