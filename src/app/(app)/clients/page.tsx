@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Users, Edit, Trash2, Phone, Mail, MessageCircle, Briefcase, TrendingUp, TrendingDown, FileText, Edit2, DollarSign, Calendar as CalendarIconFeather, Package, Save, Grid, List as ListIcon, Search } from "react-feather";
@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { mockBookings } from '@/app/(app)/bookings/page';
-import type { Payment, PaymentStatus, Client } from '@/types'; // Updated to import Client type
+import type { Payment, PaymentStatus, Client } from '@/types';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
@@ -17,10 +17,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'react-toastify';
 import { cn } from '@/lib/utils';
-import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone'; // Added import
+import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 
-// Mock data for clients
-const initialMockClients: Client[] = [ // Explicitly type initialMockClients
+const initialMockClients: Client[] = [
   { id: "1", name: "Alice Wonderland", contactDetails: { email: "alice@example.com", phone: "555-1234", whatsapp: "555-1234" }, address: "123 Storybook Lane", totalPayments: 150, outstandingBalance: 0, totalBookings: 1, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "female person", notes: "Prefers morning shoots. Allergic to cats." },
   { id: "2", name: "Bob The Builder", contactDetails: { email: "bob@example.com", phone: "555-5678" }, address: "456 Construction Rd", totalPayments: 2500, outstandingBalance: 0, totalBookings: 1, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "male person", notes: "Needs invoices sent to accounting@bobcorp.com." },
   { id: "3", name: "Charlie Chaplin", contactDetails: { email: "charlie@example.com" }, totalPayments: 0, outstandingBalance: 100, totalBookings: 1, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "classic actor", notes: "" },
@@ -37,18 +36,29 @@ const paymentStatusVariantMap: Record<PaymentStatus, "default" | "secondary" | "
 type LayoutMode = 'grid' | 'list';
 
 export default function ClientsPage() {
-  const [mockClients, setMockClients] = useState<Client[]>(initialMockClients); // Type mockClients state
+  const [mockClients, setMockClients] = useState<Client[]>(initialMockClients);
   const [isAddClientDialogOpen, setIsAddClientDialogOpen] = useState(false);
-  
-  // New client form state
+  const [isEditClientDialogOpen, setIsEditClientDialogOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+
   const [newClientName, setNewClientName] = useState('');
   const [newClientEmail, setNewClientEmail] = useState('');
   const [newClientPhone, setNewClientPhone] = useState('');
-  const [newClientWhatsApp, setNewClientWhatsApp] = useState(''); // Added WhatsApp state
+  const [newClientWhatsApp, setNewClientWhatsApp] = useState('');
   const [newClientAddress, setNewClientAddress] = useState('');
   const [newClientNotes, setNewClientNotes] = useState('');
-  const [newClientPhotoFile, setNewClientPhotoFile] = useState<File | null>(null); // Added photo file state
-  const [newClientPhotoPreview, setNewClientPhotoPreview] = useState<string | null>(null); // Added photo preview state
+  const [newClientPhotoFile, setNewClientPhotoFile] = useState<File | null>(null);
+  const [newClientPhotoPreview, setNewClientPhotoPreview] = useState<string | null>(null);
+
+  const [editClientName, setEditClientName] = useState('');
+  const [editClientEmail, setEditClientEmail] = useState('');
+  const [editClientPhone, setEditClientPhone] = useState('');
+  const [editClientWhatsApp, setEditClientWhatsApp] = useState('');
+  const [editClientAddress, setEditClientAddress] = useState('');
+  const [editClientNotes, setEditClientNotes] = useState('');
+  const [editClientPhotoFile, setEditClientPhotoFile] = useState<File | null>(null);
+  const [editClientPhotoPreview, setEditClientPhotoPreview] = useState<string | null>(null);
+
 
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('grid');
   const [searchTerm, setSearchTerm] = useState('');
@@ -57,6 +67,12 @@ export default function ClientsPage() {
 
   const handleEditNote = (clientName: string) => {
     console.log(`Edit note for ${clientName} clicked.`);
+    // This could open a smaller, dedicated note editing modal if desired.
+    // For now, the main edit dialog will handle notes.
+    const clientToEdit = mockClients.find(c => c.name === clientName);
+    if (clientToEdit) {
+      handleOpenEditDialog(clientToEdit); // Open full edit dialog
+    }
   };
 
   const getClientPayments = (clientName: string): Payment[] => {
@@ -74,11 +90,33 @@ export default function ClientsPage() {
     setNewClientName('');
     setNewClientEmail('');
     setNewClientPhone('');
-    setNewClientWhatsApp(''); // Reset WhatsApp
+    setNewClientWhatsApp('');
     setNewClientAddress('');
     setNewClientNotes('');
-    setNewClientPhotoFile(null); // Reset photo file
-    setNewClientPhotoPreview(null); // Reset photo preview
+    setNewClientPhotoFile(null);
+    setNewClientPhotoPreview(null);
+  };
+
+  const handleClientPhotoChange = (file: File | null, type: 'new' | 'edit') => {
+    if (type === 'new') {
+      setNewClientPhotoFile(file);
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => setNewClientPhotoPreview(reader.result as string);
+        reader.readAsDataURL(file);
+      } else {
+        setNewClientPhotoPreview(null);
+      }
+    } else {
+      setEditClientPhotoFile(file);
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => setEditClientPhotoPreview(reader.result as string);
+        reader.readAsDataURL(file);
+      } else {
+        setEditClientPhotoPreview(editingClient?.avatarUrl || null); // Revert to original or clear
+      }
+    }
   };
 
   const handleSaveNewClient = () => {
@@ -87,18 +125,18 @@ export default function ClientsPage() {
       return;
     }
 
-    const newClient: Client = { // Type newClient
-      id: (mockClients.length + 1).toString(),
+    const newClient: Client = {
+      id: (mockClients.length + Date.now()).toString(), // More unique ID
       name: newClientName,
       contactDetails: {
         email: newClientEmail.trim() || undefined,
         phone: newClientPhone.trim() || undefined,
-        whatsapp: newClientWhatsApp.trim() || undefined, // Add WhatsApp
+        whatsapp: newClientWhatsApp.trim() || undefined,
       },
       address: newClientAddress.trim() || undefined,
       notes: newClientNotes.trim() || undefined,
-      avatarUrl: newClientPhotoPreview || `https://placehold.co/80x80.png?text=${getInitials(newClientName)}`, // Use photo preview or fallback
-      dataAiHint: "person client", // Generic AI hint
+      avatarUrl: newClientPhotoPreview || `https://placehold.co/80x80.png?text=${getInitials(newClientName)}`,
+      dataAiHint: newClientPhotoPreview ? "person client custom" : "person client",
       totalPayments: 0,
       outstandingBalance: 0,
       totalBookings: 0,
@@ -106,34 +144,68 @@ export default function ClientsPage() {
 
     setMockClients(prevClients => [...prevClients, newClient]);
     toast.success(`Client "${newClient.name}" added successfully!`);
-    console.log("New Client Saved:", newClient);
-
     resetNewClientForm();
     setIsAddClientDialogOpen(false);
   };
+
+  const handleOpenEditDialog = (client: Client) => {
+    setEditingClient(client);
+    setEditClientName(client.name);
+    setEditClientEmail(client.contactDetails.email || '');
+    setEditClientPhone(client.contactDetails.phone || '');
+    setEditClientWhatsApp(client.contactDetails.whatsapp || '');
+    setEditClientAddress(client.address || '');
+    setEditClientNotes(client.notes || '');
+    setEditClientPhotoPreview(client.avatarUrl || null);
+    setEditClientPhotoFile(null);
+    setIsEditClientDialogOpen(true);
+  };
+
+  const handleSaveEditedClient = () => {
+    if (!editingClient || !editClientName.trim()) {
+      toast.error("Client Name is required.");
+      return;
+    }
+
+    const updatedClient: Client = {
+      ...editingClient,
+      name: editClientName,
+      contactDetails: {
+        email: editClientEmail.trim() || undefined,
+        phone: editClientPhone.trim() || undefined,
+        whatsapp: editClientWhatsApp.trim() || undefined,
+      },
+      address: editClientAddress.trim() || undefined,
+      notes: editClientNotes.trim() || undefined,
+      avatarUrl: editClientPhotoPreview || editingClient.avatarUrl, // Keep original if no new preview
+      dataAiHint: editClientPhotoPreview && editClientPhotoPreview !== editingClient.avatarUrl ? "person client custom" : editingClient.dataAiHint,
+    };
+
+    setMockClients(prevClients =>
+      prevClients.map(c => (c.id === editingClient.id ? updatedClient : c))
+    );
+    toast.success(`Client "${updatedClient.name}" updated successfully!`);
+    setIsEditClientDialogOpen(false);
+    setEditingClient(null);
+  };
+  
+  const handleDeleteClient = (clientId: string, clientName: string) => {
+    setMockClients(prevClients => prevClients.filter(client => client.id !== clientId));
+    toast.info(`Client "${clientName}" deleted.`);
+  };
+
 
   const filteredClients = useMemo(() => {
     let clientsToDisplay = [...mockClients];
     if (searchTerm.trim() !== '') {
       clientsToDisplay = clientsToDisplay.filter(client =>
-        client.name.toLowerCase().includes(searchTerm.toLowerCase())
+        client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (client.contactDetails.email && client.contactDetails.email.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
     return clientsToDisplay;
   }, [mockClients, searchTerm]);
   
-  const handleClientPhotoChange = (file: File | null) => {
-    setNewClientPhotoFile(file);
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewClientPhotoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setNewClientPhotoPreview(null);
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -147,7 +219,7 @@ export default function ClientsPage() {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search clients by name..."
+                placeholder="Search clients..."
                 className="pl-8 w-full sm:w-[200px] lg:w-[250px]"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -196,7 +268,7 @@ export default function ClientsPage() {
                   <span className="font-medium text-foreground">{client.name}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="icon" title="Edit Client">
+                  <Button variant="ghost" size="icon" title="Edit Client" onClick={() => handleOpenEditDialog(client)}>
                     <Edit className="h-4 w-4" />
                   </Button>
                   <Button
@@ -204,10 +276,7 @@ export default function ClientsPage() {
                     size="icon"
                     className="text-destructive hover:text-destructive hover:bg-destructive/10"
                     title="Delete Client"
-                    onClick={() => {
-                      setMockClients(prev => prev.filter(c => c.id !== client.id));
-                      toast.info(`Client "${client.name}" deleted.`);
-                    }}
+                    onClick={() => handleDeleteClient(client.id, client.name)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -339,15 +408,12 @@ export default function ClientsPage() {
                   <Button variant="ghost" size="icon" title="Edit Note" onClick={() => handleEditNote(client.name)}>
                       <Edit2 className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm"><Edit className="mr-1.5 h-4 w-4" />Edit</Button>
+                  <Button variant="ghost" size="sm" onClick={() => handleOpenEditDialog(client)}><Edit className="mr-1.5 h-4 w-4" />Edit</Button>
                   <Button 
                       variant="ghost" 
                       size="sm" 
                       className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => {
-                          setMockClients(prev => prev.filter(c => c.id !== client.id));
-                          toast.info(`Client "${client.name}" deleted.`);
-                      }}
+                      onClick={() => handleDeleteClient(client.id, client.name)}
                   >
                       <Trash2 className="mr-1.5 h-4 w-4" />Delete
                   </Button>
@@ -359,7 +425,7 @@ export default function ClientsPage() {
       ) : (
          <div className="flex flex-col items-center justify-center py-20 text-center rounded-lg border border-dashed">
           <Users className="h-20 w-20 text-muted-foreground mb-6" />
-          {initialMockClients.length === 0 && searchTerm.trim() === '' ? ( // Check initialMockClients for truly empty state
+          {initialMockClients.length === 0 && searchTerm.trim() === '' ? ( 
             <>
               <h3 className="text-2xl font-semibold mb-3 font-headline">No Clients Yet</h3>
               <p className="text-muted-foreground mb-6 max-w-sm">You haven&apos;t added any clients. Click the button below to add your first client and start managing their bookings.</p>
@@ -376,6 +442,7 @@ export default function ClientsPage() {
         </div>
       )}
 
+      {/* Add New Client Dialog */}
       <Dialog open={isAddClientDialogOpen} onOpenChange={setIsAddClientDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
@@ -388,9 +455,9 @@ export default function ClientsPage() {
             <div className="grid gap-2">
               <Label htmlFor="new-client-photo">Client Photo</Label>
               <ImageUploadDropzone
-                onFileChange={handleClientPhotoChange}
-                initialImageUrl={newClientPhotoPreview || undefined} // Pass preview or undefined
-                className="h-32" // Adjusted height
+                onFileChange={(file) => handleClientPhotoChange(file, 'new')}
+                initialImageUrl={newClientPhotoPreview || undefined}
+                className="h-32"
                 imageClassName="rounded-md"
                 label="Drop photo or click to upload"
               />
@@ -469,7 +536,100 @@ export default function ClientsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Client Dialog */}
+      {editingClient && (
+        <Dialog open={isEditClientDialogOpen} onOpenChange={setIsEditClientDialogOpen}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="font-headline">Edit Client: {editingClient.name}</DialogTitle>
+              <DialogDescription>
+                Update the client's profile information.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="edit-client-photo">Client Photo</Label>
+                <ImageUploadDropzone
+                  onFileChange={(file) => handleClientPhotoChange(file, 'edit')}
+                  initialImageUrl={editClientPhotoPreview || undefined}
+                  className="h-32"
+                  imageClassName="rounded-md"
+                  label="Drop photo or click to upload"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-client-name">Full Name</Label>
+                <Input
+                  id="edit-client-name"
+                  value={editClientName}
+                  onChange={(e) => setEditClientName(e.target.value)}
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                  <Label htmlFor="edit-client-email">Email Address</Label>
+                  <Input
+                      id="edit-client-email"
+                      type="email"
+                      value={editClientEmail}
+                      onChange={(e) => setEditClientEmail(e.target.value)}
+                  />
+                  </div>
+                  <div className="grid gap-2">
+                  <Label htmlFor="edit-client-phone">Phone Number</Label>
+                  <Input
+                      id="edit-client-phone"
+                      type="tel"
+                      value={editClientPhone}
+                      onChange={(e) => setEditClientPhone(e.target.value)}
+                  />
+                  </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-client-whatsapp">WhatsApp Number (Optional)</Label>
+                <Input
+                  id="edit-client-whatsapp"
+                  type="tel"
+                  value={editClientWhatsApp}
+                  onChange={(e) => setEditClientWhatsApp(e.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-client-address">Address (Optional)</Label>
+                <Textarea
+                  id="edit-client-address"
+                  value={editClientAddress}
+                  onChange={(e) => setEditClientAddress(e.target.value)}
+                  rows={2}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-client-notes">Notes (Optional)</Label>
+                <Textarea
+                  id="edit-client-notes"
+                  value={editClientNotes}
+                  onChange={(e) => setEditClientNotes(e.target.value)}
+                  rows={3}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button type="button" variant="outline" onClick={() => {setIsEditClientDialogOpen(false); setEditingClient(null);}}>
+                  Cancel
+                </Button>
+              </DialogClose>
+              <Button type="button" onClick={handleSaveEditedClient}>
+                <Save className="mr-2 h-4 w-4" /> Save Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
     
+
+      
