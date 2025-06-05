@@ -23,15 +23,17 @@
     --popover: 220 40% 99%;
     --popover-foreground: 220 25% 20%;
 
-    /* Fallback primary, accent, ring, and gradient colors (effectively the 'default-blue' theme if no specific theme class is applied) */
+    /* Fallback primary & accent (effectively the 'default-blue' if no theme class is applied) */
+    /* These base accent values are used by the default-blue theme explicitly too */
     --accent: 205 75% 50%;
     --accent-foreground: 210 60% 98%;
-    --primary: hsl(var(--accent));
-    --primary-foreground: hsl(var(--accent-foreground));
-    --ring: 205 75% 45%;
-    --chart-2: 205 75% 50%; /* Default chart-2 based on fallback accent */
+    --primary: hsl(var(--accent)); /* Primary defaults to accent */
+    --primary-foreground: hsl(var(--accent-foreground)); /* Primary FG defaults to accent FG */
+    --ring: 205 75% 45%; /* Ring defaults to a shade of accent */
+    --chart-2: hsl(var(--accent)); /* Chart-2 defaults to accent */
     --gradient-start-hsl: 205 75% 50%; /* Fallback gradient start */
     --gradient-end-hsl: 195 85% 45%; /* Fallback gradient end */
+
 
     --secondary: 210 25% 90%;              /* Light Gray-Blue */
     --secondary-foreground: 220 15% 35%;    /* Medium-Dark Gray-Blue */
@@ -84,13 +86,13 @@
     --popover: 220 25% 18%;
     --popover-foreground: 210 30% 90%;
 
-    /* Fallback primary, accent, ring, and gradient colors for dark mode */
+    /* Fallback primary & accent for dark mode */
     --accent: 205 70% 60%;
     --accent-foreground: 210 30% 15%;
     --primary: hsl(var(--accent));
     --primary-foreground: hsl(var(--accent-foreground));
     --ring: 205 70% 55%;
-    --chart-2: 205 70% 60%;
+    --chart-2: hsl(var(--accent));
     --gradient-start-hsl: 205 70% 60%; /* Fallback gradient start for dark */
     --gradient-end-hsl: 195 80% 55%; /* Fallback gradient end for dark */
 
@@ -136,14 +138,14 @@
     --gradient-start-hsl: 205 75% 50%;
     --gradient-end-hsl: 195 85% 45%;
     --sidebar-accent: hsl(var(--accent));
-    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-accent-foreground: hsl(var(--foreground)); /* Dark text on light gradient */
     --sidebar-ring: hsl(var(--ring));
     --sidebar-primary: hsl(var(--primary));
     --sidebar-primary-foreground: hsl(var(--primary-foreground));
   }
   .dark .theme-accent-default-blue {
     --accent: 205 70% 60%;
-    --accent-foreground: 210 30% 15%; /* Adjusted for dark mode button text */
+    --accent-foreground: 210 30% 15%;
     --primary: hsl(var(--accent));
     --primary-foreground: hsl(var(--accent-foreground));
     --ring: 205 70% 55%;
@@ -151,7 +153,7 @@
     --gradient-start-hsl: 205 70% 60%;
     --gradient-end-hsl: 195 80% 55%;
     --sidebar-accent: hsl(var(--accent));
-    --sidebar-accent-foreground: hsl(var(--accent-foreground)); /* Should be dark for contrast */
+    --sidebar-accent-foreground: hsl(var(--accent-foreground));
     --sidebar-ring: hsl(var(--ring));
     --sidebar-primary: hsl(var(--primary));
     --sidebar-primary-foreground: hsl(var(--primary-foreground));
@@ -168,14 +170,14 @@
     --gradient-start-hsl: 260 75% 60%;
     --gradient-end-hsl: 270 80% 55%;
     --sidebar-accent: hsl(var(--accent));
-    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-accent-foreground: hsl(var(--foreground));
     --sidebar-ring: hsl(var(--ring));
     --sidebar-primary: hsl(var(--primary));
     --sidebar-primary-foreground: hsl(var(--primary-foreground));
   }
   .dark .theme-accent-violet-gradient {
     --accent: 260 70% 70%;
-    --accent-foreground: 260 30% 15%; /* Adjusted for dark mode button text */
+    --accent-foreground: 260 30% 15%;
     --primary: hsl(var(--accent));
     --primary-foreground: hsl(var(--accent-foreground));
     --ring: 260 70% 65%;
@@ -183,7 +185,7 @@
     --gradient-start-hsl: 260 70% 70%;
     --gradient-end-hsl: 270 75% 65%;
     --sidebar-accent: hsl(var(--accent));
-    --sidebar-accent-foreground: hsl(var(--accent-foreground)); /* Should be dark for contrast */
+    --sidebar-accent-foreground: hsl(var(--accent-foreground));
     --sidebar-ring: hsl(var(--ring));
     --sidebar-primary: hsl(var(--primary));
     --sidebar-primary-foreground: hsl(var(--primary-foreground));
@@ -200,14 +202,14 @@
     --gradient-start-hsl: 140 60% 40%;
     --gradient-end-hsl: 150 65% 35%;
     --sidebar-accent: hsl(var(--accent));
-    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-accent-foreground: hsl(var(--foreground));
     --sidebar-ring: hsl(var(--ring));
     --sidebar-primary: hsl(var(--primary));
     --sidebar-primary-foreground: hsl(var(--primary-foreground));
   }
   .dark .theme-accent-green-gradient {
     --accent: 140 55% 50%;
-    --accent-foreground: 140 30% 10%; /* Adjusted for dark mode button text */
+    --accent-foreground: 140 30% 10%;
     --primary: hsl(var(--accent));
     --primary-foreground: hsl(var(--accent-foreground));
     --ring: 140 55% 45%;
@@ -215,7 +217,7 @@
     --gradient-start-hsl: 140 55% 50%;
     --gradient-end-hsl: 150 60% 45%;
     --sidebar-accent: hsl(var(--accent));
-    --sidebar-accent-foreground: hsl(var(--accent-foreground)); /* Should be dark for contrast */
+    --sidebar-accent-foreground: hsl(var(--accent-foreground));
     --sidebar-ring: hsl(var(--ring));
     --sidebar-primary: hsl(var(--primary));
     --sidebar-primary-foreground: hsl(var(--primary-foreground));
@@ -224,7 +226,7 @@
   /* Sunset Orange Gradient */
   .theme-accent-orange-gradient {
     --accent: 30 90% 55%;
-    --accent-foreground: 20 60% 98%; /* This is light, suitable for light mode buttons */
+    --accent-foreground: 20 60% 98%;
     --primary: hsl(var(--accent));
     --primary-foreground: hsl(var(--accent-foreground));
     --ring: 30 90% 50%;
@@ -232,14 +234,14 @@
     --gradient-start-hsl: 30 90% 55%;
     --gradient-end-hsl: 40 95% 50%;
     --sidebar-accent: hsl(var(--accent));
-    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-accent-foreground: hsl(var(--foreground));
     --sidebar-ring: hsl(var(--ring));
     --sidebar-primary: hsl(var(--primary));
     --sidebar-primary-foreground: hsl(var(--primary-foreground));
   }
   .dark .theme-accent-orange-gradient {
     --accent: 30 80% 65%;
-    --accent-foreground: 20 30% 10%; /* Dark text for dark mode orange buttons */
+    --accent-foreground: 20 30% 10%;
     --primary: hsl(var(--accent));
     --primary-foreground: hsl(var(--accent-foreground));
     --ring: 30 80% 60%;
@@ -247,11 +249,12 @@
     --gradient-start-hsl: 30 80% 65%;
     --gradient-end-hsl: 40 85% 60%;
     --sidebar-accent: hsl(var(--accent));
-    --sidebar-accent-foreground: hsl(var(--accent-foreground)); /* Should be dark for contrast */
+    --sidebar-accent-foreground: hsl(var(--accent-foreground));
     --sidebar-ring: hsl(var(--ring));
     --sidebar-primary: hsl(var(--primary));
     --sidebar-primary-foreground: hsl(var(--primary-foreground));
   }
+
 
   /* --- Font Themes --- */
   .font-theme-classic-serif body {
