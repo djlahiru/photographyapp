@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Users, Edit, Trash2, Phone, Mail, MessageCircle, Briefcase, TrendingUp, TrendingDown, FileText, Edit2, DollarSign, Calendar as CalendarIconFeather, Package, Save, Grid, List as ListIcon, Search, Eye } from "react-feather";
@@ -69,7 +69,7 @@ export default function ClientsPage() {
 
   const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase();
 
-  const resetNewClientForm = () => {
+  const resetNewClientForm = useCallback(() => {
     setNewClientName('');
     setNewClientEmail('');
     setNewClientPhone('');
@@ -78,12 +78,12 @@ export default function ClientsPage() {
     setNewClientNotes('');
     setNewClientPhotoFile(null);
     setNewClientPhotoPreview(null);
-  };
+  }, []);
 
-  const handleOpenAddClientDialog = () => {
+  const handleOpenAddClientDialog = useCallback(() => {
     resetNewClientForm();
     setIsAddClientDialogOpen(true);
-  };
+  }, [resetNewClientForm]);
 
   useEffect(() => {
     const openDialog = () => handleOpenAddClientDialog();
@@ -91,7 +91,7 @@ export default function ClientsPage() {
     return () => {
       window.removeEventListener('fabOpenNewClientDialog', openDialog);
     };
-  }, []); 
+  }, [handleOpenAddClientDialog]); 
 
   const handleEditNote = (clientName: string) => {
     const clientToEdit = clients.find(c => c.name === clientName);
@@ -248,7 +248,7 @@ export default function ClientsPage() {
             outstandingBalance: outstandingBalance < 0 ? 0 : outstandingBalance,
         };
     });
-  }, [clients, mockBookingsData]); 
+  }, [clients]); 
 
   const filteredClients = useMemo(() => {
     let clientsToDisplay = [...clientsWithDynamicData];

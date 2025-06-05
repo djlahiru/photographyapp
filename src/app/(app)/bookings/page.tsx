@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
 import type { Booking, BookingStatus, Payment, PaymentStatus, BookingActivityLogEntry, Client, BookingDateTime, BookingCategory } from "@/types";
 import { BookingActivityLog } from "@/components/bookings/booking-activity-log";
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import { format, parseISO, isValid } from 'date-fns';
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
@@ -117,7 +117,7 @@ export default function BookingsPage() {
     toast.success(`Booking status updated to ${newStatus}.`);
   };
 
-  const resetBookingForm = () => {
+  const resetBookingForm = useCallback(() => {
     setBookingClientName('');
     setBookingPackageId(undefined);
     setDialogBookingDates([{ id: 'dt_reset_' + Date.now(), dateTime: '', note: '' }]);
@@ -125,7 +125,7 @@ export default function BookingsPage() {
     setEditingBookingId(null);
     setSuggestedClients([]);
     setIsClientSuggestionsOpen(false);
-  };
+  }, []);
 
   const resetNewClientForBookingForm = () => {
       setNewClientForBookingName('');
@@ -172,10 +172,10 @@ export default function BookingsPage() {
   const handleBookingDateChange = (idToChange: string, newDateTime: string) => setDialogBookingDates(prev => prev.map(dt => dt.id === idToChange ? { ...dt, dateTime: newDateTime } : dt));
   const handleBookingDateNoteChange = (idToChange: string, newNote: string) => setDialogBookingDates(prev => prev.map(dt => dt.id === idToChange ? { ...dt, note: newNote } : dt));
 
-  const handleOpenAddBookingDialog = () => {
+  const handleOpenAddBookingDialog = useCallback(() => {
     resetBookingForm();
     setIsAddBookingDialogOpen(true);
-  };
+  }, [resetBookingForm]);
 
   useEffect(() => {
     const openDialog = () => handleOpenAddBookingDialog();
@@ -183,7 +183,7 @@ export default function BookingsPage() {
     return () => {
       window.removeEventListener('fabOpenNewBookingDialog', openDialog);
     };
-  }, []); 
+  }, [handleOpenAddBookingDialog]); 
 
   const handleOpenEditBookingDialog = (booking: Booking) => {
     resetBookingForm();
