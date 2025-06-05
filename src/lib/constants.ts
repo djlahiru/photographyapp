@@ -135,13 +135,26 @@ export const ACCENT_THEMES: AccentTheme[] = [
   {
     value: 'orange-gradient',
     label: 'Sunset Orange Gradient',
-    lightColors: { accent: '30 90% 55%', accentForeground: '20 60% 98%', ring: '30 90% 50%', chart2: '30 90% 55%' },
-    darkColors: { accent: '30 80% 65%', accentForeground: '20 30% 10%', ring: '30 80% 60%', chart2: '30 80% 65%' },
-    gradientPreview: 'linear-gradient(to right, hsl(30, 90%, 55%), hsl(40, 95%, 50%))',
-    lightGradientStartHsl: '30 90% 55%',
-    lightGradientEndHsl: '40 95% 50%',
-    darkGradientStartHsl: '30 80% 65%',
-    darkGradientEndHsl: '40 85% 60%',
+    // Hex: #c21500 (darker) to #ffc500 (lighter)
+    // #c21500 -> HSL: 6 100% 38%
+    // #ffc500 -> HSL: 46 100% 50%
+    lightColors: { 
+      accent: '46 100% 50%', // #ffc500
+      accentForeground: '20 80% 10%', // Dark foreground for contrast
+      ring: '46 100% 45%', 
+      chart2: '46 100% 50%' 
+    },
+    darkColors: { 
+      accent: '46 100% 65%', // Lightened #ffc500 for dark mode
+      accentForeground: '40 100% 95%', // Light foreground for contrast
+      ring: '46 100% 60%', 
+      chart2: '46 100% 65%' 
+    },
+    gradientPreview: 'linear-gradient(to right, #c21500, #ffc500)',
+    lightGradientStartHsl: '6 100% 38%', // #c21500
+    lightGradientEndHsl: '46 100% 50%', // #ffc500
+    darkGradientStartHsl: '6 100% 48%',  // Lightened #c21500 for dark mode
+    darkGradientEndHsl: '46 100% 65%', // Lightened #ffc500 for dark mode
   },
 ];
 export type AccentThemeValue = typeof ACCENT_THEMES[number]['value'];
@@ -166,3 +179,5 @@ export const ALL_LOCAL_STORAGE_KEYS: string[] = [
   CLOCK_FORMAT_LS_KEY,
 ];
 
+
+    
