@@ -4,7 +4,7 @@
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { AppHeader } from '@/components/layout/app-header';
-import { FloatingActionButton } from '@/components/ui/floating-action-button';
+// import { FloatingActionButton } from '@/components/ui/floating-action-button'; // Removed import
 import { useIsMobile } from '@/hooks/use-mobile';
 import { BottomNavigationBar } from '@/components/layout/bottom-navigation-bar';
 import { cn } from '@/lib/utils';
@@ -40,16 +40,14 @@ export default function AppLayout({
         <AppHeader />
         <div className={cn(
           "flex-1 p-6 content-area-gradient overflow-auto",
-          isMobileView && "pb-24" // Increased padding for bottom nav + FAB
+          isMobileView && "pb-24" // Increased padding for bottom nav
         )}>
          {children}
         </div>
-        {/* Adjust FAB position slightly if mobile nav is present */}
-        <div className={cn(isMobileView && "bottom-20 right-6 fixed z-40", !isMobileView && "fixed bottom-6 right-6 z-40")}>
-            <FloatingActionButton />
-        </div>
+        {/* Floating Action Button removed from here */}
       </main>
       {isMobileView && <BottomNavigationBar />}
     </SidebarProvider>
   );
 }
+
