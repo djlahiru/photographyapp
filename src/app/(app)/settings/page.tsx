@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button"; // Added buttonVariants import
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -33,10 +33,12 @@ import {
   GOOGLE_CALENDAR_CONNECTED_LS_KEY,
   GOOGLE_CALENDAR_ID_LS_KEY,
   GOOGLE_CALENDAR_AUTO_SYNC_LS_KEY,
+  INVOICE_TEMPLATE_LS_KEY,
+  INVOICE_HISTORY_LS_KEY,
   SELECTED_CURRENCY_LS_KEY,
   AVAILABLE_CURRENCIES,
   type CurrencyDefinition,
-  ALL_LOCAL_STORAGE_KEYS, // Import the new constant
+  ALL_LOCAL_STORAGE_KEYS, 
 } from '@/lib/constants';
 
 
@@ -220,7 +222,7 @@ export default function SettingsPage() {
         }
     });
 
-    if (themeValue !== 'default-sans') { // default-sans is the base, no class needed for it
+    if (themeValue !== 'default-sans') { 
       document.documentElement.classList.add(`${classPrefix}${themeValue}`);
     }
   };
@@ -339,25 +341,20 @@ export default function SettingsPage() {
   };
 
   const handleResetApplicationData = () => {
-    resetAllMockData(); // Reset the in-memory mock data arrays
+    resetAllMockData(); 
 
     ALL_LOCAL_STORAGE_KEYS.forEach(key => {
       localStorage.removeItem(key);
     });
 
-    // Reset font theme class on HTML element
     document.documentElement.classList.forEach(cls => {
       if (cls.startsWith('font-theme-')) {
         document.documentElement.classList.remove(cls);
       }
     });
-    // Default accent theme will be reapplied on load by RootLayout if no other theme is set.
-    // No need to explicitly set it here if relying on RootLayout's logic.
-
+    
     toast.success("Application data has been reset. Logging out...");
     
-    // Redirect to login page and force reload to ensure all state is fresh
-    // A slight delay might be good for the toast to be seen.
     setTimeout(() => {
         window.location.href = '/login'; 
     }, 1500);
