@@ -25,10 +25,10 @@
 
     /* Fallback primary, accent, ring, and gradient colors (effectively the 'default-blue' theme) */
     /* THESE WILL BE OVERRIDDEN BY .theme-accent-* classes FOR ACCENT */
-    --primary: 205 75% 50%; /* Default primary if no theme applied */
-    --primary-foreground: 210 60% 98%;
-    --accent: 205 75% 50%;
+    --accent: 205 75% 50%; /* Default primary if no theme applied */
     --accent-foreground: 210 60% 98%;
+    --primary: hsl(var(--accent));
+    --primary-foreground: hsl(var(--accent-foreground));
     --ring: 205 75% 45%;
     --chart-2: 205 75% 50%; /* Default chart-2 */
     --gradient-start-hsl: 205 75% 50%; /* Fallback gradient start */
@@ -86,10 +86,10 @@
     --popover-foreground: 210 30% 90%;
 
     /* Fallback primary, accent, ring, and gradient colors for dark mode */
-    --primary: 205 70% 60%;
-    --primary-foreground: 210 30% 15%;
     --accent: 205 70% 60%;
     --accent-foreground: 210 30% 15%;
+    --primary: hsl(var(--accent));
+    --primary-foreground: hsl(var(--accent-foreground));
     --ring: 205 70% 55%;
     --chart-2: 205 70% 60%;
     --gradient-start-hsl: 205 70% 60%; /* Fallback gradient start for dark */
@@ -284,12 +284,18 @@
 @layer components {
   /* Active sidebar menu items */
   .sidebar-menu-button--active {
-    background-color: hsl(var(--sidebar-accent));
+    background-image: linear-gradient(to right, hsl(var(--gradient-start-hsl)), hsl(var(--gradient-end-hsl)));
     color: hsl(var(--sidebar-accent-foreground));
+    filter: brightness(100%); /* Ensure it's not too dark if a global filter exists */
+    transition: filter 0.2s ease-in-out;
   }
+  .sidebar-menu-button--active:hover {
+    filter: brightness(90%); /* Slight dim on hover for the active gradient button */
+  }
+
   /* Hover for non-active sidebar items */
   .sidebar-menu-button--inactive:hover {
-    background-color: hsl(var(--sidebar-accent) / 0.8);
+    background-color: hsl(var(--sidebar-accent) / 0.8); /* Use semi-transparent solid accent for hover */
     color: hsl(var(--sidebar-accent-foreground));
   }
 }
@@ -304,3 +310,5 @@
     background-color: hsl(var(--sidebar-gradient-bg-start-hsl));
   }
 }
+
+    
