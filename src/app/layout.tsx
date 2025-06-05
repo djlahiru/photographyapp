@@ -71,7 +71,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased">
+      <body className="font-body antialiased flex flex-col min-h-screen"> {/* Added flex flex-col and min-h-screen (though min-h-screen is also in globals.css) */}
         <I18nProviderClient>
           <ThemeProvider
             attribute="class"
@@ -79,13 +79,16 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
-            <ToastContainer theme="colored" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
+            <div className="flex-grow flex flex-col"> {/* Wrapper for children + toast to make it grow */}
+              {children}
+              <ToastContainer theme="colored" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
+            </div>
+            <footer className="py-4 text-center text-xs text-muted-foreground border-t border-border">
+              Copyright 2025 | Developed By Cyber ​​yakku
+            </footer>
           </ThemeProvider>
         </I18nProviderClient>
       </body>
     </html>
   );
 }
-
-    
