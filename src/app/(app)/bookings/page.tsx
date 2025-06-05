@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup, SelectLabel } from "@/components/ui/select";
-import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIconFeather, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle, Search, TrendingUp, TrendingDown, CreditCard, Save, UserPlus, Plus, Trash } from "react-feather";
+import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIconFeather, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle, Search, TrendingUp, TrendingDown, CreditCard, Save, UserPlus, Plus, Trash, FileText } from "react-feather";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
 import type { Booking, BookingStatus, Payment, PaymentStatus, BookingActivityLogEntry, Client, BookingDateTime } from "@/types";
@@ -49,7 +49,7 @@ export default function BookingsPage() {
 
   const [bookingClientName, setBookingClientName] = React.useState('');
   const [bookingPackageId, setBookingPackageId] = React.useState<string | undefined>(undefined);
-  const [dialogBookingDates, setDialogBookingDates] = React.useState<BookingDateTime[]>([{ id: 'dt_new_' + Date.now(), dateTime: '' }]);
+  const [dialogBookingDates, setDialogBookingDates] = React.useState<BookingDateTime[]>([{ id: 'dt_new_' + Date.now(), dateTime: '', note: '' }]);
   const [bookingCategory, setBookingCategory] = React.useState('');
   
   const [suggestedClients, setSuggestedClients] = React.useState<Client[]>([]);
@@ -104,7 +104,7 @@ export default function BookingsPage() {
   const resetBookingForm = () => {
     setBookingClientName('');
     setBookingPackageId(undefined);
-    setDialogBookingDates([{ id: 'dt_reset_' + Date.now(), dateTime: '' }]);
+    setDialogBookingDates([{ id: 'dt_reset_' + Date.now(), dateTime: '', note: '' }]);
     setBookingCategory('');
     setEditingBookingId(null);
     setSuggestedClients([]);
@@ -129,7 +129,7 @@ export default function BookingsPage() {
       setIsClientSuggestionsOpen(false);
       return;
     }
-    const matches = mockClientsData.filter(client => // Use mockClientsData
+    const matches = mockClientsData.filter(client => 
       client.name.toLowerCase().includes(name.toLowerCase())
     );
     setSuggestedClients(matches);
@@ -148,7 +148,7 @@ export default function BookingsPage() {
   };
 
   const handleAddBookingDate = () => {
-    setDialogBookingDates(prev => [...prev, { id: 'dt_add_' + Date.now(), dateTime: '' }]);
+    setDialogBookingDates(prev => [...prev, { id: 'dt_add_' + Date.now(), dateTime: '', note: '' }]);
   };
 
   const handleRemoveBookingDate = (idToRemove: string) => {
@@ -163,6 +163,10 @@ export default function BookingsPage() {
     setDialogBookingDates(prev => prev.map(dt => dt.id === idToChange ? { ...dt, dateTime: newDateTime } : dt));
   };
 
+  const handleBookingDateNoteChange = (idToChange: string, newNote: string) => {
+    setDialogBookingDates(prev => prev.map(dt => dt.id === idToChange ? { ...dt, note: newNote } : dt));
+  };
+
   const handleOpenAddBookingDialog = () => {
     resetBookingForm();
     setIsAddBookingDialogOpen(true);
@@ -175,9 +179,10 @@ export default function BookingsPage() {
     setBookingPackageId(booking.packageId);
     const formattedDates = booking.bookingDates.map(bd => ({
         ...bd,
-        dateTime: bd.dateTime && isValid(parseISO(bd.dateTime)) ? format(parseISO(bd.dateTime), "yyyy-MM-dd'T'HH:mm") : ''
+        dateTime: bd.dateTime && isValid(parseISO(bd.dateTime)) ? format(parseISO(bd.dateTime), "yyyy-MM-dd'T'HH:mm") : '',
+        note: bd.note || ''
     }));
-    setDialogBookingDates(formattedDates.length > 0 ? formattedDates : [{ id: 'dt_edit_empty_' + Date.now(), dateTime: '' }]);
+    setDialogBookingDates(formattedDates.length > 0 ? formattedDates : [{ id: 'dt_edit_empty_' + Date.now(), dateTime: '', note: '' }]);
     setBookingCategory(booking.category || '');
     setIsEditBookingDialogOpen(true);
     setSuggestedClients([]);
@@ -211,7 +216,7 @@ export default function BookingsPage() {
             outstandingBalance: 0,
             totalBookings: 0,
         };
-        mockClientsData.unshift(newClientToAdd); // Add to centralized client data
+        mockClientsData.unshift(newClientToAdd); 
         setBookingClientName(newClientToAdd.name);
         toast.success(`New client "${newClientToAdd.name}" added and selected for this booking.`);
     }
@@ -229,7 +234,7 @@ export default function BookingsPage() {
       return;
     }
 
-    const selectedPackage = mockPackagesData.find(p => p.id === bookingPackageId); // Use mockPackagesData
+    const selectedPackage = mockPackagesData.find(p => p.id === bookingPackageId); 
     if (!selectedPackage) {
       toast.error("Selected package not found.");
       return;
@@ -237,7 +242,11 @@ export default function BookingsPage() {
 
     const validBookingDates = dialogBookingDates
         .filter(dt => dt.dateTime.trim() !== '')
-        .map(dt => ({ ...dt, dateTime: new Date(dt.dateTime).toISOString() }));
+        .map(dt => ({ 
+            ...dt, 
+            dateTime: new Date(dt.dateTime).toISOString(),
+            note: dt.note?.trim() || undefined 
+        }));
 
     if (validBookingDates.length === 0) {
         toast.error("Please provide at least one valid booking date and time.");
@@ -288,8 +297,8 @@ export default function BookingsPage() {
           },
         ],
       };
-      mockBookingsData.unshift(newBooking); // Add to centralized data
-      setBookings([...mockBookingsData]); // Update local state
+      mockBookingsData.unshift(newBooking); 
+      setBookings([...mockBookingsData]); 
       toast.success(`Booking for ${newBooking.clientName} with ${newBooking.packageName} scheduled!`);
       setIsAddBookingDialogOpen(false);
     }
@@ -352,7 +361,8 @@ export default function BookingsPage() {
                 const StatusIcon = statusIconMap[booking.status];
                 const totalPaid = booking.payments?.filter(p => p.status === 'Paid').reduce((sum, p) => sum + p.amount, 0) || 0;
                 const remainingAmount = booking.price - totalPaid;
-                const firstBookingDate = booking.bookingDates && booking.bookingDates.length > 0 && booking.bookingDates[0].dateTime ? parseISO(booking.bookingDates[0].dateTime) : null;
+                const firstBookingDateEntry = booking.bookingDates && booking.bookingDates.length > 0 ? booking.bookingDates[0] : null;
+                const firstBookingDate = firstBookingDateEntry && firstBookingDateEntry.dateTime ? parseISO(firstBookingDateEntry.dateTime) : null;
 
                 return (
                 <Card key={booking.id} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -415,15 +425,23 @@ export default function BookingsPage() {
                         </div>
                     </CardHeader>
                     <CardContent className="p-4 flex-grow space-y-3 text-sm">
-                        <div className="flex items-center">
-                            <CalendarIconFeather className="h-4 w-4 mr-2 text-muted-foreground" />
-                            {firstBookingDate && isValid(firstBookingDate) ? (
-                                <>
-                                    <span>{format(firstBookingDate, "eee, MMM d, yyyy 'at' h:mm a")}</span>
-                                    {booking.bookingDates.length > 1 && <span className="ml-2 text-xs text-muted-foreground">(+{booking.bookingDates.length -1} more)</span>}
-                                </>
-                            ) : (
-                                <span>No date set</span>
+                        <div className="space-y-1">
+                            <div className="flex items-center">
+                                <CalendarIconFeather className="h-4 w-4 mr-2 text-muted-foreground flex-shrink-0" />
+                                {firstBookingDate && isValid(firstBookingDate) ? (
+                                    <div className="flex-grow">
+                                        <span>{format(firstBookingDate, "eee, MMM d, yyyy 'at' h:mm a")}</span>
+                                        {booking.bookingDates.length > 1 && <span className="ml-1 text-xs text-muted-foreground">(+{booking.bookingDates.length -1} more)</span>}
+                                    </div>
+                                ) : (
+                                    <span className="flex-grow">No date set</span>
+                                )}
+                            </div>
+                            {firstBookingDateEntry?.note && (
+                                <div className="flex items-start pl-6">
+                                    <FileText className="h-3.5 w-3.5 mr-1.5 mt-0.5 text-muted-foreground flex-shrink-0" />
+                                    <p className="text-xs text-muted-foreground italic leading-tight">{firstBookingDateEntry.note}</p>
+                                </div>
                             )}
                         </div>
                         {booking.category && (
@@ -502,7 +520,7 @@ export default function BookingsPage() {
               {isEditBookingDialogOpen ? "Update the booking details below." : "Fill in the details below to create a new booking."}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-2"> {/* Added max-height and overflow */}
             <div className="relative grid gap-2">
               <Label htmlFor="booking-client-name">Client Name</Label>
               <div className="flex items-center gap-2">
@@ -513,14 +531,14 @@ export default function BookingsPage() {
                   onChange={(e) => handleClientNameChange(e.target.value)}
                   onFocus={() => {
                      if (bookingClientName.trim()) {
-                       const matches = mockClientsData.filter(client => // Use mockClientsData
+                       const matches = mockClientsData.filter(client => 
                          client.name.toLowerCase().includes(bookingClientName.toLowerCase())
                        );
                        setSuggestedClients(matches);
                        setIsClientSuggestionsOpen(matches.length > 0);
                      }
                    }}
-                   onBlur={() => setTimeout(() => setIsClientSuggestionsOpen(false), 150)} // Delay to allow click on suggestion
+                   onBlur={() => setTimeout(() => setIsClientSuggestionsOpen(false), 150)} 
                   autoComplete="off"
                   className="flex-grow"
                 />
@@ -534,7 +552,7 @@ export default function BookingsPage() {
                     <div
                       key={client.id}
                       className="p-2 hover:bg-accent cursor-pointer text-sm"
-                      onMouseDown={() => { // Use onMouseDown to fire before onBlur of input
+                      onMouseDown={() => { 
                         setBookingClientName(client.name);
                         setIsClientSuggestionsOpen(false);
                         setSuggestedClients([]);
@@ -555,7 +573,7 @@ export default function BookingsPage() {
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Available Packages</SelectLabel>
-                    {mockPackagesData.map((pkg) => ( // Use mockPackagesData
+                    {mockPackagesData.map((pkg) => ( 
                       <SelectItem key={pkg.id} value={pkg.id}>
                         {pkg.name} (${pkg.price.toFixed(2)})
                       </SelectItem>
@@ -565,26 +583,35 @@ export default function BookingsPage() {
               </Select>
             </div>
 
-            <div className="grid gap-2">
+            <div className="grid gap-3">
                 <Label>Booking Dates & Times</Label>
                 {dialogBookingDates.map((dt, index) => (
-                    <div key={dt.id} className="flex items-center gap-2">
+                    <div key={dt.id} className="space-y-2 p-3 border rounded-md bg-muted/30">
+                        <div className="flex items-center gap-2">
+                            <Input
+                                type="datetime-local"
+                                value={dt.dateTime}
+                                onChange={(e) => handleBookingDateChange(dt.id, e.target.value)}
+                                className="flex-grow bg-background"
+                            />
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleRemoveBookingDate(dt.id)}
+                                disabled={dialogBookingDates.length <= 1}
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                title="Remove date/time"
+                            >
+                                <Trash className="h-4 w-4" />
+                            </Button>
+                        </div>
                         <Input
-                            type="datetime-local"
-                            value={dt.dateTime}
-                            onChange={(e) => handleBookingDateChange(dt.id, e.target.value)}
-                            className="flex-grow"
+                            type="text"
+                            placeholder="Short note for this session (optional)"
+                            value={dt.note || ''}
+                            onChange={(e) => handleBookingDateNoteChange(dt.id, e.target.value)}
+                            className="text-sm bg-background"
                         />
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleRemoveBookingDate(dt.id)}
-                            disabled={dialogBookingDates.length <= 1}
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                            title="Remove date/time"
-                        >
-                            <Trash className="h-4 w-4" />
-                        </Button>
                     </div>
                 ))}
                 <Button variant="outline" size="sm" onClick={handleAddBookingDate} className="mt-1">
@@ -712,4 +739,3 @@ export default function BookingsPage() {
     </div>
   );
 }
-

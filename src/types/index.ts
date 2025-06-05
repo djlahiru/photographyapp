@@ -75,6 +75,7 @@ export interface BookingActivityLogEntry {
 export interface BookingDateTime {
   id: string; // Unique ID for this date/time entry, e.g., for React keys
   dateTime: string; // ISO date string or format compatible with datetime-local
+  note?: string; // Optional note for this specific session
 }
 
 export interface Booking {
@@ -86,7 +87,7 @@ export interface Booking {
   category?: string;
   status: BookingStatus;
   price: number;
-  notes?: string;
+  notes?: string; // General notes for the booking
   payments?: Payment[];
   activityLog?: BookingActivityLogEntry[];
 }

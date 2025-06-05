@@ -24,7 +24,7 @@ export let mockBookingsData: Booking[] = [
     clientName: "Alice Wonderland",
     packageName: "Basic Portrait Session",
     packageId: "1",
-    bookingDates: [{ id: 'dt1_1', dateTime: "2024-08-15T14:00:00Z" }],
+    bookingDates: [{ id: 'dt1_1', dateTime: "2024-08-15T14:00:00Z", note: "Focus on professional headshots." }],
     category: "Portrait",
     status: "Confirmed" as BookingStatus,
     price: 150,
@@ -45,7 +45,7 @@ export let mockBookingsData: Booking[] = [
     clientName: "Bob The Builder",
     packageName: "Standard Wedding Package",
     packageId: "2",
-    bookingDates: [{ id: 'dt2_1', dateTime: "2024-09-20T10:30:00Z" }],
+    bookingDates: [{ id: 'dt2_1', dateTime: "2024-09-20T10:30:00Z", note: "Ceremony at City Hall, reception at The Grand Ballroom." }],
     category: "Wedding",
     status: "Completed" as BookingStatus,
     price: 2500,
@@ -65,7 +65,7 @@ export let mockBookingsData: Booking[] = [
     clientName: "Charlie Chaplin",
     packageName: "Family Lifestyle Shoot",
     packageId: "3",
-    bookingDates: [{ id: 'dt3_1', dateTime: "2024-07-30T16:00:00Z" }],
+    bookingDates: [{ id: 'dt3_1', dateTime: "2024-07-30T16:00:00Z" }], // No note for this one
     category: "Family",
     status: "Pending" as BookingStatus,
     price: 350,
@@ -82,7 +82,7 @@ export let mockBookingsData: Booking[] = [
     clientName: "Diana Prince",
     packageName: "Basic Portrait Session",
     packageId: "1",
-    bookingDates: [{ id: 'dt4_1', dateTime: "2024-08-05T09:00:00Z" }],
+    bookingDates: [{ id: 'dt4_1', dateTime: "2024-08-05T09:00:00Z", note: "Client requested a very specific studio background." }],
     category: "Portrait",
     status: "Cancelled" as BookingStatus,
     price: 150,
@@ -91,4 +91,21 @@ export let mockBookingsData: Booking[] = [
        { id: "log4b", timestamp: "2024-07-28T16:00:00Z", action: "Booking cancelled by client.", actor: "Diana Prince", iconName: "XCircle" },
     ]
   },
+  {
+    id: "5",
+    clientName: "Alice Wonderland",
+    packageName: "Family Lifestyle Shoot",
+    packageId: "3",
+    bookingDates: [
+        { id: 'dt5_1', dateTime: "2024-10-10T10:00:00Z", note: "Park session, bring picnic blanket." },
+        { id: 'dt5_2', dateTime: "2024-10-12T15:00:00Z", note: "Rain date backup." }
+    ],
+    category: "Family",
+    status: "Pending" as BookingStatus,
+    price: 350,
+    payments: [],
+    activityLog: [
+      { id: "log5a", timestamp: "2024-09-25T10:00:00Z", action: "Booking created.", actor: "Admin", iconName: "PlusCircle" },
+    ]
+  }
 ];
