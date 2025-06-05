@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup, SelectLabel } from "@/components/ui/select";
-import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIconFeather, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle, Search, TrendingUp, TrendingDown, CreditCard, Save, UserPlus, Plus, Trash, FileText } from "react-feather";
+import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIconFeather, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle, Search, TrendingUp, TrendingDown, CreditCard, Save, UserPlus, Plus, Trash, FileText as FileTextIcon, Info } from "react-feather";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
 import type { Booking, BookingStatus, Payment, PaymentStatus, BookingActivityLogEntry, Client, BookingDateTime } from "@/types";
@@ -17,6 +17,8 @@ import { format, parseISO, isValid } from 'date-fns';
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 import { mockBookingsData, mockClientsData, mockPackagesData } from '@/lib/mock-data';
 
 
@@ -34,6 +36,13 @@ const statusIconMap: Record<BookingStatus, React.ElementType> = {
   Confirmed: CheckCircle,
   Completed: CheckCircle,
   Cancelled: XCircle,
+};
+
+const paymentStatusVariantMap: Record<PaymentStatus, "default" | "secondary" | "destructive" | "outline" | "success" | "warning"> = {
+  Paid: "success",
+  Pending: "warning",
+  Failed: "destructive",
+  Refunded: "outline",
 };
 
 
@@ -66,6 +75,10 @@ export default function BookingsPage() {
   const [newClientForBookingNotes, setNewClientForBookingNotes] = React.useState('');
   const [newClientForBookingPhotoFile, setNewClientForBookingPhotoFile] = React.useState<File | null>(null);
   const [newClientForBookingPhotoPreview, setNewClientForBookingPhotoPreview] = React.useState<string | null>(null);
+
+  // State for "View Booking Details" Dialog
+  const [selectedBookingForDetailsView, setSelectedBookingForDetailsView] = React.useState<Booking | null>(null);
+  const [isViewDetailsDialogOpen, setIsViewDetailsDialogOpen] = React.useState(false);
 
 
   const filteredBookings = React.useMemo(() => {
@@ -187,6 +200,11 @@ export default function BookingsPage() {
     setIsEditBookingDialogOpen(true);
     setSuggestedClients([]);
     setIsClientSuggestionsOpen(false);
+  };
+
+  const handleOpenViewDetailsDialog = (booking: Booking) => {
+    setSelectedBookingForDetailsView(booking);
+    setIsViewDetailsDialogOpen(true);
   };
 
   const handleSaveNewClientForBooking = () => {
@@ -379,6 +397,9 @@ export default function BookingsPage() {
                                 </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleOpenViewDetailsDialog(booking)}>
+                                        <FileTextIcon className="mr-2 h-4 w-4" />View Details
+                                    </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => handleOpenEditBookingDialog(booking)}>
                                         <Edit className="mr-2 h-4 w-4" />Edit Booking
                                     </DropdownMenuItem>
@@ -439,7 +460,7 @@ export default function BookingsPage() {
                             </div>
                             {firstBookingDateEntry?.note && (
                                 <div className="flex items-start pl-6">
-                                    <FileText className="h-3.5 w-3.5 mr-1.5 mt-0.5 text-muted-foreground flex-shrink-0" />
+                                    <FileTextIcon className="h-3.5 w-3.5 mr-1.5 mt-0.5 text-muted-foreground flex-shrink-0" />
                                     <p className="text-xs text-muted-foreground italic leading-tight">{firstBookingDateEntry.note}</p>
                                 </div>
                             )}
@@ -520,7 +541,7 @@ export default function BookingsPage() {
               {isEditBookingDialogOpen ? "Update the booking details below." : "Fill in the details below to create a new booking."}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-2"> {/* Added max-height and overflow */}
+          <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
             <div className="relative grid gap-2">
               <Label htmlFor="booking-client-name">Client Name</Label>
               <div className="flex items-center gap-2">
@@ -585,7 +606,7 @@ export default function BookingsPage() {
 
             <div className="grid gap-3">
                 <Label>Booking Dates & Times</Label>
-                {dialogBookingDates.map((dt, index) => (
+                {dialogBookingDates.map((dt) => (
                     <div key={dt.id} className="space-y-2 p-3 border rounded-md bg-muted/30">
                         <div className="flex items-center gap-2">
                             <Input
@@ -736,6 +757,155 @@ export default function BookingsPage() {
         </DialogContent>
       </Dialog>
 
+      {/* View Booking Details Dialog */}
+      {selectedBookingForDetailsView && (
+        <Dialog open={isViewDetailsDialogOpen} onOpenChange={setIsViewDetailsDialogOpen}>
+            <DialogContent className="sm:max-w-2xl">
+                <DialogHeader>
+                    <DialogTitle className="font-headline text-xl">Booking Details: {selectedBookingForDetailsView.packageName}</DialogTitle>
+                    <DialogDescription>Client: {selectedBookingForDetailsView.clientName}</DialogDescription>
+                </DialogHeader>
+                <ScrollArea className="max-h-[70vh] pr-3">
+                    <div className="space-y-6 py-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <Label className="font-semibold text-muted-foreground">Status</Label>
+                                <Badge variant={statusVariantMap[selectedBookingForDetailsView.status]} className="mt-1 py-1 text-xs">
+                                    {React.createElement(statusIconMap[selectedBookingForDetailsView.status], { className: "mr-1.5 h-3.5 w-3.5" })}
+                                    {selectedBookingForDetailsView.status}
+                                </Badge>
+                            </div>
+                             {selectedBookingForDetailsView.category && (
+                                <div>
+                                    <Label className="font-semibold text-muted-foreground">Category</Label>
+                                    <p className="text-foreground">{selectedBookingForDetailsView.category}</p>
+                                </div>
+                            )}
+                            <div>
+                                <Label className="font-semibold text-muted-foreground">Total Price</Label>
+                                <p className="text-foreground">${selectedBookingForDetailsView.price.toFixed(2)}</p>
+                            </div>
+                        </div>
+                        
+                        <Separator />
+
+                        <div>
+                            <Label className="font-semibold text-muted-foreground mb-2 block">Booking Dates & Sessions</Label>
+                            <div className="space-y-4">
+                                {selectedBookingForDetailsView.bookingDates.map((bd, index) => (
+                                    <div key={bd.id} className="p-3 border rounded-md bg-muted/20">
+                                        <div className="flex items-center">
+                                            <CalendarIconFeather className="h-4 w-4 mr-2 text-primary flex-shrink-0" />
+                                            {isValid(parseISO(bd.dateTime)) ? (
+                                                <span className="font-medium text-foreground">{format(parseISO(bd.dateTime), "eee, MMM d, yyyy 'at' h:mm a")}</span>
+                                            ) : (
+                                                <span className="text-foreground">Invalid Date</span>
+                                            )}
+                                        </div>
+                                        {bd.note && (
+                                            <div className="flex items-start mt-1.5 pl-6">
+                                                <FileTextIcon className="h-3.5 w-3.5 mr-1.5 mt-0.5 text-muted-foreground flex-shrink-0" />
+                                                <p className="text-xs text-muted-foreground italic">{bd.note}</p>
+                                            </div>
+                                        )}
+                                        {index < selectedBookingForDetailsView.bookingDates.length - 1 && <Separator className="mt-3" />}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {(selectedBookingForDetailsView.payments && selectedBookingForDetailsView.payments.length > 0) && (
+                            <>
+                                <Separator />
+                                <div>
+                                    <Label className="font-semibold text-muted-foreground mb-2 block">Payments</Label>
+                                    <div className="space-y-3">
+                                    {selectedBookingForDetailsView.payments.map(payment => (
+                                        <Card key={payment.id} className="bg-muted/20">
+                                            <CardContent className="p-3 text-xs space-y-1">
+                                                <div className="flex justify-between items-center">
+                                                    <p className="font-medium text-foreground">{payment.description || `Payment on ${format(parseISO(payment.paymentDate), 'MMM d')}`}</p>
+                                                    <Badge variant={paymentStatusVariantMap[payment.status]} className="text-xs px-1.5 py-0.5">
+                                                      {payment.status}
+                                                    </Badge>
+                                                </div>
+                                                <p><span className="text-muted-foreground">Amount:</span> ${payment.amount.toFixed(2)}</p>
+                                                <p><span className="text-muted-foreground">Date:</span> {format(parseISO(payment.paymentDate), 'MMM d, yyyy, h:mm a')}</p>
+                                                {payment.method && <p><span className="text-muted-foreground">Method:</span> {payment.method}</p>}
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                    </div>
+                                    <div className="mt-3 pt-2 border-t border-border/50 text-sm">
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Total Paid:</span>
+                                            <span className="font-semibold text-green-600 dark:text-green-400">
+                                                ${(selectedBookingForDetailsView.payments?.filter(p=>p.status === 'Paid').reduce((sum,p)=>sum+p.amount,0) || 0).toFixed(2)}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Remaining:</span>
+                                            <span className="font-semibold">
+                                                ${(selectedBookingForDetailsView.price - (selectedBookingForDetailsView.payments?.filter(p=>p.status === 'Paid').reduce((sum,p)=>sum+p.amount,0) || 0)).toFixed(2)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {selectedBookingForDetailsView.notes && (
+                            <>
+                                <Separator />
+                                <div>
+                                    <Label className="font-semibold text-muted-foreground">General Booking Notes</Label>
+                                    <p className="text-sm text-foreground whitespace-pre-wrap mt-1">{selectedBookingForDetailsView.notes}</p>
+                                </div>
+                            </>
+                        )}
+                        
+                        {(selectedBookingForDetailsView.activityLog && selectedBookingForDetailsView.activityLog.length > 0) && (
+                             <>
+                                <Separator />
+                                <div>
+                                    <Label className="font-semibold text-muted-foreground mb-2 block">Recent Activity (Last 3)</Label>
+                                    <div className="space-y-3">
+                                        {selectedBookingForDetailsView.activityLog.slice(0, 3).map(log => {
+                                            const LogIcon = log.iconName ? (Info[log.iconName as keyof typeof Info] || Clock) : Clock;
+                                            return (
+                                                <div key={log.id} className="flex items-start text-xs">
+                                                    <LogIcon className="h-4 w-4 mr-2 mt-0.5 text-muted-foreground flex-shrink-0" />
+                                                    <div>
+                                                        <p className="text-foreground">{log.action}</p>
+                                                        <p className="text-muted-foreground/80">
+                                                            {format(parseISO(log.timestamp), "MMM d, h:mm a")}
+                                                            {log.actor && ` by ${log.actor}`}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                        {selectedBookingForDetailsView.activityLog.length > 3 && (
+                                            <p className="text-xs text-muted-foreground text-center mt-2">
+                                                View full activity log from the card menu for more details.
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </ScrollArea>
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button type="button" variant="outline">Close</Button>
+                    </DialogClose>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+      )}
+
     </div>
   );
 }
+
