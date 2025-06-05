@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIcon, Eye, Droplet, Edit3, Square, Circle as CircleIcon, Image as ImageIconFeather, Save, Trash2, AlertTriangle, Tag, Plus, DollarSign as DollarSignIcon } from "react-feather";
+import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIconSettings, Eye, Droplet, Edit3, Square, Circle as CircleIcon, Image as ImageIconFeather, Save, Trash2, AlertTriangle, Tag, Plus, DollarSign as DollarSignIcon, Sun as SunIcon, Moon } from "react-feather"; // Renamed Calendar to CalendarIconSettings, Added SunIcon, Moon
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 import { format } from 'date-fns';
@@ -76,7 +76,7 @@ const defaultUser: UserProfile = {
 };
 
 export default function SettingsPage() {
-  const { theme: nextTheme } = useTheme();
+  const { theme: nextTheme, setTheme, resolvedTheme } = useTheme(); // Added setTheme and resolvedTheme
   const [user, setUser] = useState<UserProfile>(defaultUser);
   
   const [isCalendarConnected, setIsCalendarConnected] = useState(false);
@@ -102,14 +102,13 @@ export default function SettingsPage() {
   const [categoryDialogGradient, setCategoryDialogGradient] = useState(PREDEFINED_GRADIENTS[0].value);
   const [categoryDialogTextColor, setCategoryDialogTextColor] = useState(PREDEFINED_GRADIENTS[0].textColor);
 
-  // State for the RadioGroup controlling currency selection
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>('USD');
-
+  const [mounted, setMounted] = useState(false); // For theme toggle button
 
   useEffect(() => {
+    setMounted(true);
     const timer = setInterval(() => setCurrentDateTime(new Date()), 1000 * 60);
     
-    // Load User Profile (which includes selectedCurrency)
     const storedProfileString = localStorage.getItem(USER_PROFILE_LS_KEY);
     let profileFromStorage: UserProfile | null = null;
     if (storedProfileString) {
@@ -122,8 +121,6 @@ export default function SettingsPage() {
     const effectiveUser = profileFromStorage ? { ...defaultUser, ...profileFromStorage } : defaultUser;
     setUser(effectiveUser);
 
-    // Initialize RadioGroup state for currency
-    // Priority: 1. From loaded effectiveUser.selectedCurrency. 2. From dedicated LS key. 3. Default.
     let currencyForRadioGroupInit: CurrencyCode = 'USD';
     if (effectiveUser.selectedCurrency && AVAILABLE_CURRENCIES.some(c => c.code === effectiveUser.selectedCurrency)) {
       currencyForRadioGroupInit = effectiveUser.selectedCurrency;
@@ -134,13 +131,9 @@ export default function SettingsPage() {
       }
     }
     setSelectedCurrency(currencyForRadioGroupInit);
-    // Ensure user object is in sync if it was derived differently
     if (effectiveUser.selectedCurrency !== currencyForRadioGroupInit) {
       setUser(prev => ({...prev, selectedCurrency: currencyForRadioGroupInit}));
-      // Optionally re-save profile if it was just synced from SELECTED_CURRENCY_LS_KEY
-      // localStorage.setItem(USER_PROFILE_LS_KEY, JSON.stringify({...effectiveUser, selectedCurrency: currencyForRadioGroupInit}));
     }
-
 
     const storedShape = localStorage.getItem(AVATAR_SHAPE_LS_KEY) as AvatarShape | null;
     if (storedShape) setAvatarShape(storedShape);
@@ -186,8 +179,6 @@ export default function SettingsPage() {
   };
   
   const handleSaveChanges = () => {
-    // The `user` state already contains the `selectedCurrency`
-    // because `handleCurrencyChange` updates the `user` state.
     localStorage.setItem(USER_PROFILE_LS_KEY, JSON.stringify(user));
     toast.success("Profile changes saved.");
     window.dispatchEvent(new CustomEvent('profileUpdated'));
@@ -197,13 +188,13 @@ export default function SettingsPage() {
   };
 
   const handleCurrencyChange = (newCurrency: CurrencyCode) => {
-    setSelectedCurrency(newCurrency); // Update RadioGroup state
+    setSelectedCurrency(newCurrency); 
     const updatedUser = { ...user, selectedCurrency: newCurrency };
-    setUser(updatedUser); // Update the main 'user' object for the page
-    localStorage.setItem(SELECTED_CURRENCY_LS_KEY, newCurrency); // Save to dedicated currency key (can be for convenience)
-    localStorage.setItem(USER_PROFILE_LS_KEY, JSON.stringify(updatedUser)); // CRITICAL: Save the updated user profile
+    setUser(updatedUser); 
+    localStorage.setItem(SELECTED_CURRENCY_LS_KEY, newCurrency); 
+    localStorage.setItem(USER_PROFILE_LS_KEY, JSON.stringify(updatedUser)); 
     toast.success(`Currency changed to ${AVAILABLE_CURRENCIES.find(c=>c.code === newCurrency)?.label || newCurrency}.`);
-    window.dispatchEvent(new CustomEvent('profileUpdated')); // Notify other components if they listen
+    window.dispatchEvent(new CustomEvent('profileUpdated')); 
   };
 
   const toggleCalendarConnection = () => {
@@ -365,7 +356,6 @@ export default function SettingsPage() {
   };
 
 
-
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
       <div>
@@ -468,16 +458,31 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center"><Droplet className="mr-2 h-5 w-5" /> Theme & Appearance</CardTitle>
+          <CardTitle className="flex items-center"><Droplet className="mr-2 h-5 w-5" /> Theme &amp; Appearance</CardTitle>
           <CardDescription>Personalize the look and feel of Rubo.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div>
-            <Label>Light/Dark Mode</Label>
-            <p className="text-sm text-muted-foreground">
-              Current mode: <span className="capitalize font-medium">{nextTheme}</span>. 
-              Use the sun/moon icon in the header to toggle.
-            </p>
+          <div className="flex items-center justify-between">
+            <div>
+                <Label>Light/Dark Mode</Label>
+                <p className="text-sm text-muted-foreground">
+                Current mode: <span className="capitalize font-medium">{nextTheme}</span>.
+                </p>
+            </div>
+            {mounted && (
+                <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+                    aria-label="Toggle theme"
+                >
+                    {resolvedTheme === 'dark' ? (
+                    <SunIcon className="h-5 w-5" />
+                    ) : (
+                    <Moon className="h-5 w-5" />
+                    )}
+                </Button>
+            )}
           </div>
           <div>
             <Label className="flex items-center"><Droplet className="mr-1.5 h-4 w-4" />Accent Color</Label>
