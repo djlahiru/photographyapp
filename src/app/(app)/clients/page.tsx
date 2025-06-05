@@ -4,7 +4,7 @@
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Users, Edit, Trash2, Phone, Mail, MessageCircle, Briefcase, TrendingUp, TrendingDown, FileText, Edit2, DollarSign, Calendar as CalendarIconFeather, Package, Save, Grid, List as ListIcon, Filter } from "react-feather";
+import { PlusCircle, Users, Edit, Trash2, Phone, Mail, MessageCircle, Briefcase, TrendingUp, TrendingDown, FileText, Edit2, DollarSign, Calendar as CalendarIconFeather, Package, Save, Grid, List as ListIcon, Search } from "react-feather";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -34,7 +34,6 @@ const paymentStatusVariantMap: Record<PaymentStatus, "default" | "secondary" | "
 };
 
 type LayoutMode = 'grid' | 'list';
-type SortOrder = 'default' | 'az';
 
 export default function ClientsPage() {
   const [mockClients, setMockClients] = useState(initialMockClients);
@@ -45,7 +44,7 @@ export default function ClientsPage() {
   const [newClientAddress, setNewClientAddress] = useState('');
   const [newClientNotes, setNewClientNotes] = useState('');
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('grid');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('default');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase();
 
@@ -102,13 +101,15 @@ export default function ClientsPage() {
     setIsAddClientDialogOpen(false);
   };
 
-  const sortedClients = useMemo(() => {
+  const filteredClients = useMemo(() => {
     let clientsToDisplay = [...mockClients];
-    if (sortOrder === 'az') {
-      clientsToDisplay.sort((a, b) => a.name.localeCompare(b.name));
+    if (searchTerm.trim() !== '') {
+      clientsToDisplay = clientsToDisplay.filter(client =>
+        client.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
     return clientsToDisplay;
-  }, [mockClients, sortOrder]);
+  }, [mockClients, searchTerm]);
 
   return (
     <div className="space-y-6">
@@ -117,48 +118,50 @@ export default function ClientsPage() {
             <h1 className="text-3xl font-bold tracking-tight font-headline">Client Management</h1>
             <p className="text-muted-foreground">Add, view, edit, and manage client information.</p>
         </div>
-        <div className="flex items-center gap-2 w-full md:w-auto justify-end flex-wrap">
-          <div className="flex items-center gap-2">
-            <Button 
-              variant={layoutMode === 'grid' ? 'default' : 'outline'} 
-              size="icon" 
-              onClick={() => setLayoutMode('grid')}
-              aria-label="Grid View"
-              title="Grid View"
-            >
-              <Grid className="h-5 w-5" />
+        <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto justify-end flex-wrap">
+            <div className="relative w-full sm:w-auto flex-grow sm:flex-grow-0">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search clients by name..."
+                className="pl-8 w-full sm:w-[200px] lg:w-[250px]"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant={layoutMode === 'grid' ? 'default' : 'outline'} 
+                size="icon" 
+                onClick={() => setLayoutMode('grid')}
+                aria-label="Grid View"
+                title="Grid View"
+              >
+                <Grid className="h-5 w-5" />
+              </Button>
+              <Button 
+                variant={layoutMode === 'list' ? 'default' : 'outline'} 
+                size="icon" 
+                onClick={() => setLayoutMode('list')}
+                aria-label="List View"
+                title="List View"
+              >
+                <ListIcon className="h-5 w-5" />
+              </Button>
+            </div>
+            <Button onClick={() => setIsAddClientDialogOpen(true)}>
+              <PlusCircle className="mr-2 h-4 w-4" /> Add New Client
             </Button>
-            <Button 
-              variant={layoutMode === 'list' ? 'default' : 'outline'} 
-              size="icon" 
-              onClick={() => setLayoutMode('list')}
-              aria-label="List View"
-              title="List View"
-            >
-              <ListIcon className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSortOrder(prev => prev === 'az' ? 'default' : 'az')}
-            >
-              <Filter className="mr-2 h-4 w-4" />
-              {sortOrder === 'az' ? 'Clear Sort' : 'Sort A-Z'}
-            </Button>
-          </div>
-          <Button onClick={() => setIsAddClientDialogOpen(true)}>
-            <PlusCircle className="mr-2 h-4 w-4" /> Add New Client
-          </Button>
         </div>
       </div>
 
-      {sortedClients.length > 0 ? (
+      {filteredClients.length > 0 ? (
         <div className={cn(
           layoutMode === 'grid'
             ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
-            : "flex flex-col gap-2" // Tighter gap for list view
+            : "flex flex-col gap-2" 
         )}>
-          {sortedClients.map((client) => (
+          {filteredClients.map((client) => (
             layoutMode === 'list' ? (
               <div key={client.id} className="flex items-center justify-between p-3 border rounded-md hover:bg-muted/50 transition-colors bg-card shadow-sm">
                 <div className="flex items-center gap-3">
@@ -169,7 +172,7 @@ export default function ClientsPage() {
                   <span className="font-medium text-foreground">{client.name}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="icon" title="Edit Client"> {/* Add actual edit functionality later */}
+                  <Button variant="ghost" size="icon" title="Edit Client">
                     <Edit className="h-4 w-4" />
                   </Button>
                   <Button
@@ -187,7 +190,6 @@ export default function ClientsPage() {
                 </div>
               </div>
             ) : (
-              // Existing Card rendering for grid mode
               <Card key={client.id} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300">
                 <CardHeader className="flex flex-row items-center gap-4 p-4">
                   <Avatar className="h-16 w-16">
@@ -327,8 +329,17 @@ export default function ClientsPage() {
       ) : (
          <div className="flex flex-col items-center justify-center py-20 text-center rounded-lg border border-dashed">
           <Users className="h-20 w-20 text-muted-foreground mb-6" />
-          <h3 className="text-2xl font-semibold mb-3 font-headline">No Clients Yet</h3>
-          <p className="text-muted-foreground mb-6 max-w-sm">You haven&apos;t added any clients. Click the button below to add your first client and start managing their bookings.</p>
+          {mockClients.length === 0 && searchTerm.trim() === '' ? (
+            <>
+              <h3 className="text-2xl font-semibold mb-3 font-headline">No Clients Yet</h3>
+              <p className="text-muted-foreground mb-6 max-w-sm">You haven&apos;t added any clients. Click the button below to add your first client and start managing their bookings.</p>
+            </>
+          ) : (
+            <>
+              <h3 className="text-2xl font-semibold mb-3 font-headline">No Clients Found</h3>
+              <p className="text-muted-foreground mb-6 max-w-sm">No clients match your current search criteria. Try adjusting your search.</p>
+            </>
+          )}
           <Button size="lg" onClick={() => setIsAddClientDialogOpen(true)}>
             <PlusCircle className="mr-2 h-5 w-5" /> Add New Client
           </Button>
