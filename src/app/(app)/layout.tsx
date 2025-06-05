@@ -9,6 +9,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { BottomNavigationBar } from '@/components/layout/bottom-navigation-bar';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { AUTH_STATUS_LS_KEY } from '@/lib/constants';
 
 export default function AppLayout({
   children,
@@ -17,21 +19,37 @@ export default function AppLayout({
 }) {
   const isMobileView = useIsMobile();
   const [mounted, setMounted] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    // Check authentication status
+    if (typeof window !== 'undefined') {
+      const isAuthenticated = localStorage.getItem(AUTH_STATUS_LS_KEY) === 'true';
+      if (!isAuthenticated) {
+        router.replace('/login');
+      }
+    }
+  }, [router]);
 
   if (!mounted) {
-    // To prevent hydration mismatch, render nothing or a loader until client-side check is complete
-    // Or, render a default layout that works for both, then adjust.
-    // For simplicity here, we'll delay rendering based on isMobileView until mounted.
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        {/* Optional: Add a loading spinner here */}
+      <div className="flex min-h-screen items-center justify-center bg-background content-area-gradient">
+        <p className="text-lg text-primary">Loading Application...</p>
       </div>
     );
   }
+  
+  // Further check to prevent rendering children if redirecting
+  if (typeof window !== 'undefined' && localStorage.getItem(AUTH_STATUS_LS_KEY) !== 'true') {
+    // Still show loading or a minimal layout while redirect is in progress
+     return (
+      <div className="flex min-h-screen items-center justify-center bg-background content-area-gradient">
+        <p className="text-lg text-primary">Redirecting to login...</p>
+      </div>
+    );
+  }
+
 
   return (
     <SidebarProvider defaultOpen={!isMobileView}>
@@ -40,11 +58,10 @@ export default function AppLayout({
         <AppHeader />
         <div className={cn(
           "flex-1 p-6 content-area-gradient overflow-auto",
-          isMobileView && "pb-24" // Increased padding for bottom nav
+          isMobileView && "pb-24" 
         )}>
          {children}
         </div>
-        {/* Floating Action Button positioned at the bottom right */}
         <div className="fixed bottom-6 right-6 z-50">
           <FloatingActionButton />
         </div>
@@ -53,4 +70,3 @@ export default function AppLayout({
     </SidebarProvider>
   );
 }
-

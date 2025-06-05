@@ -39,6 +39,7 @@ export const GOOGLE_CALENDAR_AUTO_SYNC_LS_KEY = 'googleCalendarAutoSync';
 export const INVOICE_TEMPLATE_LS_KEY = 'invoiceTemplateHtml';
 export const INVOICE_HISTORY_LS_KEY = 'invoiceHistory';
 export const SELECTED_CURRENCY_LS_KEY = 'selectedCurrency'; // New key for selected currency
+export const AUTH_STATUS_LS_KEY = 'ruboAuthStatus'; // Key for authentication status
 
 export interface CurrencyDefinition {
   code: CurrencyCode;
