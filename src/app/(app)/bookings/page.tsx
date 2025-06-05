@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
 import type { Booking, BookingStatus, Payment, PaymentStatus, BookingActivityLogEntry, Client, BookingDateTime, BookingCategory } from "@/types";
 import { BookingActivityLog } from "@/components/bookings/booking-activity-log";
-import React from "react";
+import React, { useEffect } from "react"; // Added useEffect
 import { format, parseISO, isValid } from 'date-fns';
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
@@ -176,6 +176,14 @@ export default function BookingsPage() {
     resetBookingForm();
     setIsAddBookingDialogOpen(true);
   };
+
+  useEffect(() => {
+    const openDialog = () => handleOpenAddBookingDialog();
+    window.addEventListener('fabOpenNewBookingDialog', openDialog);
+    return () => {
+      window.removeEventListener('fabOpenNewBookingDialog', openDialog);
+    };
+  }, []); // Dependencies should include handleOpenAddBookingDialog if it changes, but for now it's stable.
 
   const handleOpenEditBookingDialog = (booking: Booking) => {
     resetBookingForm();

@@ -38,7 +38,7 @@ const bookingStatusVariantMap: Record<BookingStatus, "default" | "secondary" | "
 type LayoutMode = 'grid' | 'list';
 
 export default function ClientsPage() {
-  const [clients, setClients] = useState<Client[]>(mockClientsData); // Use centralized data
+  const [clients, setClients] = useState<Client[]>(mockClientsData); 
   const [isAddClientDialogOpen, setIsAddClientDialogOpen] = useState(false);
   const [isEditClientDialogOpen, setIsEditClientDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -69,6 +69,30 @@ export default function ClientsPage() {
 
   const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase();
 
+  const resetNewClientForm = () => {
+    setNewClientName('');
+    setNewClientEmail('');
+    setNewClientPhone('');
+    setNewClientWhatsApp('');
+    setNewClientAddress('');
+    setNewClientNotes('');
+    setNewClientPhotoFile(null);
+    setNewClientPhotoPreview(null);
+  };
+
+  const handleOpenAddClientDialog = () => {
+    resetNewClientForm();
+    setIsAddClientDialogOpen(true);
+  };
+
+  useEffect(() => {
+    const openDialog = () => handleOpenAddClientDialog();
+    window.addEventListener('fabOpenNewClientDialog', openDialog);
+    return () => {
+      window.removeEventListener('fabOpenNewClientDialog', openDialog);
+    };
+  }, []); // Dependencies should include handleOpenAddClientDialog if it changes.
+
   const handleEditNote = (clientName: string) => {
     const clientToEdit = clients.find(c => c.name === clientName);
     if (clientToEdit) {
@@ -77,7 +101,7 @@ export default function ClientsPage() {
   };
 
   const getClientPayments = (clientName: string): Payment[] => {
-    const clientBookings = mockBookingsData.filter(b => b.clientName === clientName); // Use mockBookingsData
+    const clientBookings = mockBookingsData.filter(b => b.clientName === clientName); 
     const allPayments: Payment[] = [];
     clientBookings.forEach(booking => {
       if (booking.payments) {
@@ -88,7 +112,7 @@ export default function ClientsPage() {
   };
   
   const getClientBookingsList = (clientName: string): Booking[] => {
-    return mockBookingsData.filter(booking => booking.clientName === clientName) // Use mockBookingsData
+    return mockBookingsData.filter(booking => booking.clientName === clientName) 
                               .sort((a,b) => {
                                 const dateA = a.bookingDates[0]?.dateTime ? new Date(a.bookingDates[0].dateTime) : new Date(0);
                                 const dateB = b.bookingDates[0]?.dateTime ? new Date(b.bookingDates[0].dateTime) : new Date(0);
@@ -101,17 +125,6 @@ export default function ClientsPage() {
     setIsClientBookingsDialogOpen(true);
   };
 
-
-  const resetNewClientForm = () => {
-    setNewClientName('');
-    setNewClientEmail('');
-    setNewClientPhone('');
-    setNewClientWhatsApp('');
-    setNewClientAddress('');
-    setNewClientNotes('');
-    setNewClientPhotoFile(null);
-    setNewClientPhotoPreview(null);
-  };
 
   const handleClientPhotoChange = (file: File | null, type: 'new' | 'edit') => {
     if (type === 'new') {
@@ -142,7 +155,7 @@ export default function ClientsPage() {
     }
 
     const newClient: Client = {
-      id: (mockClientsData.length + Date.now()).toString(), // Use mockClientsData
+      id: (mockClientsData.length + Date.now()).toString(), 
       name: newClientName,
       contactDetails: {
         email: newClientEmail.trim() || undefined,
@@ -158,8 +171,8 @@ export default function ClientsPage() {
       totalBookings: 0, 
     };
 
-    mockClientsData.unshift(newClient); // Add to centralized data
-    setClients([...mockClientsData]); // Update local state
+    mockClientsData.unshift(newClient); 
+    setClients([...mockClientsData]); 
 
     toast.success(`Client "${newClient.name}" added successfully!`);
     resetNewClientForm();
@@ -199,11 +212,11 @@ export default function ClientsPage() {
       dataAiHint: editClientPhotoPreview && editClientPhotoPreview !== editingClient.avatarUrl ? "person client custom" : editingClient.dataAiHint,
     };
 
-    const clientIndex = mockClientsData.findIndex(c => c.id === editingClient.id); // Use mockClientsData
+    const clientIndex = mockClientsData.findIndex(c => c.id === editingClient.id); 
     if (clientIndex !== -1) {
-      mockClientsData[clientIndex] = updatedClient; // Update in centralized data
+      mockClientsData[clientIndex] = updatedClient; 
     }
-    setClients([...mockClientsData]); // Update local state
+    setClients([...mockClientsData]); 
 
     toast.success(`Client "${updatedClient.name}" updated successfully!`);
     setIsEditClientDialogOpen(false);
@@ -211,17 +224,17 @@ export default function ClientsPage() {
   };
   
   const handleDeleteClient = (clientId: string, clientName: string) => {
-    const clientIndex = mockClientsData.findIndex(c => c.id === clientId); // Use mockClientsData
+    const clientIndex = mockClientsData.findIndex(c => c.id === clientId); 
     if (clientIndex !== -1) {
-      mockClientsData.splice(clientIndex, 1); // Remove from centralized data
+      mockClientsData.splice(clientIndex, 1); 
     }
-    setClients([...mockClientsData]); // Update local state
+    setClients([...mockClientsData]); 
     toast.info(`Client "${clientName}" deleted.`);
   };
 
   const clientsWithDynamicData = useMemo(() => {
-    return clients.map(client => { // Iterate over local 'clients' state which is synced with mockClientsData
-        const clientBookings = mockBookingsData.filter(b => b.clientName === client.name); // Use mockBookingsData
+    return clients.map(client => { 
+        const clientBookings = mockBookingsData.filter(b => b.clientName === client.name); 
         const totalPaidForClient = clientBookings.reduce((sum, booking) => {
             return sum + (booking.payments?.filter(p => p.status === 'Paid').reduce((acc, p) => acc + p.amount, 0) || 0);
         }, 0);
@@ -287,7 +300,7 @@ export default function ClientsPage() {
                 <ListIcon className="h-5 w-5" />
               </Button>
             </div>
-            <Button onClick={() => setIsAddClientDialogOpen(true)}>
+            <Button onClick={handleOpenAddClientDialog}>
               <PlusCircle className="mr-2 h-4 w-4" /> Add New Client
             </Button>
         </div>
@@ -484,7 +497,7 @@ export default function ClientsPage() {
               <p className="text-muted-foreground mb-6 max-w-sm">No clients match your current search criteria. Try adjusting your search.</p>
             </>
           )}
-          <Button size="lg" onClick={() => setIsAddClientDialogOpen(true)}>
+          <Button size="lg" onClick={handleOpenAddClientDialog}>
             <PlusCircle className="mr-2 h-5 w-5" /> Add New Client
           </Button>
         </div>

@@ -5,14 +5,15 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, X, PlusCircle, UserPlus, DollarSign } from 'react-feather';
 import { cn } from '@/lib/utils';
-import Link from 'next/link'; 
+// Link import removed as it's not used for onClick event dispatch
+// import Link from 'next/link'; 
 
 interface SpeedDialAction {
   id: string;
   label: string;
   icon: React.ElementType;
   onClick?: () => void;
-  href?: string;
+  // href?: string; // href is not used for this event-based approach
 }
 
 export function FloatingActionButton() {
@@ -27,27 +28,27 @@ export function FloatingActionButton() {
 
   const actions: SpeedDialAction[] = [
     {
-      id: 'new-booking',
+      id: 'fab-new-booking', // Changed id for clarity
       label: 'New Booking',
       icon: PlusCircle,
       onClick: () => {
-        console.log('New Booking FAB action triggered');
+        window.dispatchEvent(new CustomEvent('fabOpenNewBookingDialog'));
       },
     },
     {
-      id: 'new-client',
+      id: 'fab-new-client', // Changed id for clarity
       label: 'New Client',
       icon: UserPlus,
       onClick: () => {
-        console.log('New Client FAB action triggered');
+        window.dispatchEvent(new CustomEvent('fabOpenNewClientDialog'));
       },
     },
     {
-      id: 'new-payment',
+      id: 'fab-new-payment', // Changed id for clarity
       label: 'New Payment',
       icon: DollarSign,
       onClick: () => {
-        console.log('New Payment FAB action triggered');
+        window.dispatchEvent(new CustomEvent('fabOpenRecordPaymentDialog'));
       },
     },
   ];

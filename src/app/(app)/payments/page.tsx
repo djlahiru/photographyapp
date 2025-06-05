@@ -179,6 +179,14 @@ export default function PaymentsPage() {
     setIsRecordPaymentDialogOpen(true);
   };
   
+  useEffect(() => {
+    const openDialog = () => handleOpenRecordPaymentDialog();
+    window.addEventListener('fabOpenRecordPaymentDialog', openDialog);
+    return () => {
+      window.removeEventListener('fabOpenRecordPaymentDialog', openDialog);
+    };
+  }, []); // Dependencies should include handleOpenRecordPaymentDialog if it changes.
+
   const handlePaymentClientNameChange = (name: string) => {
     setPaymentClientName(name);
     if (name.trim() === '') {
@@ -737,5 +745,3 @@ export default function PaymentsPage() {
     </div>
   );
 }
-
-    
