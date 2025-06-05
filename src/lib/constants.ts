@@ -26,4 +26,9 @@ export const SETTINGS_NAV_ITEM: NavItem = {
 };
 
 export const APP_NAME_KEY = "appName"; // Key for app name translation
-
+export const USER_PROFILE_LS_KEY = 'userProfile'; // Moved from settings page
+export const DASHBOARD_COVER_PHOTO_LS_KEY = 'dashboardCoverPhotoUrl';
+export const DASHBOARD_COVER_PHOTO_BLUR_LS_KEY = 'dashboardCoverPhotoBlur';
+export const AVATAR_SHAPE_LS_KEY = 'avatarShape';
+export const ACCENT_THEME_LS_KEY = 'accentTheme';
+export const FONT_THEME_LS_KEY = 'fontTheme';

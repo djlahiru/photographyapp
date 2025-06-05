@@ -15,12 +15,20 @@ import { useTheme } from 'next-themes';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
+import type { UserProfile, AvatarShape } from '@/types'; // Import UserProfile and AvatarShape
+import { 
+  USER_PROFILE_LS_KEY, 
+  AVATAR_SHAPE_LS_KEY, 
+  ACCENT_THEME_LS_KEY, 
+  FONT_THEME_LS_KEY,
+  DASHBOARD_COVER_PHOTO_LS_KEY,
+  DASHBOARD_COVER_PHOTO_BLUR_LS_KEY
+} from '@/lib/constants';
 
-type AvatarShape = 'circle' | 'square';
+
 type AccentTheme = 'default' | 'oceanic' | 'forest' | 'sunset';
 type FontTheme = 'default-sans' | 'classic-serif' | 'modern-mono';
 
-const USER_PROFILE_LS_KEY = 'userProfile';
 const ACCENT_THEMES: { value: AccentTheme; label: string }[] = [
   { value: 'default', label: 'Default Violet' },
   { value: 'oceanic', label: 'Oceanic Blue' },
@@ -34,17 +42,18 @@ const FONT_THEMES: { value: FontTheme; label: string }[] = [
   { value: 'modern-mono', label: 'Modern Mono' },
 ];
 
-const DASHBOARD_COVER_PHOTO_LS_KEY = 'dashboardCoverPhotoUrl';
-const DASHBOARD_COVER_PHOTO_BLUR_LS_KEY = 'dashboardCoverPhotoBlur';
+
+const defaultUser: UserProfile = {
+  id: 'default-user-settings',
+  name: "Admin User",
+  email: "admin@workflowzen.com",
+  avatarUrl: "https://placehold.co/100x100.png",
+  bio: "Loves photography and efficient workflows!",
+};
 
 export default function SettingsPage() {
   const { theme: nextTheme } = useTheme();
-  const [user, setUser] = useState({
-    name: "Admin User",
-    email: "admin@workflowzen.com",
-    avatarUrl: "https://placehold.co/100x100.png",
-    bio: "Loves photography and efficient workflows!",
-  });
+  const [user, setUser] = useState<UserProfile>(defaultUser);
   const [isCalendarConnected, setIsCalendarConnected] = useState(false);
 
   const [packageName, setPackageName] = useState('');
@@ -64,22 +73,26 @@ export default function SettingsPage() {
     
     const storedProfile = localStorage.getItem(USER_PROFILE_LS_KEY);
     if (storedProfile) {
-      setUser(JSON.parse(storedProfile));
+      try {
+        setUser(JSON.parse(storedProfile));
+      } catch (e) {
+        setUser(defaultUser); // Fallback if parsing fails
+      }
+    } else {
+      setUser(defaultUser); // Fallback if no profile stored
     }
 
-    const storedShape = localStorage.getItem('avatarShape') as AvatarShape | null;
+    const storedShape = localStorage.getItem(AVATAR_SHAPE_LS_KEY) as AvatarShape | null;
     if (storedShape) setAvatarShape(storedShape);
 
-    const storedAccentTheme = localStorage.getItem('accentTheme') as AccentTheme | null;
+    const storedAccentTheme = localStorage.getItem(ACCENT_THEME_LS_KEY) as AccentTheme | null;
     if (storedAccentTheme) {
       setCurrentAccentTheme(storedAccentTheme);
-      // Initial application handled by RootLayout
     }
 
-    const storedFontTheme = localStorage.getItem('fontTheme') as FontTheme | null;
+    const storedFontTheme = localStorage.getItem(FONT_THEME_LS_KEY) as FontTheme | null;
     if (storedFontTheme) {
       setCurrentFontTheme(storedFontTheme);
-      // Initial application handled by RootLayout
     }
     
     const storedCalendarConnection = localStorage.getItem('googleCalendarConnected');
@@ -109,17 +122,13 @@ export default function SettingsPage() {
   };
 
   const handleProfileImageChange = (file: File | null) => {
-    setProfileImageFile(file); // Keep track of the file itself if needed for actual upload
+    setProfileImageFile(file); 
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setUser(prevUser => ({ ...prevUser, avatarUrl: reader.result as string }));
       };
       reader.readAsDataURL(file);
-    } else {
-      // If file is removed, revert to a placeholder or default if desired
-      // For now, we assume avatarUrl in user state is the source of truth
-      // setUser(prevUser => ({ ...prevUser, avatarUrl: "https://placehold.co/100x100.png" }));
     }
   };
   
@@ -129,7 +138,6 @@ export default function SettingsPage() {
     window.dispatchEvent(new CustomEvent('profileUpdated'));
     if (profileImageFile) {
         console.log("New profile image was selected:", profileImageFile.name);
-        // In a real app, you'd upload profileImageFile here
         setProfileImageFile(null); 
     }
   };
@@ -143,7 +151,7 @@ export default function SettingsPage() {
 
   const handleAvatarShapeChange = (shape: AvatarShape) => {
     setAvatarShape(shape);
-    localStorage.setItem('avatarShape', shape);
+    localStorage.setItem(AVATAR_SHAPE_LS_KEY, shape);
     window.dispatchEvent(new CustomEvent('avatarShapeChange', { detail: shape }));
   };
 
@@ -158,19 +166,21 @@ export default function SettingsPage() {
     });
     if (themeValue !== defaultThemeValue) {
         document.documentElement.classList.add(`${classPrefix}${themeValue}`);
+    } else if (themeType === 'accent' && themeValue === 'default') {
+         document.documentElement.classList.add('theme-accent-default'); // Ensure default is explicitly set
     }
   };
 
   const handleAccentThemeChange = (themeValue: AccentTheme) => {
     setCurrentAccentTheme(themeValue);
-    localStorage.setItem('accentTheme', themeValue);
+    localStorage.setItem(ACCENT_THEME_LS_KEY, themeValue);
     applyThemeClass('accent', themeValue);
     window.dispatchEvent(new CustomEvent('accentThemeChanged'));
   };
 
   const handleFontThemeChange = (themeValue: FontTheme) => {
     setCurrentFontTheme(themeValue);
-    localStorage.setItem('fontTheme', themeValue);
+    localStorage.setItem(FONT_THEME_LS_KEY, themeValue);
     applyThemeClass('font', themeValue);
     window.dispatchEvent(new CustomEvent('fontThemeChanged'));
   };
@@ -269,7 +279,7 @@ export default function SettingsPage() {
               <Input 
                 id="email" 
                 type="email" 
-                value={user.email} 
+                value={user.email || ''} 
                 onChange={(e) => setUser(prev => ({ ...prev, email: e.target.value }))} 
               />
             </div>
@@ -279,7 +289,7 @@ export default function SettingsPage() {
               <Textarea
                 id="bio"
                 placeholder="Tell us a bit about yourself or your business..."
-                value={user.bio}
+                value={user.bio || ''}
                 onChange={(e) => setUser(prev => ({ ...prev, bio: e.target.value }))}
                 rows={3}
               />

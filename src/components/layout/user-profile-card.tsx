@@ -1,27 +1,26 @@
 
 'use client';
 
-import type { UserProfile } from '@/types';
+import type { UserProfile, AvatarShape } from '@/types'; // Updated import
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
-import { APP_NAME_KEY, SETTINGS_NAV_ITEM } from '@/lib/constants';
-import { Button } from '../ui/button';
+import { APP_NAME_KEY } from '@/lib/constants';
+// Removed Button import as it's no longer used here
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-
-type AvatarShape = 'circle' | 'square';
-const USER_PROFILE_LS_KEY = 'userProfile'; // Same key as in settings
+import { USER_PROFILE_LS_KEY, AVATAR_SHAPE_LS_KEY } from '@/lib/constants'; // Import constants
 
 interface UserProfileCardProps {
-  user?: UserProfile; // Initial user prop, can be overridden by localStorage
+  user?: UserProfile; 
 }
 
 const defaultUser: UserProfile = {
   id: 'default-1',
-  name: 'Admin User', // Fallback name
-  email: 'admin@workflowzen.com', // Fallback email
-  avatarUrl: 'https://placehold.co/100x100.png', // Fallback avatar
+  name: 'Admin User', 
+  email: 'admin@workflowzen.com', 
+  avatarUrl: 'https://placehold.co/100x100.png', 
+  bio: 'Default bio for user card.',
 };
 
 export function UserProfileCard({ user: initialUser }: UserProfileCardProps) {
@@ -34,7 +33,13 @@ export function UserProfileCard({ user: initialUser }: UserProfileCardProps) {
     const loadProfile = () => {
       const storedProfile = localStorage.getItem(USER_PROFILE_LS_KEY);
       if (storedProfile) {
-        setCurrentUser(JSON.parse(storedProfile));
+        try {
+          const parsedProfile: UserProfile = JSON.parse(storedProfile);
+          setCurrentUser(parsedProfile);
+        } catch (e) {
+          console.error("Failed to parse user profile from localStorage", e);
+          setCurrentUser(initialUser || defaultUser); // Fallback to initial or default
+        }
       } else if (initialUser) {
         setCurrentUser(initialUser);
       } else {
@@ -46,21 +51,24 @@ export function UserProfileCard({ user: initialUser }: UserProfileCardProps) {
     const handleProfileUpdate = () => loadProfile();
     const handleAvatarShapeChange = (event: Event) => {
         const customEvent = event as CustomEvent<AvatarShape>;
-        if (customEvent.detail) {
+        const storedShape = localStorage.getItem(AVATAR_SHAPE_LS_KEY) as AvatarShape | null;
+        if (customEvent.detail) { // Prefer event detail if available
             setAvatarShape(customEvent.detail);
+        } else if (storedShape) { // Fallback to localStorage
+            setAvatarShape(storedShape);
+        } else {
+            setAvatarShape('circle'); // Absolute fallback
         }
     };
     
-    window.addEventListener('profileUpdated', handleProfileUpdate);
-    window.addEventListener('avatarShapeChange', handleAvatarShapeChange);
-    
-    // Initial shape from localStorage
-    const storedShape = localStorage.getItem('avatarShape') as AvatarShape | null;
+    const storedShape = localStorage.getItem(AVATAR_SHAPE_LS_KEY) as AvatarShape | null;
     if (storedShape) {
       setAvatarShape(storedShape);
     }
 
-
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    window.addEventListener('avatarShapeChange', handleAvatarShapeChange);
+    
     return () => {
       window.removeEventListener('profileUpdated', handleProfileUpdate);
       window.removeEventListener('avatarShapeChange', handleAvatarShapeChange);
@@ -68,12 +76,12 @@ export function UserProfileCard({ user: initialUser }: UserProfileCardProps) {
   }, [initialUser]);
 
 
-  const getInitials = (name: string) => {
+  const getInitials = (name: string = "User") => {
     return name
       .split(' ')
       .map((n) => n[0])
       .join('')
-      .toUpperCase();
+      .toUpperCase() || "U";
   };
 
   return (
@@ -96,16 +104,15 @@ export function UserProfileCard({ user: initialUser }: UserProfileCardProps) {
             {currentUser ? getInitials(currentUser.name) : appNameTranslated.substring(0,2).toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <div className="flex flex-col">
-          <span className="text-lg font-semibold text-sidebar-foreground font-headline">
+        <div className="flex flex-col overflow-hidden"> {/* Added overflow-hidden for text truncation */}
+          <span className="text-lg font-semibold text-sidebar-foreground font-headline truncate">
             {currentUser?.name || appNameTranslated}
           </span>
           {currentUser?.email && (
-             <span className="text-xs text-sidebar-foreground/70">{currentUser.email}</span>
+             <span className="text-xs text-sidebar-foreground/70 truncate">{currentUser.email}</span>
           )}
         </div>
       </div>
-       {/* The Settings link button below has been removed as per user request */}
     </div>
   );
 }

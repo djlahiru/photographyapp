@@ -6,7 +6,10 @@ export interface UserProfile {
   name: string;
   email?: string;
   avatarUrl?: string;
+  bio?: string; // Added bio to UserProfile
 }
+
+export type AvatarShape = 'circle' | 'square'; // Moved AvatarShape here
 
 export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
 export type TaskStatus = 'To Do' | 'In Progress' | 'Waiting' | 'Completed' | 'Cancelled'; // For form and data
