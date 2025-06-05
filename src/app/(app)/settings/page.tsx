@@ -4,11 +4,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button, buttonVariants } from "@/components/ui/button"; // Added buttonVariants import
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIconSettings, Eye, Droplet, Edit3, Square, Circle as CircleIcon, Image as ImageIconFeather, Save, Trash2, AlertTriangle, Tag, Plus, DollarSign as DollarSignIcon, Sun as SunIcon, Moon, RefreshCw } from "react-feather";
+import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIconSettings, Eye, Droplet, Edit3, Square, Circle as CircleIcon, Image as ImageIconFeather, Save, Trash2, AlertTriangle, Tag, Plus, DollarSign as DollarSignIcon, Sun as SunIcon, Moon as MoonIcon, RefreshCw } from "react-feather"; // Renamed Moon to MoonIcon
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 import { format } from 'date-fns';
@@ -484,7 +484,7 @@ export default function SettingsPage() {
                     {resolvedTheme === 'dark' ? (
                     <SunIcon className="h-5 w-5" />
                     ) : (
-                    <Moon className="h-5 w-5" />
+                    <MoonIcon className="h-5 w-5" />
                     )}
                 </Button>
             )}
@@ -642,22 +642,30 @@ export default function SettingsPage() {
           <CardTitle className="flex items-center"><Eye className="mr-2 h-5 w-5" /> Display Previews</CardTitle>
           <CardDescription>See how certain information will be displayed.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4"> {/* Changed space-y-6 to space-y-4 for tighter packing */}
           <div>
             <Label>Date &amp; Time Format Preview</Label>
             <div className="space-y-1 mt-1 text-sm">
               <p>
-                <span className="font-medium text-muted-foreground w-28 inline-block">Style 1:</span> 
-                <span className="text-foreground">{format(currentDateTime, "MMMM d, yyyy 'at' h:mm a")}</span>
+                <span className="font-medium text-muted-foreground w-20 inline-block">Date :</span> {/* Changed and reduced width */}
+                <span className="text-foreground">{format(currentDateTime, "MMMM d, yyyy")}</span> {/* Only date */}
               </p>
               <p>
-                <span className="font-medium text-muted-foreground w-28 inline-block">Style 2:</span> 
-                <span className="text-foreground">{format(currentDateTime, "dd/MM/yyyy, HH:mm")}</span>
+                <span className="font-medium text-muted-foreground w-20 inline-block">Time :</span> {/* Changed and reduced width */}
+                <span className="text-foreground">{format(currentDateTime, "h:mm a")}</span> {/* Only time */}
               </p>
               <p>
-                <span className="font-medium text-muted-foreground w-28 inline-block">Relative:</span> 
-                <span className="text-foreground">{format(new Date(Date.now() - 1000 * 60 * 5), "PPPp")} (5 minutes ago example)</span>
+                <span className="font-medium text-muted-foreground w-20 inline-block">Relative:</span> 
+                <span className="text-foreground">{format(new Date(Date.now() - 1000 * 60 * 5), "PPPp")} (5 mins ago)</span> {/* Simplified relative example */}
               </p>
+            </div>
+            <div className="flex gap-2 mt-3">
+                <Button variant="outline" size="sm" onClick={() => toast.info("Date format changing feature coming soon!")}>
+                    <Edit3 className="mr-1.5 h-3.5 w-3.5" /> Change Date Format
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => toast.info("Clock format changing feature coming soon!")}>
+                    <Edit3 className="mr-1.5 h-3.5 w-3.5" /> Change Clock Format
+                </Button>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
                 Actual date/time format selection will be available in a future update.
