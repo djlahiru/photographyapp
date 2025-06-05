@@ -271,17 +271,14 @@
 }
 
 @layer components {
-  /* Gradient for active sidebar menu items */
+  /* Active sidebar menu items */
   .sidebar-menu-button--active {
-    background-image: linear-gradient(to right, hsl(var(--sidebar-accent-gradient-start-hsl)), hsl(var(--sidebar-accent-gradient-end-hsl)));
-    color: hsl(var(--sidebar-accent-foreground));
+    background-color: hsl(var(--accent)); /* Use the main accent color for background */
+    color: hsl(var(--accent-foreground)); /* Use the main accent foreground for text */
   }
   /* Hover for non-active sidebar items - can use single accent or a different gradient */
   .sidebar-menu-button--inactive:hover {
     background-color: hsl(var(--sidebar-accent) / 0.8); /* Example: slightly transparent single accent */
-    /* Or a hover gradient:
-    background-image: linear-gradient(to right, hsl(var(--sidebar-accent-gradient-start-hsl_hover)), hsl(var(--sidebar-accent-gradient-end-hsl_hover)));
-    */
     color: hsl(var(--sidebar-accent-foreground));
   }
 }
