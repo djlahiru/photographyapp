@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image'; // Import next/image
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import { getGreetingParts } from '@/lib/date-utils';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { UserProfile, AvatarShape } from '@/types';
-import { USER_PROFILE_LS_KEY, AVATAR_SHAPE_LS_KEY, SETTINGS_NAV_ITEM } from '@/lib/constants';
+import { USER_PROFILE_LS_KEY, AVATAR_SHAPE_LS_KEY, SETTINGS_NAV_ITEM, APP_NAME_KEY } from '@/lib/constants';
 
 const GREETING_ICON_MAP: Record<string, React.ElementType> = {
   Sunrise: Sunrise,
@@ -58,29 +59,28 @@ export function AppHeader() {
   useEffect(() => {
     const loadProfileAndShape = () => {
       const storedProfile = localStorage.getItem(USER_PROFILE_LS_KEY);
+      let profileToUse = defaultUser;
       if (storedProfile) {
         try {
-          const profile: UserProfile = JSON.parse(storedProfile);
-          setHeaderUser(profile);
-          setDynamicUserName(profile.name || "User");
+          const parsedProfile: UserProfile = JSON.parse(storedProfile);
+          profileToUse = { ...defaultUser, ...parsedProfile }; // Merge with default to ensure all fields
         } catch (e) {
           console.error("Failed to parse user profile for header", e);
-          setHeaderUser(defaultUser);
-          setDynamicUserName(defaultUser.name);
+          profileToUse = defaultUser;
         }
-      } else {
-        setHeaderUser(defaultUser);
-        setDynamicUserName(defaultUser.name);
       }
+      setHeaderUser(profileToUse);
+      setDynamicUserName(profileToUse.name || "User");
+
 
       const storedShape = localStorage.getItem(AVATAR_SHAPE_LS_KEY) as AvatarShape | null;
       setHeaderAvatarShape(storedShape || 'circle');
     };
 
-    loadProfileAndShape(); // Initial load
+    loadProfileAndShape();
 
-    const handleProfileUpdate = () => loadProfileAndShape(); // Reloads both profile and shape
-    const handleAvatarShapeChange = () => { // Specifically for shape
+    const handleProfileUpdate = () => loadProfileAndShape();
+    const handleAvatarShapeChange = () => {
         const storedShape = localStorage.getItem(AVATAR_SHAPE_LS_KEY) as AvatarShape | null;
         setHeaderAvatarShape(storedShape || 'circle');
     };
@@ -117,61 +117,83 @@ export function AppHeader() {
   const GreetingIconComponent = greetingIconName ? GREETING_ICON_MAP[greetingIconName] : null;
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-2 md:gap-4 border-b bg-background/80 backdrop-blur-sm px-4 md:px-6">
-      {mounted && !isMobileView && (
-        <SidebarTrigger />
-      )}
-
-      {/* Compact Profile for Collapsed Desktop Sidebar */}
-      {mounted && !isMobileView && !sidebarContext.open && headerUser && (
-        <TooltipProvider delayDuration={300}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link href={SETTINGS_NAV_ITEM.href} passHref legacyBehavior>
-                <a className="flex items-center p-1 rounded-md hover:bg-accent focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={`Profile: ${headerUser.name}`}>
-                  <Avatar className={cn(
-                    "h-8 w-8", 
-                    headerAvatarShape === 'circle' ? 'rounded-full' : 'rounded-md'
-                  )}>
-                    <AvatarImage src={headerUser.avatarUrl} alt={headerUser.name} data-ai-hint="user avatar" />
-                    <AvatarFallback className={cn(
-                      "text-xs",
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 backdrop-blur-sm px-4 md:px-6 relative">
+      {/* Left Group */}
+      <div className="flex items-center gap-1 md:gap-2">
+        {mounted && !isMobileView && (
+          <SidebarTrigger />
+        )}
+        {mounted && !isMobileView && !sidebarContext.open && headerUser && (
+          <TooltipProvider delayDuration={300}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href={SETTINGS_NAV_ITEM.href} passHref legacyBehavior>
+                  <a className="flex items-center p-1 rounded-md hover:bg-accent focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={`Profile: ${headerUser.name}`}>
+                    <Avatar className={cn(
+                      "h-8 w-8", 
                       headerAvatarShape === 'circle' ? 'rounded-full' : 'rounded-md'
                     )}>
-                      {getInitials(headerUser.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                </a>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" align="start">
-              <p className="font-semibold">{headerUser.name}</p>
-              {headerUser.email && <p className="text-xs text-muted-foreground">{headerUser.email}</p>}
-              <p className="text-xs text-muted-foreground mt-1">Go to Settings</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
-
-      <div className={cn(
-        "flex-1 flex items-center",
-         mounted && !isMobileView && !sidebarContext.open && headerUser ? "gap-1 sm:gap-2" : "gap-2" // Adjust gap if avatar is present
-      )}>
-        {GreetingIconComponent && <GreetingIconComponent className="h-6 w-6 text-primary" />}
-        <h1 className="text-lg font-semibold text-foreground font-headline truncate max-w-[150px] xs:max-w-[200px] sm:max-w-xs md:max-w-sm lg:max-w-md">
-          {greeting}
-        </h1>
+                      <AvatarImage src={headerUser.avatarUrl} alt={headerUser.name || 'User avatar'} data-ai-hint="user avatar" />
+                      <AvatarFallback className={cn(
+                        "text-xs",
+                        headerAvatarShape === 'circle' ? 'rounded-full' : 'rounded-md'
+                      )}>
+                        {getInitials(headerUser.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </a>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" align="start">
+                <p className="font-semibold">{headerUser.name}</p>
+                {headerUser.email && <p className="text-xs text-muted-foreground">{headerUser.email}</p>}
+                <p className="text-xs text-muted-foreground mt-1">Go to Settings</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+         <div className="flex items-center">
+            {GreetingIconComponent && <GreetingIconComponent className="h-6 w-6 text-primary mr-2" />}
+            <h1 className="text-base sm:text-lg font-semibold text-foreground font-headline truncate max-w-[80px] xs:max-w-[120px] sm:max-w-[150px] md:max-w-xs">
+            {greeting}
+            </h1>
+        </div>
       </div>
       
-      <div className="flex items-center gap-1 sm:gap-2 md:gap-4 ml-auto"> {/* Ensure this group is pushed to the right */}
-        <p className="text-xs sm:text-sm text-muted-foreground hidden md:block whitespace-nowrap">
+      {/* Logo - Centered */}
+      <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+        <Link href="/dashboard" passHref legacyBehavior>
+          <a aria-label={`${t(APP_NAME_KEY)} Dashboard`}>
+            <Image 
+              src="/images/rubo-logo.png" 
+              alt={`${t(APP_NAME_KEY)} Logo`} 
+              width={160} // Adjusted width for better fit, original aspect ratio 713x120 -> 160x27
+              height={27} 
+              priority 
+              className="hidden sm:block" // Hide on very small screens if needed, show from sm up
+            />
+             <Image 
+              src="/images/rubo-logo.png" // Could use a smaller/icon version for xs screens
+              alt={`${t(APP_NAME_KEY)} Logo`} 
+              width={80} 
+              height={14} 
+              priority 
+              className="block sm:hidden" // Show a smaller version on xs screens
+            />
+          </a>
+        </Link>
+      </div>
+
+      {/* Right Group */}
+      <div className="flex items-center gap-1 sm:gap-2"> {/* Reduced md:gap-4 to sm:gap-2 for space */}
+        <p className="text-xs sm:text-sm text-muted-foreground hidden lg:block whitespace-nowrap"> {/* Changed from md:block to lg:block */}
           {format(currentDateTime, "E, MMM d, yyyy, HH:mm:ss")}
         </p>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="rounded-full" aria-label={t('language')}>
-              <Globe className="h-5 w-5" />
+            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 sm:h-9 sm:w-9" aria-label={t('language')}> {/* Adjusted size */}
+              <Globe className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -193,17 +215,17 @@ export function AppHeader() {
             size="icon"
             onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
             aria-label={t('toggleTheme')}
-            className="rounded-full"
+            className="rounded-full h-8 w-8 sm:h-9 sm:w-9" /* Adjusted size */
           >
             {resolvedTheme === 'dark' ? (
-              <SunIcon className="h-5 w-5" />
+              <SunIcon className="h-4 w-4 sm:h-5 sm:w-5" />
             ) : (
-              <Moon className="h-5 w-5" />
+              <Moon className="h-4 w-4 sm:h-5 sm:w-5" />
             )}
           </Button>
         )}
-        <Button variant="ghost" size="icon" className="rounded-full" aria-label={t('toggleNotifications')}>
-          <Bell className="h-5 w-5" />
+        <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 sm:h-9 sm:w-9" aria-label={t('toggleNotifications')}> {/* Adjusted size */}
+          <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
         </Button>
       </div>
     </header>
