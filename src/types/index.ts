@@ -38,11 +38,15 @@ export interface Client {
   contactDetails: {
     phone?: string;
     email?: string;
+    whatsapp?: string; // Added WhatsApp
   };
   address?: string;
+  avatarUrl?: string; // Added avatar URL
+  dataAiHint?: string; // Added AI hint for avatar
+  notes?: string; // Added notes from previous implementation
   totalPayments: number; // Overall summary
   outstandingBalance: number; // Overall summary
-  // We will derive payment history from their bookings for display on client card
+  totalBookings: number; // Added total bookings from previous implementation
 }
 
 export type BookingStatus = 'Pending' | 'Confirmed' | 'Completed' | 'Cancelled';
@@ -79,3 +83,4 @@ export interface Booking {
   payments?: Payment[]; 
   activityLog?: BookingActivityLogEntry[];
 }
+

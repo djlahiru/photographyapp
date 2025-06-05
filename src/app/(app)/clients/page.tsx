@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { mockBookings } from '@/app/(app)/bookings/page';
-import type { Payment, PaymentStatus } from '@/types';
+import type { Payment, PaymentStatus, Client } from '@/types'; // Updated to import Client type
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
@@ -17,10 +17,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'react-toastify';
 import { cn } from '@/lib/utils';
+import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone'; // Added import
 
 // Mock data for clients
-const initialMockClients = [
-  { id: "1", name: "Alice Wonderland", contactDetails: { email: "alice@example.com", phone: "555-1234" }, address: "123 Storybook Lane", totalPayments: 150, outstandingBalance: 0, totalBookings: 1, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "female person", notes: "Prefers morning shoots. Allergic to cats." },
+const initialMockClients: Client[] = [ // Explicitly type initialMockClients
+  { id: "1", name: "Alice Wonderland", contactDetails: { email: "alice@example.com", phone: "555-1234", whatsapp: "555-1234" }, address: "123 Storybook Lane", totalPayments: 150, outstandingBalance: 0, totalBookings: 1, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "female person", notes: "Prefers morning shoots. Allergic to cats." },
   { id: "2", name: "Bob The Builder", contactDetails: { email: "bob@example.com", phone: "555-5678" }, address: "456 Construction Rd", totalPayments: 2500, outstandingBalance: 0, totalBookings: 1, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "male person", notes: "Needs invoices sent to accounting@bobcorp.com." },
   { id: "3", name: "Charlie Chaplin", contactDetails: { email: "charlie@example.com" }, totalPayments: 0, outstandingBalance: 100, totalBookings: 1, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "classic actor", notes: "" },
   { id: "4", name: "Diana Prince", contactDetails: { email: "diana@example.com" }, totalPayments: 0, outstandingBalance: 0, totalBookings: 1, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "heroine woman", notes: "" },
@@ -36,13 +37,19 @@ const paymentStatusVariantMap: Record<PaymentStatus, "default" | "secondary" | "
 type LayoutMode = 'grid' | 'list';
 
 export default function ClientsPage() {
-  const [mockClients, setMockClients] = useState(initialMockClients);
+  const [mockClients, setMockClients] = useState<Client[]>(initialMockClients); // Type mockClients state
   const [isAddClientDialogOpen, setIsAddClientDialogOpen] = useState(false);
+  
+  // New client form state
   const [newClientName, setNewClientName] = useState('');
   const [newClientEmail, setNewClientEmail] = useState('');
   const [newClientPhone, setNewClientPhone] = useState('');
+  const [newClientWhatsApp, setNewClientWhatsApp] = useState(''); // Added WhatsApp state
   const [newClientAddress, setNewClientAddress] = useState('');
   const [newClientNotes, setNewClientNotes] = useState('');
+  const [newClientPhotoFile, setNewClientPhotoFile] = useState<File | null>(null); // Added photo file state
+  const [newClientPhotoPreview, setNewClientPhotoPreview] = useState<string | null>(null); // Added photo preview state
+
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('grid');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -67,8 +74,11 @@ export default function ClientsPage() {
     setNewClientName('');
     setNewClientEmail('');
     setNewClientPhone('');
+    setNewClientWhatsApp(''); // Reset WhatsApp
     setNewClientAddress('');
     setNewClientNotes('');
+    setNewClientPhotoFile(null); // Reset photo file
+    setNewClientPhotoPreview(null); // Reset photo preview
   };
 
   const handleSaveNewClient = () => {
@@ -77,20 +87,21 @@ export default function ClientsPage() {
       return;
     }
 
-    const newClient = {
+    const newClient: Client = { // Type newClient
       id: (mockClients.length + 1).toString(),
       name: newClientName,
       contactDetails: {
         email: newClientEmail.trim() || undefined,
         phone: newClientPhone.trim() || undefined,
+        whatsapp: newClientWhatsApp.trim() || undefined, // Add WhatsApp
       },
       address: newClientAddress.trim() || undefined,
       notes: newClientNotes.trim() || undefined,
+      avatarUrl: newClientPhotoPreview || `https://placehold.co/80x80.png?text=${getInitials(newClientName)}`, // Use photo preview or fallback
+      dataAiHint: "person client", // Generic AI hint
       totalPayments: 0,
       outstandingBalance: 0,
       totalBookings: 0,
-      avatarUrl: `https://placehold.co/80x80.png?text=${getInitials(newClientName)}`,
-      dataAiHint: "person", 
     };
 
     setMockClients(prevClients => [...prevClients, newClient]);
@@ -110,6 +121,19 @@ export default function ClientsPage() {
     }
     return clientsToDisplay;
   }, [mockClients, searchTerm]);
+  
+  const handleClientPhotoChange = (file: File | null) => {
+    setNewClientPhotoFile(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewClientPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setNewClientPhotoPreview(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -215,6 +239,12 @@ export default function ClientsPage() {
                         <a href={`tel:${client.contactDetails.phone}`} className="hover:underline text-primary">{client.contactDetails.phone}</a>
                       </div>
                     )}
+                     {client.contactDetails.whatsapp && (
+                      <div className="flex items-center text-sm">
+                        <MessageCircle className="h-4 w-4 mr-2 text-muted-foreground" />
+                        <a href={`https://wa.me/${client.contactDetails.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary">{client.contactDetails.whatsapp} (WhatsApp)</a>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="grid grid-cols-2 gap-2 text-sm">
@@ -282,9 +312,9 @@ export default function ClientsPage() {
                   )}
 
                   <div className="flex gap-2 pt-3 border-t border-border flex-wrap">
-                    {client.contactDetails.phone && (
+                    {client.contactDetails.whatsapp && (
                       <Button variant="outline" size="sm" asChild>
-                        <Link href={`https://wa.me/${client.contactDetails.phone.replace(/\D/g, '')}`} target="_blank">
+                        <Link href={`https://wa.me/${client.contactDetails.whatsapp.replace(/\D/g, '')}`} target="_blank">
                           <MessageCircle className="h-4 w-4 mr-1.5" /> WhatsApp
                         </Link>
                       </Button>
@@ -329,7 +359,7 @@ export default function ClientsPage() {
       ) : (
          <div className="flex flex-col items-center justify-center py-20 text-center rounded-lg border border-dashed">
           <Users className="h-20 w-20 text-muted-foreground mb-6" />
-          {mockClients.length === 0 && searchTerm.trim() === '' ? (
+          {initialMockClients.length === 0 && searchTerm.trim() === '' ? ( // Check initialMockClients for truly empty state
             <>
               <h3 className="text-2xl font-semibold mb-3 font-headline">No Clients Yet</h3>
               <p className="text-muted-foreground mb-6 max-w-sm">You haven&apos;t added any clients. Click the button below to add your first client and start managing their bookings.</p>
@@ -355,6 +385,16 @@ export default function ClientsPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="new-client-photo">Client Photo</Label>
+              <ImageUploadDropzone
+                onFileChange={handleClientPhotoChange}
+                initialImageUrl={newClientPhotoPreview || undefined} // Pass preview or undefined
+                className="h-32" // Adjusted height
+                imageClassName="rounded-md"
+                label="Drop photo or click to upload"
+              />
+            </div>
             <div className="grid gap-2">
               <Label htmlFor="new-client-name">Full Name</Label>
               <Input
@@ -385,6 +425,16 @@ export default function ClientsPage() {
                     onChange={(e) => setNewClientPhone(e.target.value)}
                 />
                 </div>
+            </div>
+             <div className="grid gap-2">
+              <Label htmlFor="new-client-whatsapp">WhatsApp Number (Optional)</Label>
+              <Input
+                id="new-client-whatsapp"
+                type="tel"
+                placeholder="e.g., +1 555-0102"
+                value={newClientWhatsApp}
+                onChange={(e) => setNewClientWhatsApp(e.target.value)}
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="new-client-address">Address (Optional)</Label>
@@ -422,6 +472,4 @@ export default function ClientsPage() {
     </div>
   );
 }
-    
-
     
