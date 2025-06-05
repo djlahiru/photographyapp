@@ -7,15 +7,15 @@ import { Calendar as CalendarIconFeather } from "react-feather";
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction'; // for eventClick
-import listPlugin from '@fullcalendar/list'; // for list views
+import listPlugin from '@fullcalendar/list'; 
 import type { EventClickArg, EventSourceInput } from '@fullcalendar/core';
 import { mockBookings } from '@/app/(app)/bookings/page'; // Assuming mockBookings is exported
 import type { BookingStatus } from '@/types';
 
 // Import FullCalendar styles
 // import '@fullcalendar/core/main.css'; // This line is removed
-import '@fullcalendar/daygrid/main.css'; 
-import '@fullcalendar/list/main.css'; // Required for list views
+// import '@fullcalendar/daygrid/main.css'; 
+// import '@fullcalendar/list/main.css'; // Required for list views
 
 
 const getEventClassNames = (status: BookingStatus): string[] => {
@@ -119,3 +119,4 @@ export default function CalendarPage() {
     </div>
   );
 }
+
