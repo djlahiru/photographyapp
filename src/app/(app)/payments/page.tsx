@@ -209,15 +209,17 @@ export default function PaymentsPage() {
       toast.error("Client Name is required for the new client.");
       return;
     }
+    const trimmedName = newClientForPaymentName.trim();
+    const searchName = trimmedName.toLowerCase();
+    const existingClient = mockClientsData.find(c => c.name.toLowerCase() === searchName);
 
-    const existingClient = mockClientsData.find(c => c.name.toLowerCase() === newClientForPaymentName.trim().toLowerCase());
     if (existingClient) {
-        toast.warn(`Client "${newClientForPaymentName.trim()}" already exists. Selecting existing client.`);
-        setPaymentClientName(existingClient.name);
+        toast.warn(`A client named "${existingClient.name}" already exists and will be used to ensure proper linking.`);
+        setPaymentClientName(existingClient.name); // Use existing client's canonical name
     } else {
         const newClientToAdd: Client = {
             id: `client-${Date.now()}`,
-            name: newClientForPaymentName.trim(),
+            name: trimmedName,
             contactDetails: {
                 email: newClientForPaymentEmail.trim() || undefined,
                 phone: newClientForPaymentPhone.trim() || undefined,
@@ -225,7 +227,7 @@ export default function PaymentsPage() {
             },
             address: newClientForPaymentAddress.trim() || undefined,
             notes: newClientForPaymentNotes.trim() || undefined,
-            avatarUrl: newClientForPaymentPhotoPreview || `https://placehold.co/80x80.png?text=${newClientForPaymentName.trim().split(' ').map(n=>n[0]).join('').toUpperCase()}`,
+            avatarUrl: newClientForPaymentPhotoPreview || `https://placehold.co/80x80.png?text=${trimmedName.split(' ').map(n=>n[0]).join('').toUpperCase()}`,
             dataAiHint: newClientForPaymentPhotoPreview ? "person client custom" : "person client",
             totalPayments: 0,
             outstandingBalance: 0,
@@ -238,7 +240,7 @@ export default function PaymentsPage() {
     
     setIsAddNewClientDialogForPaymentOpen(false);
     resetNewClientForPaymentForm();
-    setSuggestedPaymentClients([]);
+    setSuggestedPaymentClients([]); // Clear suggestions
     setIsPaymentClientSuggestionsOpen(false);
   };
 

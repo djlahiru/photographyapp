@@ -230,15 +230,17 @@ export default function BookingsPage() {
       toast.error("Client Name is required for the new client.");
       return;
     }
+    const trimmedName = newClientForBookingName.trim();
+    const searchName = trimmedName.toLowerCase();
+    const existingClient = mockClientsData.find(c => c.name.toLowerCase() === searchName);
 
-    const existingClient = mockClientsData.find(c => c.name.toLowerCase() === newClientForBookingName.trim().toLowerCase());
     if (existingClient) {
-        toast.warn(`Client "${newClientForBookingName.trim()}" already exists. Selecting existing client.`);
-        setBookingClientName(existingClient.name);
+        toast.warn(`A client named "${existingClient.name}" already exists and will be used for this booking to ensure proper linking.`);
+        setBookingClientName(existingClient.name); // Use existing client's canonical name
     } else {
         const newClientToAdd: Client = {
             id: `client-${Date.now()}`,
-            name: newClientForBookingName.trim(),
+            name: trimmedName,
             contactDetails: {
                 email: newClientForBookingEmail.trim() || undefined,
                 phone: newClientForBookingPhone.trim() || undefined,
@@ -246,7 +248,7 @@ export default function BookingsPage() {
             },
             address: newClientForBookingAddress.trim() || undefined,
             notes: newClientForBookingNotes.trim() || undefined,
-            avatarUrl: newClientForBookingPhotoPreview || `https://placehold.co/80x80.png?text=${newClientForBookingName.trim().split(' ').map(n=>n[0]).join('').toUpperCase()}`,
+            avatarUrl: newClientForBookingPhotoPreview || `https://placehold.co/80x80.png?text=${trimmedName.split(' ').map(n=>n[0]).join('').toUpperCase()}`,
             dataAiHint: newClientForBookingPhotoPreview ? "person client custom" : "person client",
             totalPayments: 0,
             outstandingBalance: 0,
@@ -259,7 +261,7 @@ export default function BookingsPage() {
     
     setIsAddNewClientDialogForBookingOpen(false);
     resetNewClientForBookingForm();
-    setSuggestedClients([]);
+    setSuggestedClients([]); // Clear suggestions as client is now set
     setIsClientSuggestionsOpen(false);
   };
 
@@ -956,5 +958,6 @@ export default function BookingsPage() {
 
 
     
+
 
 
