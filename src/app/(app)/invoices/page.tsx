@@ -12,13 +12,15 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { toast } from 'react-toastify';
 import { FileText, Save, Download, DollarSign, User, Calendar as CalendarIcon, Eye, List } from 'react-feather';
 import { INVOICE_TEMPLATE_LS_KEY, INVOICE_HISTORY_LS_KEY } from '@/lib/constants';
-import type { Invoice, InvoiceStatus } from '@/types';
+import type { Invoice, InvoiceStatus, CurrencyCode } from '@/types';
 import { format, parseISO, isValid } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { formatCurrency, getSelectedCurrencyDefinition } from '@/lib/currency-utils';
+import type { CurrencyDefinition } from '@/lib/constants';
 
 export default function InvoicesPage() {
   const { t } = useTranslation();
@@ -31,6 +33,19 @@ export default function InvoicesPage() {
 
   const [invoiceHistory, setInvoiceHistory] = useState<Invoice[]>([]);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
+
+  const [currentCurrency, setCurrentCurrency] = useState<CurrencyDefinition>(getSelectedCurrencyDefinition());
+
+  useEffect(() => {
+    setCurrentCurrency(getSelectedCurrencyDefinition());
+    const handleCurrencyChange = () => {
+      setCurrentCurrency(getSelectedCurrencyDefinition());
+    };
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange);
+    };
+  }, []);
 
   useEffect(() => {
     const storedTemplate = localStorage.getItem(INVOICE_TEMPLATE_LS_KEY);
@@ -171,7 +186,7 @@ export default function InvoicesPage() {
             </div>
              <div className="space-y-2">
               <Label htmlFor="invoiceAmount" className="flex items-center">
-                <DollarSign className="mr-2 h-4 w-4 text-muted-foreground" />{t('invoices.issueNew.amountLabel')}
+                <DollarSign className="mr-2 h-4 w-4 text-muted-foreground" />{t('invoices.issueNew.amountLabel')} ({currentCurrency.symbol})
               </Label>
               <Input
                 id="invoiceAmount"
@@ -215,7 +230,7 @@ export default function InvoicesPage() {
                       <Badge variant={invoice.status === 'Recorded' ? 'success' : 'default'} className="text-xs">
                         {invoice.status}
                       </Badge>
-                      <p className="text-sm font-semibold text-primary">${invoice.amount.toFixed(2)}</p>
+                      <p className="text-sm font-semibold text-primary">{formatCurrency(invoice.amount, currentCurrency.code)}</p>
                     </div>
                   </div>
                   {invoice.dueDate && isValid(parseISO(invoice.dueDate)) && (
@@ -289,7 +304,7 @@ export default function InvoicesPage() {
                         <TableCell>{invoice.clientName}</TableCell>
                         <TableCell>{isValid(parseISO(invoice.issueDate)) ? format(parseISO(invoice.issueDate), "MMM d, yyyy") : 'Invalid Date'}</TableCell>
                         <TableCell>{invoice.dueDate && isValid(parseISO(invoice.dueDate)) ? format(parseISO(invoice.dueDate), "MMM d, yyyy") : 'N/A'}</TableCell>
-                        <TableCell className="text-right">${invoice.amount.toFixed(2)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(invoice.amount, currentCurrency.code)}</TableCell>
                         <TableCell className="text-center">
                           <Badge variant={invoice.status === 'Recorded' ? 'success' : 'default'}>{invoice.status}</Badge>
                         </TableCell>
@@ -312,4 +327,3 @@ export default function InvoicesPage() {
     </div>
   );
 }
-

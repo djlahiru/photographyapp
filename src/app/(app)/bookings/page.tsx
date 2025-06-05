@@ -10,9 +10,9 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGr
 import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIconFeather, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle, Search, TrendingUp, TrendingDown, CreditCard, Save, UserPlus, Plus, Trash, FileText as FileTextIcon, Info, Grid, List as ListIcon, Eye, Edit3 } from "react-feather";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
-import type { Booking, BookingStatus, Payment, PaymentStatus, BookingActivityLogEntry, Client, BookingDateTime, BookingCategory } from "@/types";
+import type { Booking, BookingStatus, Payment, PaymentStatus, BookingActivityLogEntry, Client, BookingDateTime, BookingCategory, CurrencyCode } from "@/types";
 import { BookingActivityLog } from "@/components/bookings/booking-activity-log";
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import { format, parseISO, isValid } from 'date-fns';
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
@@ -22,6 +22,8 @@ import { Separator } from '@/components/ui/separator';
 import { mockBookingsData, mockClientsData, mockPackagesData, mockBookingCategoriesData } from '@/lib/mock-data';
 import { cn } from "@/lib/utils";
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { formatCurrency, getSelectedCurrencyDefinition } from '@/lib/currency-utils';
+import type { CurrencyDefinition } from '@/lib/constants';
 
 
 const ALL_STATUSES: BookingStatus[] = ["Pending", "Confirmed", "Completed", "Cancelled"];
@@ -89,6 +91,19 @@ export default function BookingsPage() {
   const [selectedBookingForDetailsView, setSelectedBookingForDetailsView] = React.useState<Booking | null>(null);
   const [isViewDetailsDialogOpen, setIsViewDetailsDialogOpen] = React.useState(false);
   const [layoutMode, setLayoutMode] = React.useState<LayoutMode>('grid');
+  
+  const [currentCurrency, setCurrentCurrency] = useState<CurrencyDefinition>(getSelectedCurrencyDefinition());
+
+  useEffect(() => {
+    setCurrentCurrency(getSelectedCurrencyDefinition());
+    const handleCurrencyChange = () => {
+      setCurrentCurrency(getSelectedCurrencyDefinition());
+    };
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange);
+    };
+  }, []);
 
 
   const filteredBookings = React.useMemo(() => {
@@ -353,9 +368,9 @@ export default function BookingsPage() {
                             </div>
                         )}
                         <div className="space-y-1 pt-2 border-t border-border/50">
-                            <div className="flex items-center"><DollarSign className="h-4 w-4 mr-2 text-muted-foreground" /><span>Total Price: ${booking.price.toFixed(2)}</span></div>
-                            <div className="flex items-center text-green-600 dark:text-green-400"><TrendingUp className="h-4 w-4 mr-2" /><span>Paid: ${totalPaid.toFixed(2)}</span></div>
-                            <div className={`flex items-center ${remainingAmount > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-muted-foreground'}`}>{remainingAmount > 0 ? <TrendingDown className="h-4 w-4 mr-2" /> : <CreditCard className="h-4 w-4 mr-2"/>}<span>Remaining: ${remainingAmount.toFixed(2)}</span></div>
+                            <div className="flex items-center"><DollarSign className="h-4 w-4 mr-2 text-muted-foreground" /><span>Total Price: {formatCurrency(booking.price, currentCurrency.code)}</span></div>
+                            <div className="flex items-center text-green-600 dark:text-green-400"><TrendingUp className="h-4 w-4 mr-2" /><span>Paid: {formatCurrency(totalPaid, currentCurrency.code)}</span></div>
+                            <div className={`flex items-center ${remainingAmount > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-muted-foreground'}`}>{remainingAmount > 0 ? <TrendingDown className="h-4 w-4 mr-2" /> : <CreditCard className="h-4 w-4 mr-2"/>}<span>Remaining: {formatCurrency(remainingAmount, currentCurrency.code)}</span></div>
                         </div>
                     </CardContent>
                     <CardFooter className="p-4 border-t flex items-center justify-between">
@@ -402,7 +417,7 @@ export default function BookingsPage() {
               <Label htmlFor="booking-package">Photography Package</Label>
               <Select value={bookingPackageId} onValueChange={setBookingPackageId}>
                 <SelectTrigger id="booking-package"><SelectValue placeholder="Select a package" /></SelectTrigger>
-                <SelectContent><SelectGroup><SelectLabel>Available Packages</SelectLabel>{mockPackagesData.map((pkg) => ( <SelectItem key={pkg.id} value={pkg.id}>{pkg.name} (${pkg.price.toFixed(2)})</SelectItem> ))}</SelectGroup></SelectContent>
+                <SelectContent><SelectGroup><SelectLabel>Available Packages</SelectLabel>{mockPackagesData.map((pkg) => ( <SelectItem key={pkg.id} value={pkg.id}>{pkg.name} ({formatCurrency(pkg.price, currentCurrency.code)})</SelectItem> ))}</SelectGroup></SelectContent>
               </Select>
             </div>
             <div className="grid gap-3">
@@ -550,7 +565,7 @@ export default function BookingsPage() {
                             )}
                             <div>
                                 <Label className="font-semibold text-muted-foreground">Total Price</Label>
-                                <p className="text-foreground">${selectedBookingForDetailsView.price.toFixed(2)}</p>
+                                <p className="text-foreground">{formatCurrency(selectedBookingForDetailsView.price, currentCurrency.code)}</p>
                             </div>
                         </div>
 
@@ -580,7 +595,7 @@ export default function BookingsPage() {
                                         {selectedBookingForDetailsView.payments.map(p => (
                                         <div key={p.id} className="text-xs p-2 rounded-md border bg-muted/30">
                                             <div className="flex justify-between items-center mb-0.5">
-                                            <span className="font-medium text-foreground">{p.description || 'Payment'} (${p.amount.toFixed(2)})</span>
+                                            <span className="font-medium text-foreground">{p.description || 'Payment'} ({formatCurrency(p.amount, currentCurrency.code)})</span>
                                             <Badge variant={paymentStatusVariantMap[p.status]} className="text-xs">{p.status}</Badge>
                                             </div>
                                             <p className="text-muted-foreground">

@@ -195,6 +195,7 @@ export default function SettingsPage() {
     localStorage.setItem(USER_PROFILE_LS_KEY, JSON.stringify(updatedUser)); 
     toast.success(`Currency changed to ${AVAILABLE_CURRENCIES.find(c=>c.code === newCurrency)?.label || newCurrency}.`);
     window.dispatchEvent(new CustomEvent('profileUpdated')); 
+    window.dispatchEvent(new CustomEvent('currencyChanged')); // Dispatch event for other components
   };
 
   const toggleCalendarConnection = () => {

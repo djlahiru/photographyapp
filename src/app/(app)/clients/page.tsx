@@ -8,7 +8,7 @@ import { PlusCircle, Users, Edit, Trash2, Phone, Mail, MessageCircle, Briefcase,
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import type { Payment, PaymentStatus, Client, Booking, BookingStatus } from '@/types';
+import type { Payment, PaymentStatus, Client, Booking, BookingStatus, CurrencyCode } from '@/types';
 import { format, parseISO, isValid } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,8 @@ import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { mockClientsData, mockBookingsData } from '@/lib/mock-data'; // Import from centralized mock data
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { formatCurrency, getSelectedCurrencyDefinition } from '@/lib/currency-utils';
+import type { CurrencyDefinition } from '@/lib/constants';
 
 
 const paymentStatusVariantMap: Record<PaymentStatus, "default" | "secondary" | "destructive" | "outline" | "success" | "warning"> = {
@@ -71,6 +73,19 @@ export default function ClientsPage() {
 
   const [selectedClientForBookings, setSelectedClientForBookings] = useState<Client | null>(null);
   const [isClientBookingsDialogOpen, setIsClientBookingsDialogOpen] = useState(false);
+
+  const [currentCurrency, setCurrentCurrency] = useState<CurrencyDefinition>(getSelectedCurrencyDefinition());
+
+  useEffect(() => {
+    setCurrentCurrency(getSelectedCurrencyDefinition());
+    const handleCurrencyChange = () => {
+      setCurrentCurrency(getSelectedCurrencyDefinition());
+    };
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange);
+    };
+  }, []);
 
   const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase();
 
@@ -385,11 +400,11 @@ export default function ClientsPage() {
                       </div>
                       <div className="flex items-center">
                           <TrendingUp className="h-4 w-4 mr-2 text-green-500" />
-                          <span>${client.totalPayments.toFixed(2)} Paid</span>
+                          <span>{formatCurrency(client.totalPayments, currentCurrency.code)} Paid</span>
                       </div>
                       <div className={`flex items-center ${client.outstandingBalance > 0 ? 'text-destructive' : 'text-green-600'}`}>
                           <TrendingDown className="h-4 w-4 mr-2" />
-                          <span>${client.outstandingBalance.toFixed(2)} Due</span>
+                          <span>{formatCurrency(client.outstandingBalance, currentCurrency.code)} Due</span>
                       </div>
                   </div>
 
@@ -408,7 +423,7 @@ export default function ClientsPage() {
                               </Badge>
                             </div>
                             <div className="flex items-center text-muted-foreground">
-                              <DollarSign className="h-3 w-3 mr-1" /> ${payment.amount.toFixed(2)}
+                              <DollarSign className="h-3 w-3 mr-1" /> {formatCurrency(payment.amount, currentCurrency.code)}
                               <span className="mx-1.5">|</span>
                               <CalendarIconFeather className="h-3 w-3 mr-1" /> {format(new Date(payment.paymentDate), "MMM d, yyyy")}
                             </div>
@@ -726,7 +741,7 @@ export default function ClientsPage() {
                             <Badge variant={bookingStatusVariantMap[booking.status]} className="text-xs">
                               {booking.status}
                             </Badge>
-                            <span className="ml-auto text-sm font-medium text-foreground">${booking.price.toFixed(2)}</span>
+                            <span className="ml-auto text-sm font-medium text-foreground">{formatCurrency(booking.price, currentCurrency.code)}</span>
                           </CardFooter>
                         </Card>
                       )

@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Added useEffect
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,9 +14,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
-import type { PhotographyPackage } from '@/types';
+import type { PhotographyPackage, CurrencyCode } from '@/types';
 import { cn } from '@/lib/utils';
 import { mockPackagesData } from '@/lib/mock-data'; // Import from centralized mock data
+import { formatCurrency, getSelectedCurrencyDefinition } from '@/lib/currency-utils';
+import type { CurrencyDefinition } from '@/lib/constants';
+
 
 type LayoutMode = 'grid' | 'list';
 
@@ -42,6 +45,19 @@ export default function PackagesPage() {
   const [editPackageServices, setEditPackageServices] = useState('');
   const [editPackageImageFile, setEditPackageImageFile] = useState<File | null>(null);
   const [editPackageImagePreview, setEditPackageImagePreview] = useState<string | null>(null);
+
+  const [currentCurrency, setCurrentCurrency] = useState<CurrencyDefinition>(getSelectedCurrencyDefinition());
+
+  useEffect(() => {
+    setCurrentCurrency(getSelectedCurrencyDefinition());
+    const handleCurrencyChange = () => {
+      setCurrentCurrency(getSelectedCurrencyDefinition());
+    };
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange);
+    };
+  }, []);
 
 
   const resetNewPackageForm = () => {
@@ -242,7 +258,7 @@ export default function PackagesPage() {
               <CardContent className="flex-grow space-y-3 text-sm pt-0">
                 <div className="flex items-center font-semibold text-lg text-primary">
                   <DollarSign className="h-5 w-5 mr-1.5" />
-                  {pkg.price.toFixed(2)}
+                  {formatCurrency(pkg.price, currentCurrency.code)}
                 </div>
                 <div>
                   <h4 className="text-xs font-medium uppercase text-muted-foreground mb-1.5">Included Services:</h4>
@@ -315,7 +331,7 @@ export default function PackagesPage() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="new-package-price">Price ($)</Label>
+              <Label htmlFor="new-package-price">Price ({currentCurrency.symbol})</Label>
               <Input
                 id="new-package-price"
                 type="number"
@@ -387,7 +403,7 @@ export default function PackagesPage() {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="edit-package-price">Price ($)</Label>
+                <Label htmlFor="edit-package-price">Price ({currentCurrency.symbol})</Label>
                 <Input
                   id="edit-package-price"
                   type="number"
@@ -421,4 +437,3 @@ export default function PackagesPage() {
     </div>
   );
 }
-

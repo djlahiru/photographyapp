@@ -1,10 +1,15 @@
 
+'use client'; // Add 'use client' for useState and useEffect
+
+import React, { useState, useEffect } from 'react'; // Import React hooks
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, List, Users, Briefcase } from "react-feather"; // ListChecks -> List
+import { DollarSign, List, Users, Briefcase } from "react-feather";
+import { formatCurrency, getSelectedCurrencyDefinition } from '@/lib/currency-utils';
+import type { CurrencyDefinition } from '@/lib/constants';
 
 interface StatCardProps {
   title: string;
-  value: string;
+  value: string; // Value will now be formatted string
   icon: React.ElementType;
   description?: string;
 }
@@ -25,12 +30,32 @@ function StatCard({ title, value, icon: Icon, description }: StatCardProps) {
 }
 
 export function SummaryStats() {
-  // Placeholder data
+  const [currentCurrency, setCurrentCurrency] = useState<CurrencyDefinition>(getSelectedCurrencyDefinition());
+
+  useEffect(() => {
+    setCurrentCurrency(getSelectedCurrencyDefinition());
+    const handleCurrencyChange = () => {
+      setCurrentCurrency(getSelectedCurrencyDefinition());
+    };
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange);
+    };
+  }, []);
+
+  // Placeholder raw numerical data
+  const rawStats = {
+    activeBookings: 12,
+    paymentsThisMonth: 2350,
+    tasksInProgress: 8,
+    newClients: 3,
+  };
+
   const stats = [
-    { title: "Active Bookings", value: "12", icon: Briefcase, description: "+2 from last month" },
-    { title: "Payments This Month", value: "$2,350", icon: DollarSign, description: "Total revenue" },
-    { title: "Tasks In Progress", value: "8", icon: List, description: "Across all projects" }, // Was ListChecks
-    { title: "New Clients", value: "3", icon: Users, description: "Joined this week" },
+    { title: "Active Bookings", value: rawStats.activeBookings.toString(), icon: Briefcase, description: "+2 from last month" },
+    { title: "Payments This Month", value: formatCurrency(rawStats.paymentsThisMonth, currentCurrency.code), icon: DollarSign, description: "Total revenue" },
+    { title: "Tasks In Progress", value: rawStats.tasksInProgress.toString(), icon: List, description: "Across all projects" },
+    { title: "New Clients", value: rawStats.newClients.toString(), icon: Users, description: "Joined this week" },
   ];
 
   return (

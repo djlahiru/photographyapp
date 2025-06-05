@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { PlusCircle, DollarSign, Users, TrendingUp, TrendingDown, List, Filter, Search, CreditCard, Briefcase, Calendar as CalendarIconFeather, Package, Save, UserPlus } from "react-feather";
 import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval, isValid } from 'date-fns';
-import type { Payment, Booking, Client, PaymentStatus } from '@/types';
+import type { Payment, Booking, Client, PaymentStatus, CurrencyCode } from '@/types';
 import { mockBookingsData, mockClientsData } from '@/lib/mock-data';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectGroup, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -19,6 +19,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { formatCurrency, getSelectedCurrencyDefinition } from '@/lib/currency-utils';
+import type { CurrencyDefinition } from '@/lib/constants';
 
 const paymentStatusVariantMap: Record<PaymentStatus, "default" | "secondary" | "destructive" | "outline" | "success" | "warning"> = {
   Paid: "success",
@@ -71,6 +73,19 @@ export default function PaymentsPage() {
   const [newClientForPaymentNotes, setNewClientForPaymentNotes] = useState('');
   const [newClientForPaymentPhotoFile, setNewClientForPaymentPhotoFile] = useState<File | null>(null);
   const [newClientForPaymentPhotoPreview, setNewClientForPaymentPhotoPreview] = useState<string | null>(null);
+  
+  const [currentCurrency, setCurrentCurrency] = useState<CurrencyDefinition>(getSelectedCurrencyDefinition());
+
+  useEffect(() => {
+    setCurrentCurrency(getSelectedCurrencyDefinition());
+    const handleCurrencyChange = () => {
+      setCurrentCurrency(getSelectedCurrencyDefinition());
+    };
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange);
+    };
+  }, []);
 
 
   useEffect(() => {
@@ -299,7 +314,7 @@ export default function PaymentsPage() {
     }
     mockBookingsData[bookingIndex].payments!.unshift(newPayment);
 
-    toast.success(`Payment of $${amount.toFixed(2)} recorded for booking.`);
+    toast.success(`Payment of ${formatCurrency(amount, currentCurrency.code)} recorded for booking.`);
     setRefreshKey(prev => prev + 1);
     setIsRecordPaymentDialogOpen(false);
     resetRecordPaymentForm();
@@ -325,7 +340,7 @@ export default function PaymentsPage() {
             <TrendingUp className="h-5 w-5 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground font-headline">${summaryStats.totalRevenueThisMonth.toFixed(2)}</div>
+            <div className="text-3xl font-bold text-foreground font-headline">{formatCurrency(summaryStats.totalRevenueThisMonth, currentCurrency.code)}</div>
             <p className="text-xs text-muted-foreground pt-1">From paid invoices</p>
           </CardContent>
         </Card>
@@ -335,7 +350,7 @@ export default function PaymentsPage() {
             <TrendingDown className="h-5 w-5 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground font-headline">${summaryStats.totalOutstanding.toFixed(2)}</div>
+            <div className="text-3xl font-bold text-foreground font-headline">{formatCurrency(summaryStats.totalOutstanding, currentCurrency.code)}</div>
             <p className="text-xs text-muted-foreground pt-1">Across all active bookings</p>
           </CardContent>
         </Card>
@@ -345,7 +360,7 @@ export default function PaymentsPage() {
             <DollarSign className="h-5 w-5 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground font-headline">${summaryStats.totalPaidAllTime.toFixed(2)}</div>
+            <div className="text-3xl font-bold text-foreground font-headline">{formatCurrency(summaryStats.totalPaidAllTime, currentCurrency.code)}</div>
              <p className="text-xs text-muted-foreground pt-1">Overall received payments</p>
           </CardContent>
         </Card>
@@ -392,7 +407,7 @@ export default function PaymentsPage() {
                        <Badge variant={paymentStatusVariantMap[payment.status]} className="text-xs self-start sm:self-auto">
                         {payment.status}
                       </Badge>
-                      <p className="text-lg font-semibold text-primary">${payment.amount.toFixed(2)}</p>
+                      <p className="text-lg font-semibold text-primary">{formatCurrency(payment.amount, currentCurrency.code)}</p>
                        {isValid(parseISO(payment.paymentDate)) && (
                         <p className="text-xs text-muted-foreground">
                             {format(parseISO(payment.paymentDate), "MMM d, yyyy, h:mm a")}
@@ -460,7 +475,7 @@ export default function PaymentsPage() {
                         {payment.packageName}
                         {payment.bookingCategory && <span className="text-xs text-muted-foreground block">({payment.bookingCategory})</span>}
                     </TableCell>
-                    <TableCell className="text-right">${payment.amount.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(payment.amount, currentCurrency.code)}</TableCell>
                     <TableCell>{isValid(parseISO(payment.paymentDate)) ? format(parseISO(payment.paymentDate), "MMM d, yyyy") : 'Invalid Date'}</TableCell>
                     <TableCell>{payment.method || 'N/A'}</TableCell>
                     <TableCell className="text-center">
@@ -558,7 +573,7 @@ export default function PaymentsPage() {
                         const firstDate = booking.bookingDates[0]?.dateTime ? format(parseISO(booking.bookingDates[0].dateTime), 'MMM d, yy') : 'No Date';
                         return (
                           <SelectItem key={booking.id} value={booking.id}>
-                            {booking.packageName} ({firstDate}) - ${booking.price.toFixed(2)}
+                            {booking.packageName} ({firstDate}) - {formatCurrency(booking.price, currentCurrency.code)}
                           </SelectItem>
                         )
                       })}
@@ -570,7 +585,7 @@ export default function PaymentsPage() {
             )}
 
             <div className="grid gap-2">
-              <Label htmlFor="payment-amount">Amount ($)</Label>
+              <Label htmlFor="payment-amount">Amount ({currentCurrency.symbol})</Label>
               <Input
                 id="payment-amount"
                 type="number"
