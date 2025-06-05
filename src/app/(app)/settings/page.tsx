@@ -19,13 +19,13 @@ import { Slider } from '@/components/ui/slider';
 import type { UserProfile, AvatarShape, BookingCategory, Booking, CurrencyCode } from '@/types';
 import { Switch } from '@/components/ui/switch';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogDesc, DialogFooter, DialogClose } from "@/components/ui/dialog"; 
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogDesc, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { mockBookingCategoriesData, mockBookingsData, resetAllMockData } from '@/lib/mock-data'; 
-import { getSelectedDateFormat } from '@/lib/date-utils';
+import { mockBookingCategoriesData, mockBookingsData, resetAllMockData } from '@/lib/mock-data';
+import { getSelectedDateFormat, getSelectedClockFormatValue, getActualClockFormatString } from '@/lib/date-utils';
 import {
   USER_PROFILE_LS_KEY,
   AVATAR_SHAPE_LS_KEY,
@@ -45,6 +45,10 @@ import {
   DATE_FORMATS,
   DEFAULT_DATE_FORMAT,
   type DateFormatValue,
+  CLOCK_FORMAT_LS_KEY,
+  CLOCK_FORMATS,
+  DEFAULT_CLOCK_FORMAT_VALUE,
+  type ClockFormatValue,
 } from '@/lib/constants';
 
 
@@ -78,10 +82,10 @@ const defaultUser: UserProfile = {
 };
 
 export default function SettingsPage() {
-  const { theme: nextTheme, setTheme, resolvedTheme } = useTheme(); 
+  const { theme: nextTheme, setTheme, resolvedTheme } = useTheme();
   const router = useRouter();
   const [user, setUser] = useState<UserProfile>(defaultUser);
-  
+
   const [isCalendarConnected, setIsCalendarConnected] = useState(false);
   const [calendarIdToSync, setCalendarIdToSync] = useState('');
   const [enableAutoSync, setEnableAutoSync] = useState(false);
@@ -105,15 +109,17 @@ export default function SettingsPage() {
   const [categoryDialogTextColor, setCategoryDialogTextColor] = useState(PREDEFINED_GRADIENTS[0].textColor);
 
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>('USD');
-  const [mounted, setMounted] = useState(false); 
+  const [mounted, setMounted] = useState(false);
   const [currentSelectedDateFormat, setCurrentSelectedDateFormat] = useState<DateFormatValue>(DEFAULT_DATE_FORMAT);
+  const [currentSelectedClockFormat, setCurrentSelectedClockFormat] = useState<ClockFormatValue>(DEFAULT_CLOCK_FORMAT_VALUE);
 
 
   useEffect(() => {
     setMounted(true);
-    const timer = setInterval(() => setCurrentDateTime(new Date()), 1000 * 60);
+    const timer = setInterval(() => setCurrentDateTime(new Date()), 1000 * 60); // Updates every minute
     setCurrentSelectedDateFormat(getSelectedDateFormat());
-    
+    setCurrentSelectedClockFormat(getSelectedClockFormatValue());
+
     const storedProfileString = localStorage.getItem(USER_PROFILE_LS_KEY);
     let profileFromStorage: UserProfile | null = null;
     if (storedProfileString) {
@@ -142,10 +148,10 @@ export default function SettingsPage() {
 
     const storedShape = localStorage.getItem(AVATAR_SHAPE_LS_KEY) as AvatarShape | null;
     if (storedShape) setAvatarShape(storedShape);
-    
+
     const storedFontTheme = localStorage.getItem(FONT_THEME_LS_KEY) as FontTheme | null;
     if (storedFontTheme) setCurrentFontTheme(storedFontTheme);
-    
+
     const storedCalendarConnection = localStorage.getItem(GOOGLE_CALENDAR_CONNECTED_LS_KEY);
     if (storedCalendarConnection) setIsCalendarConnected(JSON.parse(storedCalendarConnection));
     const storedCalendarId = localStorage.getItem(GOOGLE_CALENDAR_ID_LS_KEY);
@@ -170,7 +176,7 @@ export default function SettingsPage() {
   };
 
   const handleProfileImageChange = (file: File | null) => {
-    setProfileImageFile(file); 
+    setProfileImageFile(file);
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -179,32 +185,41 @@ export default function SettingsPage() {
       reader.readAsDataURL(file);
     }
   };
-  
+
   const handleSaveChanges = () => {
     localStorage.setItem(USER_PROFILE_LS_KEY, JSON.stringify(user));
     toast.success("Profile changes saved.");
     window.dispatchEvent(new CustomEvent('profileUpdated'));
     if (profileImageFile) {
-        setProfileImageFile(null); 
+        setProfileImageFile(null);
     }
   };
 
   const handleCurrencyChange = (newCurrency: CurrencyCode) => {
-    setSelectedCurrency(newCurrency); 
+    setSelectedCurrency(newCurrency);
     const updatedUser = { ...user, selectedCurrency: newCurrency };
-    setUser(updatedUser); 
-    localStorage.setItem(SELECTED_CURRENCY_LS_KEY, newCurrency); 
-    localStorage.setItem(USER_PROFILE_LS_KEY, JSON.stringify(updatedUser)); 
+    setUser(updatedUser);
+    localStorage.setItem(SELECTED_CURRENCY_LS_KEY, newCurrency);
+    localStorage.setItem(USER_PROFILE_LS_KEY, JSON.stringify(updatedUser));
     toast.success(`Currency changed to ${AVAILABLE_CURRENCIES.find(c=>c.code === newCurrency)?.label || newCurrency}.`);
-    window.dispatchEvent(new CustomEvent('profileUpdated')); 
-    window.dispatchEvent(new CustomEvent('currencyChanged')); 
+    window.dispatchEvent(new CustomEvent('profileUpdated'));
+    window.dispatchEvent(new CustomEvent('currencyChanged'));
   };
 
   const handleDateFormatSelect = (formatValue: DateFormatValue) => {
     setCurrentSelectedDateFormat(formatValue);
     localStorage.setItem(DATE_FORMAT_LS_KEY, formatValue);
     window.dispatchEvent(new CustomEvent('dateFormatChanged'));
-    toast.info(`Date format set to ${DATE_FORMATS.find(f => f.value === formatValue)?.label}. App-wide change will apply on next interaction or refresh in some areas.`);
+    const selectedFormatLabel = DATE_FORMATS.find(f => f.value === formatValue)?.label || formatValue;
+    toast.info(`Date format set to: ${selectedFormatLabel}.`);
+  };
+
+  const handleClockFormatSelect = (formatValue: ClockFormatValue) => {
+    setCurrentSelectedClockFormat(formatValue);
+    localStorage.setItem(CLOCK_FORMAT_LS_KEY, formatValue);
+    window.dispatchEvent(new CustomEvent('clockFormatChanged'));
+    const selectedFormatLabel = CLOCK_FORMATS.find(f => f.value === formatValue)?.label || formatValue;
+    toast.info(`Clock format set to: ${selectedFormatLabel}.`);
   };
 
   const toggleCalendarConnection = () => {
@@ -231,14 +246,14 @@ export default function SettingsPage() {
 
   const applyThemeClass = (themeType: 'font', themeValue: FontTheme) => {
     const classPrefix = themeType === 'font' ? 'font-theme-' : '';
-    
+
     document.documentElement.classList.forEach(cls => {
         if (cls.startsWith(classPrefix)) {
             document.documentElement.classList.remove(cls);
         }
     });
 
-    if (themeValue !== 'default-sans') { 
+    if (themeValue !== 'default-sans') {
       document.documentElement.classList.add(`${classPrefix}${themeValue}`);
     }
   };
@@ -357,7 +372,7 @@ export default function SettingsPage() {
   };
 
   const handleResetApplicationData = () => {
-    resetAllMockData(); 
+    resetAllMockData();
 
     ALL_LOCAL_STORAGE_KEYS.forEach(key => {
       localStorage.removeItem(key);
@@ -368,11 +383,11 @@ export default function SettingsPage() {
         document.documentElement.classList.remove(cls);
       }
     });
-    
+
     toast.success("Application data has been reset. Logging out...");
-    
+
     setTimeout(() => {
-        window.location.href = '/login'; 
+        window.location.href = '/login';
     }, 1500);
   };
 
@@ -416,19 +431,19 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="name">Full Name</Label>
-              <Input 
-                id="name" 
-                value={user.name} 
-                onChange={(e) => setUser(prev => ({ ...prev, name: e.target.value }))} 
+              <Input
+                id="name"
+                value={user.name}
+                onChange={(e) => setUser(prev => ({ ...prev, name: e.target.value }))}
               />
             </div>
             <div>
               <Label htmlFor="email">Email Address</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                value={user.email || ''} 
-                onChange={(e) => setUser(prev => ({ ...prev, email: e.target.value }))} 
+              <Input
+                id="email"
+                type="email"
+                value={user.email || ''}
+                onChange={(e) => setUser(prev => ({ ...prev, email: e.target.value }))}
               />
             </div>
           </div>
@@ -505,7 +520,7 @@ export default function SettingsPage() {
                 </Button>
             )}
           </div>
-          
+
            <div>
             <Label className="flex items-center"><Edit3 className="mr-1.5 h-4 w-4" /> Font Style</Label>
             <RadioGroup value={currentFontTheme} onValueChange={(value) => handleFontThemeChange(value as FontTheme)} className="grid grid-cols-1 gap-4 mt-2 sm:grid-cols-2">
@@ -525,7 +540,7 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
-      
+
       <Separator />
 
       <Card>
@@ -539,7 +554,7 @@ export default function SettingsPage() {
             <ImageUploadDropzone
               initialImageUrl={dashboardCoverPhotoPreview || undefined}
               onFileChange={handleDashboardCoverPhotoSelected}
-              className="h-48 w-full" 
+              className="h-48 w-full"
               imageClassName="rounded-md"
               label="Drop a wide image or click to upload (e.g., 1200x300)"
             />
@@ -563,7 +578,7 @@ export default function SettingsPage() {
             <Slider
               id="dashboardBlurIntensity"
               min={0}
-              max={24} 
+              max={24}
               step={1}
               value={[dashboardBlurIntensity]}
               onValueChange={handleBlurIntensityChange}
@@ -572,7 +587,7 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
-      
+
       <Separator />
 
       <Card>
@@ -596,11 +611,11 @@ export default function SettingsPage() {
                       <Button variant="ghost" size="icon" className={cn("h-7 w-7 hover:bg-white/20", category.textColorClass)} onClick={() => handleOpenCategoryDialog(category)} title="Edit Category">
                         <Edit3 className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className={cn("h-7 w-7 hover:bg-white/20", category.textColorClass, mockBookingsData.some(b => b.categoryId === category.id) && "opacity-50 cursor-not-allowed")} 
-                        onClick={() => handleDeleteCategory(category.id)} 
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={cn("h-7 w-7 hover:bg-white/20", category.textColorClass, mockBookingsData.some(b => b.categoryId === category.id) && "opacity-50 cursor-not-allowed")}
+                        onClick={() => handleDeleteCategory(category.id)}
                         title={mockBookingsData.some(b => b.categoryId === category.id) ? "Cannot delete: Category in use" : "Delete Category"}
                         disabled={mockBookingsData.some(b => b.categoryId === category.id)}
                       >
@@ -652,27 +667,27 @@ export default function SettingsPage() {
       </Dialog>
 
       <Separator />
-      
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center"><Eye className="mr-2 h-5 w-5" /> Display Previews</CardTitle>
           <CardDescription>See how certain information will be displayed.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4"> 
+        <CardContent className="space-y-4">
           <div>
             <Label>Date &amp; Time Format Preview</Label>
             <div className="space-y-1 mt-1 text-sm">
               <p>
-                <span className="font-medium text-muted-foreground w-20 inline-block">Date :</span> 
-                <span className="text-foreground">{format(currentDateTime, currentSelectedDateFormat)}</span> 
+                <span className="font-medium text-muted-foreground w-20 inline-block">Date :</span>
+                <span className="text-foreground">{format(currentDateTime, currentSelectedDateFormat)}</span>
               </p>
               <p>
-                <span className="font-medium text-muted-foreground w-20 inline-block">Time :</span> 
-                <span className="text-foreground">{format(currentDateTime, "h:mm a")}</span> 
+                <span className="font-medium text-muted-foreground w-20 inline-block">Time :</span>
+                <span className="text-foreground">{format(currentDateTime, getActualClockFormatString(currentSelectedClockFormat))}</span>
               </p>
               <p>
-                <span className="font-medium text-muted-foreground w-20 inline-block">Relative:</span> 
-                <span className="text-foreground">{format(new Date(Date.now() - 1000 * 60 * 5), "PPPp")} (5 mins ago)</span> 
+                <span className="font-medium text-muted-foreground w-20 inline-block">Relative:</span>
+                <span className="text-foreground">{format(new Date(Date.now() - 1000 * 60 * 5), `PPP ${getActualClockFormatString()}`)} (5 mins ago)</span>
               </p>
             </div>
             <div className="flex gap-2 mt-3">
@@ -684,7 +699,7 @@ export default function SettingsPage() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start">
                     {DATE_FORMATS.map(formatOption => (
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         key={formatOption.value}
                         onClick={() => handleDateFormatSelect(formatOption.value)}
                       >
@@ -700,22 +715,21 @@ export default function SettingsPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start">
-                    <DropdownMenuItem onClick={() => toast.info(`Selected 12-hour (AM/PM) format. (e.g., ${format(currentDateTime, "h:mm a")}) App-wide change coming soon!`)}>
-                      12-hour (e.g., {format(currentDateTime, "h:mm a")})
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => toast.info(`Selected 24-hour format. (e.g., ${format(currentDateTime, "HH:mm")}) App-wide change coming soon!`)}>
-                      24-hour (e.g., {format(currentDateTime, "HH:mm")})
-                    </DropdownMenuItem>
+                    {CLOCK_FORMATS.map(formatOption => (
+                        <DropdownMenuItem
+                        key={formatOption.value}
+                        onClick={() => handleClockFormatSelect(formatOption.value)}
+                        >
+                        {formatOption.label} (e.g., {format(currentDateTime, formatOption.exampleFormat)})
+                        </DropdownMenuItem>
+                    ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-                Actual date/time format selection will be available in a future update.
-            </p>
           </div>
         </CardContent>
       </Card>
-      
+
       <Separator />
 
       <Card>
@@ -745,12 +759,12 @@ export default function SettingsPage() {
               </Button>
             </div>
           )}
-          
+
           <div className="space-y-2">
             <Label htmlFor="calendarId">Google Calendar ID to Sync</Label>
-            <Input 
-              id="calendarId" 
-              placeholder="e.g., your_email@gmail.com or a specific calendar ID" 
+            <Input
+              id="calendarId"
+              placeholder="e.g., your_email@gmail.com or a specific calendar ID"
               value={calendarIdToSync}
               onChange={(e) => setCalendarIdToSync(e.target.value)}
               disabled={!isCalendarConnected}
@@ -761,9 +775,9 @@ export default function SettingsPage() {
           </div>
 
           <div className="flex items-center space-x-2">
-            <Switch 
-                id="enableAutoSync" 
-                checked={enableAutoSync} 
+            <Switch
+                id="enableAutoSync"
+                checked={enableAutoSync}
                 onCheckedChange={setEnableAutoSync}
                 disabled={!isCalendarConnected}
             />
@@ -772,7 +786,7 @@ export default function SettingsPage() {
            <p className="text-xs text-muted-foreground">
             When enabled and connected, Rubo will attempt to sync events automatically.
           </p>
-          
+
           <Button onClick={handleSaveCalendarPreferences} disabled={!isCalendarConnected}>
             <Save className="mr-2 h-4 w-4" /> Save Calendar Preferences
           </Button>
@@ -780,7 +794,7 @@ export default function SettingsPage() {
                 <div className="flex items-start">
                     <AlertTriangle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
                     <span>
-                    The actual Google Calendar connection and sync functionality will be implemented when publishing the app. 
+                    The actual Google Calendar connection and sync functionality will be implemented when publishing the app.
                     These settings allow you to pre-configure how it should behave.
                     </span>
                 </div>
@@ -798,9 +812,9 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div>
             <Label htmlFor="packageName">Package Name</Label>
-            <Input 
-              id="packageName" 
-              placeholder="e.g., framer-motion or lodash@4.17.21" 
+            <Input
+              id="packageName"
+              placeholder="e.g., framer-motion or lodash@4.17.21"
               value={packageName}
               onChange={(e) => setPackageName(e.target.value)}
             />
@@ -857,4 +871,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-    

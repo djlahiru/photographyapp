@@ -5,7 +5,7 @@ import type { CurrencyCode } from '@/types';
 
 export interface NavItem {
   href: string;
-  labelKey: string; 
+  labelKey: string;
   icon: ElementType;
   disabled?: boolean;
 }
@@ -23,11 +23,11 @@ export const NAV_ITEMS: NavItem[] = [
 
 export const SETTINGS_NAV_ITEM: NavItem = {
   href: '/settings',
-  labelKey: 'nav.settings', 
+  labelKey: 'nav.settings',
   icon: SettingsIcon,
 };
 
-export const APP_NAME_KEY = "appName"; 
+export const APP_NAME_KEY = "appName";
 export const USER_PROFILE_LS_KEY = 'userProfile';
 export const DASHBOARD_COVER_PHOTO_LS_KEY = 'dashboardCoverPhotoUrl';
 export const DASHBOARD_COVER_PHOTO_BLUR_LS_KEY = 'dashboardCoverPhotoBlur';
@@ -41,6 +41,7 @@ export const INVOICE_HISTORY_LS_KEY = 'invoiceHistory';
 export const SELECTED_CURRENCY_LS_KEY = 'selectedCurrency';
 export const AUTH_STATUS_LS_KEY = 'ruboAuthStatus';
 export const DATE_FORMAT_LS_KEY = 'dateFormatPreference';
+export const CLOCK_FORMAT_LS_KEY = 'clockFormatPreference';
 
 export const DATE_FORMATS = [
   { value: 'MM/dd/yyyy', label: 'MM/DD/YYYY' },
@@ -49,6 +50,14 @@ export const DATE_FORMATS = [
 ] as const;
 export type DateFormatValue = typeof DATE_FORMATS[number]['value'];
 export const DEFAULT_DATE_FORMAT: DateFormatValue = 'MMMM d, yyyy';
+
+export const CLOCK_FORMATS = [
+    { value: '12h', label: '12-hour (AM/PM)', exampleFormat: 'h:mm a' },
+    { value: '24h', label: '24-hour', exampleFormat: 'HH:mm' },
+] as const;
+export type ClockFormatValue = typeof CLOCK_FORMATS[number]['value'];
+export const DEFAULT_CLOCK_FORMAT_VALUE: ClockFormatValue = '12h';
+
 
 export interface CurrencyDefinition {
   code: CurrencyCode;
@@ -75,7 +84,7 @@ export const ALL_LOCAL_STORAGE_KEYS: string[] = [
   INVOICE_HISTORY_LS_KEY,
   SELECTED_CURRENCY_LS_KEY,
   AUTH_STATUS_LS_KEY,
-  DATE_FORMAT_LS_KEY, 
+  DATE_FORMAT_LS_KEY,
+  CLOCK_FORMAT_LS_KEY,
   // Add any new localStorage keys here for them to be included in the reset
 ];
-

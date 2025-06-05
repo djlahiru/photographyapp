@@ -1,5 +1,5 @@
 
-import { DATE_FORMAT_LS_KEY, DEFAULT_DATE_FORMAT, type DateFormatValue } from './constants';
+import { DATE_FORMAT_LS_KEY, DEFAULT_DATE_FORMAT, type DateFormatValue, CLOCK_FORMAT_LS_KEY, DEFAULT_CLOCK_FORMAT_VALUE, CLOCK_FORMATS, type ClockFormatValue } from './constants';
 
 // Returns a translation key, optionally the name, and an icon name
 export function getGreetingParts(name?: string): { greetingKey: string; name?: string; iconName: 'Sunrise' | 'Sun' | 'Sunset' | 'Moon' } {
@@ -31,4 +31,18 @@ export function getSelectedDateFormat(): DateFormatValue {
   }
   const storedFormat = localStorage.getItem(DATE_FORMAT_LS_KEY) as DateFormatValue | null;
   return storedFormat || DEFAULT_DATE_FORMAT;
+}
+
+export function getSelectedClockFormatValue(): ClockFormatValue {
+  if (typeof window === 'undefined') {
+    return DEFAULT_CLOCK_FORMAT_VALUE;
+  }
+  const storedFormat = localStorage.getItem(CLOCK_FORMAT_LS_KEY) as ClockFormatValue | null;
+  return storedFormat || DEFAULT_CLOCK_FORMAT_VALUE;
+}
+
+export function getActualClockFormatString(formatValue?: ClockFormatValue): string {
+  const valueToUse = formatValue || getSelectedClockFormatValue();
+  const formatObject = CLOCK_FORMATS.find(f => f.value === valueToUse);
+  return formatObject ? formatObject.exampleFormat : CLOCK_FORMATS.find(f => f.value === DEFAULT_CLOCK_FORMAT_VALUE)!.exampleFormat;
 }

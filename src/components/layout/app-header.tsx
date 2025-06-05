@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image'; // Import next/image
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
-import { getGreetingParts, getSelectedDateFormat } from '@/lib/date-utils';
+import { getGreetingParts, getSelectedDateFormat, getActualClockFormatString, getSelectedClockFormatValue } from '@/lib/date-utils';
 import { Button } from '@/components/ui/button';
 import { Bell, Globe, Sunrise, Sunset, Moon, Sun as SunIcon } from 'react-feather';
 import { useTheme } from 'next-themes';
@@ -17,7 +17,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { UserProfile, AvatarShape } from '@/types';
-import { USER_PROFILE_LS_KEY, AVATAR_SHAPE_LS_KEY, SETTINGS_NAV_ITEM, APP_NAME_KEY, DEFAULT_DATE_FORMAT, type DateFormatValue } from '@/lib/constants';
+import { USER_PROFILE_LS_KEY, AVATAR_SHAPE_LS_KEY, SETTINGS_NAV_ITEM, APP_NAME_KEY, DEFAULT_DATE_FORMAT, type DateFormatValue, DEFAULT_CLOCK_FORMAT_VALUE, type ClockFormatValue } from '@/lib/constants';
 
 const GREETING_ICON_MAP: Record<string, React.ElementType> = {
   Sunrise: Sunrise,
@@ -52,6 +52,7 @@ export function AppHeader() {
   const isMobileView = useIsMobile();
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [displayDateFormat, setDisplayDateFormat] = useState<DateFormatValue>(DEFAULT_DATE_FORMAT);
+  const [displayClockFormatString, setDisplayClockFormatString] = useState<string>(getActualClockFormatString(DEFAULT_CLOCK_FORMAT_VALUE));
 
   const [headerUser, setHeaderUser] = useState<UserProfile>(defaultUser);
   const [headerAvatarShape, setHeaderAvatarShape] = useState<AvatarShape>('circle');
@@ -80,6 +81,7 @@ export function AppHeader() {
 
     loadProfileAndShape();
     setDisplayDateFormat(getSelectedDateFormat());
+    setDisplayClockFormatString(getActualClockFormatString());
 
 
     const handleProfileUpdate = () => loadProfileAndShape();
@@ -97,20 +99,26 @@ export function AppHeader() {
     const handleDateFormatChange = () => {
       setDisplayDateFormat(getSelectedDateFormat());
     };
+    const handleClockFormatChange = () => {
+      setDisplayClockFormatString(getActualClockFormatString());
+    };
+
 
     window.addEventListener('profileUpdated', handleProfileUpdate);
     window.addEventListener('avatarShapeChange', handleAvatarShapeChange);
     window.addEventListener('dateFormatChanged', handleDateFormatChange);
+    window.addEventListener('clockFormatChanged', handleClockFormatChange);
 
 
     const timerId = setInterval(() => {
       setCurrentDateTime(new Date());
-    }, 1000);
+    }, 1000); // Update every second for live clock
 
     return () => {
       window.removeEventListener('profileUpdated', handleProfileUpdate);
       window.removeEventListener('avatarShapeChange', handleAvatarShapeChange);
       window.removeEventListener('dateFormatChanged', handleDateFormatChange);
+      window.removeEventListener('clockFormatChanged', handleClockFormatChange);
       clearInterval(timerId);
     };
   }, []);
@@ -134,7 +142,7 @@ export function AppHeader() {
 
   const formattedDatePart = format(currentDateTime, displayDateFormat);
   const dayOfWeekPart = format(currentDateTime, "E");
-  const timePart = format(currentDateTime, "HH:mm:ss");
+  const timePart = format(currentDateTime, displayClockFormatString); // Use dynamic clock format
   const fullDateTimeString = `${dayOfWeekPart}, ${formattedDatePart}, ${timePart}`;
 
 
@@ -188,14 +196,14 @@ export function AppHeader() {
               src="/images/rubo-logo.png"
               alt={`${t(APP_NAME_KEY)} Logo`}
               width={160}
-              height={27} 
+              height={27}
               priority
               className="hidden sm:block"
             />
              <Image
               src="/images/rubo-logo.png"
               alt={`${t(APP_NAME_KEY)} Logo`}
-              width={80} 
+              width={80}
               height={14}
               priority
               className="block sm:hidden"
@@ -250,5 +258,3 @@ export function AppHeader() {
     </header>
   );
 }
-    
-    
