@@ -83,14 +83,14 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col items-center justify-center p-4 content-area-gradient">
         <div className="absolute top-8 left-1/2 transform -translate-x-1/2">
             <Image
-                src="/images/new-company-logo.png"
+                src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj30D3MJKJVq6fF6F2E8bOPhD3osgIrrESDnONbWzfN8WQ6BG6PX4d3ne80pu8RWdU85RoZxGbEFbXiPMSVMcDhW9h3DFNQdsrPlnc3UohL5qOu2xK6nJ2iWHewEtHbFiqCRxHCNXZWwSx1yDEAQe-rSGHRnQh_NAbWapbgWi-NOlTkbXTq_J_uN68mYYk/s320/your-logo.png"
                 alt={`${appName} Logo`}
-                width={200}
-                height={34}
+                width={200} // Adjusted width, height can be inferred or set
+                height={34} // Keeping similar height for layout consistency
                 priority
             />
         </div>
-      <Card className="w-full max-w-sm shadow-2xl">
+      <Card className="w-full max-w-sm shadow-2xl mt-20"> {/* Added mt-20 to give space for the logo above */}
         <CardHeader className="text-center items-center">
            <Avatar className={cn(
             "h-24 w-24 mb-4",
