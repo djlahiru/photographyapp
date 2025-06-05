@@ -1,13 +1,6 @@
 
 {
-  "appName": "වර්ක්ෆ්ලෝසෙන්",
-  "searchPlaceholder": "සොයන්න...",
-  "language": "භාෂාව",
-  "english": "ඉංග්‍රීසි",
-  "sinhala": "සිංහල",
-  "tamil": "දෙමළ",
-  "toggleTheme": "තේමාව මාරු කරන්න",
-  "toggleNotifications": "දැනුම්දීම් මාරු කරන්න",
+  "appName": "WorkFlowZen",
   "greeting": {
     "morning": "සුබ උදෑසනක්",
     "afternoon": "සුබ සන්ධ්‍යාවක්",
@@ -15,14 +8,20 @@
     "night": "සුබ රාත්‍රියක්"
   },
   "nav": {
-    "dashboard": "පාලන පුවරුව",
+    "dashboard": "උපකරණ පුවරුව",
     "tasks": "කාර්යයන්",
     "bookings": "වෙන් කිරීම්",
-    "calendar": "දින දර්ශනය",
-    "clients": "සේවාලාභීන්",
+    "calendar": "දින දසුන",
+    "clients": "සේවාදායකයින්",
     "packages": "පැකේජ",
     "payments": "ගෙවීම්",
     "settings": "සැකසුම්"
   },
-  "logout": "පිටවීම"
+  "language": "භාෂාව",
+  "english": "ඉංග්‍රීසි",
+  "sinhala": "සිංහල",
+  "tamil": "දෙමළ",
+  "toggleTheme": "තේමාව මාරු කරන්න",
+  "toggleNotifications": "දැනුම්දීම් මාරු කරන්න",
+  "logout": "ඉවත් වන්න"
 }

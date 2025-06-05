@@ -5,33 +5,59 @@ import React, { useState, useEffect } from 'react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { getGreetingParts } from '@/lib/date-utils';
 import { Button } from '@/components/ui/button';
-import { Bell, Search, Moon, Sun as SunIcon, Globe, Sunrise, Sunset } from 'react-feather'; // Sun aliased to SunIcon
-import { Input } from '@/components/ui/input';
+import { Bell, Globe, Sunrise, Sunset, Moon, Sun as SunIcon } from 'react-feather';
 import { useTheme } from 'next-themes';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTranslation } from 'react-i18next';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-
-const MOCK_USER_NAME = "Admin";
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import type { UserProfile } from '@/types'; // Import UserProfile type
 
 const GREETING_ICON_MAP: Record<string, React.ElementType> = {
   Sunrise: Sunrise,
   Sun: SunIcon,
   Sunset: Sunset,
-  Moon: Moon, // Moon icon is also used for theme toggle, can be reused
+  Moon: Moon,
 };
 
 export function AppHeader() {
   const { t, i18n } = useTranslation();
   const [greeting, setGreeting] = useState('');
   const [greetingIconName, setGreetingIconName] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string | undefined>(undefined);
+  const [userName, setUserName] = useState<string | undefined>("User"); // Default to "User"
   const { setTheme, theme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const isMobileView = useIsMobile();
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
 
   useEffect(() => {
-    setUserName(MOCK_USER_NAME);
+    const loadUserName = () => {
+      const storedProfile = localStorage.getItem('userProfile');
+      if (storedProfile) {
+        try {
+          const profile: UserProfile = JSON.parse(storedProfile);
+          setUserName(profile.name || "User");
+        } catch (e) {
+          console.error("Failed to parse user profile from localStorage", e);
+          setUserName("User"); 
+        }
+      } else {
+        setUserName("User"); 
+      }
+    };
+
+    loadUserName();
+    window.addEventListener('profileUpdated', loadUserName);
+
+    const timerId = setInterval(() => {
+      setCurrentDateTime(new Date());
+    }, 1000);
+
+    return () => {
+      window.removeEventListener('profileUpdated', loadUserName);
+      clearInterval(timerId);
+    };
   }, []);
 
   useEffect(() => {
@@ -59,10 +85,9 @@ export function AppHeader() {
         <h1 className="text-lg font-semibold text-foreground font-headline">{greeting}</h1>
       </div>
       <div className="flex items-center gap-2 md:gap-4">
-        <div className="relative hidden md:block">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input type="search" placeholder={t('searchPlaceholder')} className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px] bg-background" />
-        </div>
+        <p className="text-sm text-muted-foreground hidden md:block whitespace-nowrap">
+          {format(currentDateTime, "E, MMM d, yyyy, HH:mm:ss")}
+        </p>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
