@@ -4,7 +4,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIcon, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle, Search } from "react-feather";
+import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIcon, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle, Search, TrendingUp, TrendingDown, CreditCard } from "react-feather";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
 import type { Booking, BookingStatus, Payment, PaymentStatus, BookingActivityLogEntry } from "@/types";
@@ -97,11 +97,10 @@ const statusVariantMap: Record<BookingStatus, "default" | "secondary" | "destruc
 const statusIconMap: Record<BookingStatus, React.ElementType> = {
   Pending: Clock,
   Confirmed: CheckCircle,
-  Completed: CheckCircle, // Using CheckCircle for Completed as well
-  Cancelled: XCircle, // Changed from Trash2 for better semantic meaning of cancellation
+  Completed: CheckCircle, 
+  Cancelled: XCircle, 
 };
 
-// Export for calendar page (will show initial static data)
 export const mockBookings = initialMockBookings;
 
 export default function BookingsPage() {
@@ -129,7 +128,7 @@ export default function BookingsPage() {
             id: `log-${booking.id}-${Date.now()}`,
             timestamp: new Date().toISOString(),
             action: `Booking status changed to ${newStatus}.`,
-            actor: "Admin", // Or current user if available
+            actor: "Admin", 
             iconName: statusIconMap[newStatus] === Clock ? 'Clock' :
                       statusIconMap[newStatus] === CheckCircle ? 'CheckCircle' :
                       statusIconMap[newStatus] === XCircle ? 'XCircle' : 'Edit',
@@ -200,6 +199,9 @@ export default function BookingsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredBookings.map((booking) => {
                 const StatusIcon = statusIconMap[booking.status];
+                const totalPaid = booking.payments?.filter(p => p.status === 'Paid').reduce((sum, p) => sum + p.amount, 0) || 0;
+                const remainingAmount = booking.price - totalPaid;
+
                 return (
                 <Card key={booking.id} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300">
                     <CardHeader className="p-4">
@@ -261,12 +263,20 @@ export default function BookingsPage() {
                                 <span>Category: {booking.category}</span>
                             </div>
                         )}
-                        {booking.price && (
-                             <div className="flex items-center">
+                        <div className="space-y-1 pt-2 border-t border-border/50">
+                            <div className="flex items-center">
                                 <DollarSign className="h-4 w-4 mr-2 text-muted-foreground" />
-                                <span>Price: ${booking.price.toFixed(2)}</span>
+                                <span>Total Price: ${booking.price.toFixed(2)}</span>
                             </div>
-                        )}
+                            <div className="flex items-center text-green-600 dark:text-green-400">
+                                <TrendingUp className="h-4 w-4 mr-2" />
+                                <span>Paid: ${totalPaid.toFixed(2)}</span>
+                            </div>
+                            <div className={`flex items-center ${remainingAmount > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-muted-foreground'}`}>
+                                {remainingAmount > 0 ? <TrendingDown className="h-4 w-4 mr-2" /> : <CreditCard className="h-4 w-4 mr-2"/>}
+                                <span>Remaining: ${remainingAmount.toFixed(2)}</span>
+                            </div>
+                        </div>
                     </CardContent>
                     <CardFooter className="p-4 border-t">
                          <Badge variant={statusVariantMap[booking.status]} className="w-full justify-center py-1.5 text-xs">
@@ -280,7 +290,7 @@ export default function BookingsPage() {
       ) : (
         <div className="flex flex-col items-center justify-center py-20 text-center rounded-lg border border-dashed">
           <BookOpen className="h-20 w-20 text-muted-foreground mb-6" />
-           {bookings.length === 0 && searchTerm.trim() === '' && selectedStatuses.length === 0 ? ( // Adjusted condition
+           {bookings.length === 0 && searchTerm.trim() === '' && selectedStatuses.length === 0 ? ( 
             <>
               <h3 className="text-2xl font-semibold mb-3 font-headline">No Bookings Yet</h3>
               <p className="text-muted-foreground mb-6 max-w-sm">You haven&apos;t scheduled any bookings. Click the button to create your first one.</p>
@@ -311,6 +321,3 @@ export default function BookingsPage() {
     </div>
   );
 }
-
-
-    
