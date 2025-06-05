@@ -668,20 +668,32 @@ export default function SettingsPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start">
-                    <DropdownMenuItem onClick={() => toast.info(`Selected MM/DD/YYYY format. (App-wide change for this format is coming soon!)`)}>
+                    <DropdownMenuItem onClick={() => toast.info(`Selected MM/DD/YYYY format. (e.g., ${format(currentDateTime, "MM/dd/yyyy")}) App-wide change coming soon!`)}>
                        MM/DD/YYYY (e.g., {format(currentDateTime, "MM/dd/yyyy")})
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => toast.info(`Selected DD/MM/YYYY format. (App-wide change for this format is coming soon!)`)}>
+                    <DropdownMenuItem onClick={() => toast.info(`Selected DD/MM/YYYY format. (e.g., ${format(currentDateTime, "dd/MM/yyyy")}) App-wide change coming soon!`)}>
                       DD/MM/YYYY (e.g., {format(currentDateTime, "dd/MM/yyyy")})
                     </DropdownMenuItem>
-                     <DropdownMenuItem onClick={() => toast.info(`Selected Default (Month D, YYYY) format. (App-wide change for this format is coming soon!)`)}>
+                     <DropdownMenuItem onClick={() => toast.info(`Selected Default (Month D, YYYY) format. (e.g., ${format(currentDateTime, "MMMM d, yyyy")}) App-wide change coming soon!`)}>
                       Default (e.g., {format(currentDateTime, "MMMM d, yyyy")})
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <Button variant="outline" size="sm" onClick={() => toast.info("Clock format changing feature coming soon! (e.g., 12-hour (with AM/PM) or 24-hour time)")}>
-                    <Edit3 className="mr-1.5 h-3.5 w-3.5" /> Change Clock Format
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Edit3 className="mr-1.5 h-3.5 w-3.5" /> Change Clock Format
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuItem onClick={() => toast.info(`Selected 12-hour (AM/PM) format. (e.g., ${format(currentDateTime, "h:mm a")}) App-wide change coming soon!`)}>
+                      12-hour (e.g., {format(currentDateTime, "h:mm a")})
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => toast.info(`Selected 24-hour format. (e.g., ${format(currentDateTime, "HH:mm")}) App-wide change coming soon!`)}>
+                      24-hour (e.g., {format(currentDateTime, "HH:mm")})
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
                 Actual date/time format selection will be available in a future update.
