@@ -1,5 +1,5 @@
 
-'use client'; 
+'use client';
 
 import type { ReactNode } from 'react';
 import { useEffect } from 'react';
@@ -8,7 +8,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { I18nProviderClient } from '@/components/i18n-provider-client';
-import { ACCENT_THEME_LS_KEY, DEFAULT_ACCENT_THEME_VALUE, FONT_THEME_LS_KEY, type AccentThemeValue, type FontTheme } from '@/lib/constants';
+import { ACCENT_THEME_LS_KEY, DEFAULT_ACCENT_THEME_VALUE, FONT_THEME_LS_KEY, type AccentThemeValue, type FontTheme, ACCENT_THEMES, FONT_THEMES } from '@/lib/constants';
 
 
 export default function RootLayout({
@@ -21,25 +21,23 @@ export default function RootLayout({
     const applyPersistedThemes = () => {
       // Apply persisted font theme
       const storedFontTheme = localStorage.getItem(FONT_THEME_LS_KEY) as FontTheme | null;
-      document.documentElement.classList.forEach(cls => {
-        if (cls.startsWith('font-theme-')) {
-          document.documentElement.classList.remove(cls);
-        }
+      const fontThemeToApply = storedFontTheme || 'default-sans';
+
+      FONT_THEMES.forEach(theme => { // Use FONT_THEMES from constants
+        document.documentElement.classList.remove(`font-theme-${theme.value}`);
       });
-      if (storedFontTheme && storedFontTheme !== 'default-sans') {
-        document.documentElement.classList.add(`font-theme-${storedFontTheme}`);
+      if (fontThemeToApply !== 'default-sans') {
+        document.documentElement.classList.add(`font-theme-${fontThemeToApply}`);
       }
 
-      // Apply persisted accent theme, defaulting to Oceanic Blue if none is set
+      // Apply persisted accent theme, defaulting if none is set
       const storedAccentTheme = localStorage.getItem(ACCENT_THEME_LS_KEY) as AccentThemeValue | null;
-      const themeToApply = storedAccentTheme || DEFAULT_ACCENT_THEME_VALUE; // Default to Oceanic Blue
-      
-      document.documentElement.classList.forEach(cls => {
-        if (cls.startsWith('theme-accent-')) {
-          document.documentElement.classList.remove(cls);
-        }
+      const accentThemeToApply = storedAccentTheme || DEFAULT_ACCENT_THEME_VALUE;
+
+      ACCENT_THEMES.forEach(theme => { // Use ACCENT_THEMES from constants
+        document.documentElement.classList.remove(`theme-accent-${theme.value}`);
       });
-      document.documentElement.classList.add(`theme-accent-${themeToApply}`);
+      document.documentElement.classList.add(`theme-accent-${accentThemeToApply}`);
     };
 
     applyPersistedThemes(); // Apply on initial mount
@@ -68,7 +66,7 @@ export default function RootLayout({
       window.removeEventListener('fontThemeChanged', handleThemeChangeEvent);
       window.removeEventListener('accentThemeChanged', handleThemeChangeEvent);
     };
-  }, []); 
+  }, []);
 
 
   return (

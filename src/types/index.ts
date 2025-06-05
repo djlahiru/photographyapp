@@ -8,48 +8,49 @@ export interface UserProfile {
   name: string;
   email?: string;
   avatarUrl?: string;
-  bio?: string; 
+  bio?: string;
   selectedCurrency?: CurrencyCode; // Added selectedCurrency
 }
 
-export type AvatarShape = 'circle' | 'square'; 
+export type AvatarShape = 'circle' | 'square';
+export type FontTheme = 'default-sans' | 'classic-serif' | 'modern-mono';
 
 export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
-export type TaskStatus = 'To Do' | 'In Progress' | 'Waiting' | 'Completed' | 'Cancelled'; 
-export type KanbanBoardStatus = 'To Do' | 'In Progress' | 'Done'; 
+export type TaskStatus = 'To Do' | 'In Progress' | 'Waiting' | 'Completed' | 'Cancelled';
+export type KanbanBoardStatus = 'To Do' | 'In Progress' | 'Done';
 
 export interface TaskFileAttachment {
   id: string;
   name: string;
-  url: string; 
-  type: string; 
-  size: number; 
+  url: string;
+  type: string;
+  size: number;
 }
 
 export interface Task {
   id: string;
   title: string;
   description?: string;
-  assignee?: string; 
-  dueDate?: string; 
-  startDate?: string; 
+  assignee?: string;
+  dueDate?: string;
+  startDate?: string;
   priority: TaskPriority;
-  status: TaskStatus; 
+  status: TaskStatus;
   relatedClientId?: string;
   relatedBookingId?: string;
-  category?: string; 
+  category?: string;
   attachments?: TaskFileAttachment[];
-  reminderDate?: string; 
-  subtasks?: string; 
-  colorTag?: string; 
-  createdBy: string; 
-  createdAt: string; 
+  reminderDate?: string;
+  subtasks?: string;
+  colorTag?: string;
+  createdBy: string;
+  createdAt: string;
 }
 
 
 export interface KanbanColumn {
   id: string;
-  title: KanbanBoardStatus; 
+  title: KanbanBoardStatus;
   taskIds: string[];
 }
 
@@ -120,7 +121,7 @@ export interface Booking {
   packageId: string;
   packageName: string;
   bookingDates: BookingDateTime[];
-  categoryId?: string; 
+  categoryId?: string;
   status: BookingStatus;
   price: number;
   notes?: string;
@@ -134,8 +135,8 @@ export interface SpecialNote {
   id: string;
   content: string;
   color: SpecialNoteColor;
-  createdAt: string; 
-  updatedAt?: string; 
+  createdAt: string;
+  updatedAt?: string;
 }
 
 export type InvoiceStatus = 'Draft' | 'Sent' | 'Paid' | 'Overdue' | 'Recorded';
@@ -145,8 +146,8 @@ export interface Invoice {
   invoiceNumber: string;
   clientName: string;
   amount: number;
-  issueDate: string; 
-  dueDate?: string; 
+  issueDate: string;
+  dueDate?: string;
   status: InvoiceStatus;
 }
 

@@ -1,7 +1,7 @@
 
 import type { ElementType } from 'react';
 import { Layout, List, Package, Users, BookOpen, Calendar, Settings as SettingsIcon, CreditCard, FileText } from 'react-feather';
-import type { CurrencyCode } from '@/types';
+import type { CurrencyCode, FontTheme } from '@/types';
 
 export interface NavItem {
   href: string;
@@ -43,6 +43,12 @@ export const AUTH_STATUS_LS_KEY = 'ruboAuthStatus';
 export const DATE_FORMAT_LS_KEY = 'dateFormatPreference';
 export const CLOCK_FORMAT_LS_KEY = 'clockFormatPreference';
 export const ACCENT_THEME_LS_KEY = 'accentThemePreference';
+
+export const FONT_THEMES: { value: FontTheme; label: string }[] = [
+  { value: 'default-sans', label: 'Default Sans' },
+  { value: 'classic-serif', label: 'Classic Serif' },
+  { value: 'modern-mono', label: 'Modern Mono' },
+];
 
 export const DATE_FORMATS = [
   { value: 'MM/dd/yyyy', label: 'MM/DD/YYYY' },

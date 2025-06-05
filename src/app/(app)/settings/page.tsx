@@ -16,7 +16,7 @@ import { useTheme } from 'next-themes';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
-import type { UserProfile, AvatarShape, BookingCategory, Booking, CurrencyCode } from '@/types';
+import type { UserProfile, AvatarShape, BookingCategory, Booking, CurrencyCode, FontTheme } from '@/types';
 import { Switch } from '@/components/ui/switch';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogDesc, DialogFooter, DialogClose } from "@/components/ui/dialog";
@@ -30,6 +30,7 @@ import {
   USER_PROFILE_LS_KEY,
   AVATAR_SHAPE_LS_KEY,
   FONT_THEME_LS_KEY,
+  FONT_THEMES,
   DASHBOARD_COVER_PHOTO_LS_KEY,
   DASHBOARD_COVER_PHOTO_BLUR_LS_KEY,
   GOOGLE_CALENDAR_CONNECTED_LS_KEY,
@@ -55,14 +56,6 @@ import {
   type AccentThemeValue,
 } from '@/lib/constants';
 
-
-type FontTheme = 'default-sans' | 'classic-serif' | 'modern-mono';
-
-const FONT_THEMES: { value: FontTheme; label: string }[] = [
-  { value: 'default-sans', label: 'Default Sans' },
-  { value: 'classic-serif', label: 'Classic Serif' },
-  { value: 'modern-mono', label: 'Modern Mono' },
-];
 
 const PREDEFINED_GRADIENTS: { label: string; value: string; textColor: string }[] = [
   { label: "Rose Petal", value: "bg-gradient-to-br from-pink-400 via-pink-500 to-red-500", textColor: "text-white" },
@@ -99,7 +92,7 @@ export default function SettingsPage() {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
 
   const [avatarShape, setAvatarShape] = useState<AvatarShape>('circle');
-  
+
   // Active themes
   const [currentFontTheme, setCurrentFontTheme] = useState<FontTheme>('default-sans');
   const [currentAccentTheme, setCurrentAccentTheme] = useState<AccentThemeValue>(DEFAULT_ACCENT_THEME_VALUE);
@@ -128,19 +121,18 @@ export default function SettingsPage() {
 
 
   const applyThemeClass = (themeType: 'font' | 'accent', themeValue: FontTheme | AccentThemeValue) => {
-    const classPrefix = themeType === 'font' ? 'font-theme-' : 'theme-accent-';
-    // const themesToIterate = themeType === 'font' ? FONT_THEMES.map(f => f.value) : ACCENT_THEMES.map(a => a.value);
-
-    document.documentElement.classList.forEach(cls => {
-        if (cls.startsWith(classPrefix)) {
-            document.documentElement.classList.remove(cls);
-        }
-    });
-    
-    if (themeType === 'font' && themeValue !== 'default-sans') {
-      document.documentElement.classList.add(`${classPrefix}${themeValue}`);
-    } else if (themeType === 'accent') {
-      document.documentElement.classList.add(`${classPrefix}${themeValue}`);
+    if (themeType === 'accent') {
+      ACCENT_THEMES.forEach(theme => { // Use ACCENT_THEMES from constants
+        document.documentElement.classList.remove(`theme-accent-${theme.value}`);
+      });
+      document.documentElement.classList.add(`theme-accent-${themeValue}`);
+    } else if (themeType === 'font') {
+      FONT_THEMES.forEach(theme => { // Use FONT_THEMES from constants
+        document.documentElement.classList.remove(`font-theme-${theme.value}`);
+      });
+      if (themeValue !== 'default-sans') {
+        document.documentElement.classList.add(`font-theme-${themeValue}`);
+      }
     }
   };
 
@@ -184,12 +176,10 @@ export default function SettingsPage() {
     const activeFontTheme = localStorage.getItem(FONT_THEME_LS_KEY) as FontTheme | null || 'default-sans';
     setCurrentFontTheme(activeFontTheme);
     setPendingFontTheme(activeFontTheme);
-    // applyThemeClass('font', activeFontTheme); // Apply on initial load too
 
     const activeAccentTheme = localStorage.getItem(ACCENT_THEME_LS_KEY) as AccentThemeValue | null || DEFAULT_ACCENT_THEME_VALUE;
     setCurrentAccentTheme(activeAccentTheme);
     setPendingAccentTheme(activeAccentTheme);
-    // applyThemeClass('accent', activeAccentTheme); // Apply on initial load too
 
     setPendingNextTheme(nextTheme);
 
@@ -207,7 +197,7 @@ export default function SettingsPage() {
     if (storedBlurIntensity) setDashboardBlurIntensity(parseInt(storedBlurIntensity, 10));
 
     return () => clearInterval(timer);
-  }, []); // Removed nextTheme from dependencies as it's handled by useTheme
+  }, [nextTheme]);
 
 
   useEffect(() => {
@@ -411,7 +401,7 @@ export default function SettingsPage() {
     if (idx !== -1) mockBookingCategoriesData.splice(idx, 1);
     toast.info("Category deleted.");
   };
-  
+
   const handleRequestPackage = () => {
     if (!packageName.trim()) {
       toast.error("Package Name Required: Please enter a package name first.");
@@ -950,4 +940,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
