@@ -15,86 +15,10 @@ import { BookingActivityLog } from "@/components/bookings/booking-activity-log";
 import React from "react";
 import { format, parseISO, isValid } from 'date-fns';
 import { toast } from 'react-toastify';
-import { initialMockPackages } from '@/app/(app)/packages/page';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 import { Textarea } from '@/components/ui/textarea';
-import { initialMockClients } from '@/app/(app)/clients/page';
+import { mockBookingsData, mockClientsData, mockPackagesData } from '@/lib/mock-data';
 
-
-export const initialMockBookings: Booking[] = [
-  {
-    id: "1",
-    clientName: "Alice Wonderland",
-    packageName: "Basic Portrait Session",
-    packageId: "1",
-    bookingDates: [{ id: 'dt1_1', dateTime: "2024-08-15T14:00:00Z" }],
-    category: "Portrait",
-    status: "Confirmed" as BookingStatus,
-    price: 150,
-    payments: [
-      { id: "p1a", bookingId: "1", amount: 75, paymentDate: "2024-08-02T11:30:00Z", method: "Credit Card", status: "Paid" as PaymentStatus, description: "Deposit" },
-      { id: "p1b", bookingId: "1", amount: 75, paymentDate: "2024-08-14T10:00:00Z", method: "Credit Card", status: "Paid" as PaymentStatus, description: "Final Payment" }
-    ],
-    activityLog: [
-      { id: "log1a", timestamp: "2024-08-01T10:00:00Z", action: "Booking created by Alice Wonderland.", actor: "Alice Wonderland", iconName: "PlusCircle" },
-      { id: "log1b", timestamp: "2024-08-02T11:30:00Z", action: "Payment of $75 received (Deposit).", actor: "System", iconName: "DollarSign" },
-      { id: "log1c", timestamp: "2024-08-03T14:15:00Z", action: "Booking status changed to Confirmed.", actor: "Admin", iconName: "CheckCircle" },
-      { id: "log1d", timestamp: "2024-08-14T09:00:00Z", action: "Reminder email sent to client.", actor: "System", iconName: "Mail" },
-      { id: "log1e", timestamp: "2024-08-14T10:00:00Z", action: "Final payment of $75 received.", actor: "System", iconName: "DollarSign" },
-    ]
-  },
-  {
-    id: "2",
-    clientName: "Bob The Builder",
-    packageName: "Standard Wedding Package",
-    packageId: "2",
-    bookingDates: [{ id: 'dt2_1', dateTime: "2024-09-20T10:30:00Z" }],
-    category: "Wedding",
-    status: "Completed" as BookingStatus,
-    price: 2500,
-    payments: [
-      { id: "p2a", bookingId: "2", amount: 1000, paymentDate: "2024-07-10T10:00:00Z", method: "Bank Transfer", status: "Paid" as PaymentStatus, description: "Initial Deposit" },
-      { id: "p2b", bookingId: "2", amount: 1500, paymentDate: "2024-09-15T14:00:00Z", method: "Bank Transfer", status: "Paid" as PaymentStatus, description: "Final Balance" }
-    ],
-    activityLog: [
-        { id: "log2a", timestamp: "2024-07-01T10:00:00Z", action: "Booking created by Bob The Builder.", actor: "Bob The Builder", iconName: "PlusCircle" },
-        { id: "log2b", timestamp: "2024-07-10T10:00:00Z", action: "Payment of $1000 received (Initial Deposit).", actor: "System", iconName: "DollarSign" },
-        { id: "log2c", timestamp: "2024-09-15T14:00:00Z", action: "Final payment of $1500 received.", actor: "System", iconName: "DollarSign" },
-        { id: "log2d", timestamp: "2024-09-21T10:00:00Z", action: "Booking status changed to Completed.", actor: "Admin", iconName: "CheckCircle" },
-    ]
-  },
-  {
-    id: "3",
-    clientName: "Charlie Chaplin",
-    packageName: "Family Lifestyle Shoot",
-    packageId: "3",
-    bookingDates: [{ id: 'dt3_1', dateTime: "2024-07-30T16:00:00Z" }],
-    category: "Family",
-    status: "Pending" as BookingStatus,
-    price: 350,
-    payments: [
-      { id: "p3a", bookingId: "3", amount: 100, paymentDate: "2024-07-20T12:00:00Z", method: "PayPal", status: "Pending" as PaymentStatus, description: "Deposit" }
-    ],
-    activityLog: [
-        { id: "log3a", timestamp: "2024-07-19T10:00:00Z", action: "Booking created.", actor: "Charlie Chaplin", iconName: "PlusCircle" },
-        { id: "log3b", timestamp: "2024-07-20T12:00:00Z", action: "Deposit payment of $100 initiated.", actor: "System", iconName: "DollarSign" },
-    ]
-  },
-  {
-    id: "4",
-    clientName: "Diana Prince",
-    packageName: "Basic Portrait Session",
-    packageId: "1",
-    bookingDates: [{ id: 'dt4_1', dateTime: "2024-08-05T09:00:00Z" }],
-    category: "Portrait",
-    status: "Cancelled" as BookingStatus,
-    price: 150,
-    activityLog: [
-       { id: "log4a", timestamp: "2024-07-20T10:00:00Z", action: "Booking requested.", actor: "Diana Prince", iconName: "FilePlus" },
-       { id: "log4b", timestamp: "2024-07-28T16:00:00Z", action: "Booking cancelled by client.", actor: "Diana Prince", iconName: "XCircle" },
-    ]
-  },
-];
 
 const ALL_STATUSES: BookingStatus[] = ["Pending", "Confirmed", "Completed", "Cancelled"];
 
@@ -114,7 +38,7 @@ const statusIconMap: Record<BookingStatus, React.ElementType> = {
 
 
 export default function BookingsPage() {
-  const [bookings, setBookings] = React.useState<Booking[]>(initialMockBookings);
+  const [bookings, setBookings] = React.useState<Booking[]>(mockBookingsData);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [selectedStatuses, setSelectedStatuses] = React.useState<BookingStatus[]>([]);
   const [selectedBookingForLog, setSelectedBookingForLog] = React.useState<Booking | null>(null);
@@ -156,27 +80,24 @@ export default function BookingsPage() {
   }, [bookings, searchTerm, selectedStatuses]);
 
   const handleStatusUpdate = (bookingId: string, newStatus: BookingStatus) => {
-    setBookings(prevBookings =>
-      prevBookings.map(booking => {
-        if (booking.id === bookingId) {
-          const newLogEntry: BookingActivityLogEntry = {
-            id: `log-${booking.id}-${Date.now()}`,
+    const bookingIndex = mockBookingsData.findIndex(b => b.id === bookingId);
+    if (bookingIndex !== -1) {
+        const newLogEntry: BookingActivityLogEntry = {
+            id: `log-${bookingId}-${Date.now()}`,
             timestamp: new Date().toISOString(),
             action: `Booking status changed to ${newStatus}.`,
             actor: "Admin",
             iconName: statusIconMap[newStatus] === Clock ? 'Clock' :
                       statusIconMap[newStatus] === CheckCircle ? 'CheckCircle' :
                       statusIconMap[newStatus] === XCircle ? 'XCircle' : 'Edit',
-          };
-          return {
-            ...booking,
+        };
+        mockBookingsData[bookingIndex] = {
+            ...mockBookingsData[bookingIndex],
             status: newStatus,
-            activityLog: booking.activityLog ? [newLogEntry, ...booking.activityLog] : [newLogEntry]
-          };
-        }
-        return booking;
-      })
-    );
+            activityLog: mockBookingsData[bookingIndex].activityLog ? [newLogEntry, ...mockBookingsData[bookingIndex].activityLog!] : [newLogEntry]
+        };
+    }
+    setBookings([...mockBookingsData]);
     toast.success(`Booking status updated to ${newStatus}.`);
   };
 
@@ -208,7 +129,7 @@ export default function BookingsPage() {
       setIsClientSuggestionsOpen(false);
       return;
     }
-    const matches = initialMockClients.filter(client =>
+    const matches = mockClientsData.filter(client => // Use mockClientsData
       client.name.toLowerCase().includes(name.toLowerCase())
     );
     setSuggestedClients(matches);
@@ -268,8 +189,33 @@ export default function BookingsPage() {
       toast.error("Client Name is required for the new client.");
       return;
     }
-    setBookingClientName(newClientForBookingName.trim());
-    toast.success(`Client "${newClientForBookingName.trim()}" selected for this booking.`);
+
+    const existingClient = mockClientsData.find(c => c.name.toLowerCase() === newClientForBookingName.trim().toLowerCase());
+    if (existingClient) {
+        toast.warn(`Client "${newClientForBookingName.trim()}" already exists. Selecting existing client.`);
+        setBookingClientName(existingClient.name);
+    } else {
+        const newClientToAdd: Client = {
+            id: `client-${Date.now()}`,
+            name: newClientForBookingName.trim(),
+            contactDetails: {
+                email: newClientForBookingEmail.trim() || undefined,
+                phone: newClientForBookingPhone.trim() || undefined,
+                whatsapp: newClientForBookingWhatsApp.trim() || undefined,
+            },
+            address: newClientForBookingAddress.trim() || undefined,
+            notes: newClientForBookingNotes.trim() || undefined,
+            avatarUrl: newClientForBookingPhotoPreview || `https://placehold.co/80x80.png?text=${newClientForBookingName.trim().split(' ').map(n=>n[0]).join('').toUpperCase()}`,
+            dataAiHint: newClientForBookingPhotoPreview ? "person client custom" : "person client",
+            totalPayments: 0,
+            outstandingBalance: 0,
+            totalBookings: 0,
+        };
+        mockClientsData.unshift(newClientToAdd); // Add to centralized client data
+        setBookingClientName(newClientToAdd.name);
+        toast.success(`New client "${newClientToAdd.name}" added and selected for this booking.`);
+    }
+    
     setIsAddNewClientDialogForBookingOpen(false);
     resetNewClientForBookingForm();
     setSuggestedClients([]);
@@ -283,7 +229,7 @@ export default function BookingsPage() {
       return;
     }
 
-    const selectedPackage = initialMockPackages.find(p => p.id === bookingPackageId);
+    const selectedPackage = mockPackagesData.find(p => p.id === bookingPackageId); // Use mockPackagesData
     if (!selectedPackage) {
       toast.error("Selected package not found.");
       return;
@@ -308,9 +254,8 @@ export default function BookingsPage() {
     };
 
     if (isEditBookingDialogOpen && editingBookingId) {
-      setBookings(prevBookings =>
-        prevBookings.map(b => {
-          if (b.id === editingBookingId) {
+        const bookingIndex = mockBookingsData.findIndex(b => b.id === editingBookingId);
+        if (bookingIndex !== -1) {
             const newLogEntry: BookingActivityLogEntry = {
               id: `log-edit-${editingBookingId}-${Date.now()}`,
               timestamp: new Date().toISOString(),
@@ -318,15 +263,13 @@ export default function BookingsPage() {
               actor: "Admin",
               iconName: "Edit",
             };
-            return {
-              ...b,
+            mockBookingsData[bookingIndex] = {
+              ...mockBookingsData[bookingIndex],
               ...bookingData,
-              activityLog: b.activityLog ? [newLogEntry, ...b.activityLog] : [newLogEntry],
+              activityLog: mockBookingsData[bookingIndex].activityLog ? [newLogEntry, ...mockBookingsData[bookingIndex].activityLog!] : [newLogEntry],
             };
-          }
-          return b;
-        })
-      );
+        }
+      setBookings([...mockBookingsData]);
       toast.success(`Booking for ${bookingData.clientName} updated!`);
       setIsEditBookingDialogOpen(false);
     } else {
@@ -345,7 +288,8 @@ export default function BookingsPage() {
           },
         ],
       };
-      setBookings(prevBookings => [newBooking, ...prevBookings]);
+      mockBookingsData.unshift(newBooking); // Add to centralized data
+      setBookings([...mockBookingsData]); // Update local state
       toast.success(`Booking for ${newBooking.clientName} with ${newBooking.packageName} scheduled!`);
       setIsAddBookingDialogOpen(false);
     }
@@ -569,7 +513,7 @@ export default function BookingsPage() {
                   onChange={(e) => handleClientNameChange(e.target.value)}
                   onFocus={() => {
                      if (bookingClientName.trim()) {
-                       const matches = initialMockClients.filter(client =>
+                       const matches = mockClientsData.filter(client => // Use mockClientsData
                          client.name.toLowerCase().includes(bookingClientName.toLowerCase())
                        );
                        setSuggestedClients(matches);
@@ -611,7 +555,7 @@ export default function BookingsPage() {
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Available Packages</SelectLabel>
-                    {initialMockPackages.map((pkg) => (
+                    {mockPackagesData.map((pkg) => ( // Use mockPackagesData
                       <SelectItem key={pkg.id} value={pkg.id}>
                         {pkg.name} (${pkg.price.toFixed(2)})
                       </SelectItem>

@@ -16,19 +16,12 @@ import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 import type { PhotographyPackage } from '@/types';
 import { cn } from '@/lib/utils';
-
-// Mock data for packages
-export const initialMockPackages: PhotographyPackage[] = [
-  { id: "1", name: "Basic Portrait Session", description: "A quick session for individual portraits, perfect for headshots or a small update.", price: 150, services: ["30 min session", "5 edited photos", "Online gallery access"], imageUrl: "https://placehold.co/600x400.png", dataAiHint: "portrait photography" },
-  { id: "2", name: "Standard Wedding Package", description: "Comprehensive wedding day coverage from getting ready to the first dance.", price: 2500, services: ["8 hours coverage", "2 photographers", "Online gallery", "300+ edited photos", "Engagement session discount"], imageUrl: "https://placehold.co/600x400.png", dataAiHint: "wedding event" },
-  { id: "3", name: "Family Lifestyle Shoot", description: "Capture natural family moments in a relaxed outdoor or in-home setting.", price: 350, services: ["1 hour session", "Outdoor or in-home", "50 edited photos", "Print release"], imageUrl: "https://placehold.co/600x400.png", dataAiHint: "family photoshoot" },
-  { id: "4", name: "Event Photography", description: "Coverage for corporate events, parties, or other special occasions.", price: 600, services: ["Up to 3 hours coverage", "Online gallery", "All usable photos delivered"], imageUrl: "https://placehold.co/600x400.png", dataAiHint: "corporate event" },
-];
+import { mockPackagesData } from '@/lib/mock-data'; // Import from centralized mock data
 
 type LayoutMode = 'grid' | 'list';
 
 export default function PackagesPage() {
-  const [mockPackages, setMockPackages] = useState<PhotographyPackage[]>(initialMockPackages);
+  const [packages, setPackages] = useState<PhotographyPackage[]>(mockPackagesData); // Use centralized data
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('grid');
   
   // State for Add Package Dialog
@@ -95,7 +88,7 @@ export default function PackagesPage() {
     const servicesArray = newPackageServices.split('\n').map(s => s.trim()).filter(s => s.length > 0);
 
     const newPackage: PhotographyPackage = {
-      id: (mockPackages.length + Date.now()).toString(),
+      id: (mockPackagesData.length + Date.now()).toString(),
       name: newPackageName,
       description: newPackageDescription,
       price: price,
@@ -103,8 +96,10 @@ export default function PackagesPage() {
       imageUrl: newPackageImagePreview || "https://placehold.co/600x400.png",
       dataAiHint: newPackageImagePreview ? "custom package" : "package photography",
     };
+    
+    mockPackagesData.unshift(newPackage); // Add to centralized data
+    setPackages([...mockPackagesData]); // Update local state
 
-    setMockPackages(prevPackages => [...prevPackages, newPackage]);
     toast.success(`Package "${newPackage.name}" added successfully!`);
     resetNewPackageForm();
     setIsAddPackageDialogOpen(false);
@@ -143,16 +138,23 @@ export default function PackagesPage() {
       dataAiHint: editPackageImagePreview && editPackageImagePreview !== editingPackage.imageUrl ? "custom package" : editingPackage.dataAiHint || "package photography",
     };
 
-    setMockPackages(prevPackages => 
-      prevPackages.map(p => (p.id === editingPackage.id ? updatedPackage : p))
-    );
+    const packageIndex = mockPackagesData.findIndex(p => p.id === editingPackage.id);
+    if (packageIndex !== -1) {
+      mockPackagesData[packageIndex] = updatedPackage; // Update in centralized data
+    }
+    setPackages([...mockPackagesData]); // Update local state
+
     toast.success(`Package "${updatedPackage.name}" updated successfully!`);
     setIsEditPackageDialogOpen(false);
     setEditingPackage(null);
   };
 
   const handleDeletePackage = (packageId: string, packageName: string) => {
-     setMockPackages(prev => prev.filter(p => p.id !== packageId));
+     const packageIndex = mockPackagesData.findIndex(p => p.id === packageId);
+     if (packageIndex !== -1) {
+       mockPackagesData.splice(packageIndex, 1); // Remove from centralized data
+     }
+     setPackages([...mockPackagesData]); // Update local state
      toast.info(`Package "${packageName}" deleted.`);
   };
 
@@ -191,13 +193,13 @@ export default function PackagesPage() {
         </div>
       </div>
 
-      {mockPackages.length > 0 ? (
+      {packages.length > 0 ? (
         <div className={cn(
           layoutMode === 'grid'
             ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
             : "flex flex-col gap-4" 
         )}>
-          {mockPackages.map((pkg) => (
+          {packages.map((pkg) => (
             <Card key={pkg.id} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300">
               {(pkg.imageUrl || "https://placehold.co/600x400.png") && (
                 <div className="relative w-full h-48">

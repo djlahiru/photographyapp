@@ -8,7 +8,6 @@ import { PlusCircle, Users, Edit, Trash2, Phone, Mail, MessageCircle, Briefcase,
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { initialMockBookings } from '@/app/(app)/bookings/page';
 import type { Payment, PaymentStatus, Client, Booking, BookingStatus } from '@/types';
 import { format, parseISO, isValid } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
@@ -19,13 +18,8 @@ import { toast } from 'react-toastify';
 import { cn } from '@/lib/utils';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { mockClientsData, mockBookingsData } from '@/lib/mock-data'; // Import from centralized mock data
 
-export const initialMockClients: Client[] = [
-  { id: "1", name: "Alice Wonderland", contactDetails: { email: "alice@example.com", phone: "555-1234", whatsapp: "555-1234" }, address: "123 Storybook Lane", totalPayments: 0, outstandingBalance: 0, totalBookings: 0, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "female person", notes: "Prefers morning shoots. Allergic to cats." },
-  { id: "2", name: "Bob The Builder", contactDetails: { email: "bob@example.com", phone: "555-5678" }, address: "456 Construction Rd", totalPayments: 0, outstandingBalance: 0, totalBookings: 0, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "male person", notes: "Needs invoices sent to accounting@bobcorp.com." },
-  { id: "3", name: "Charlie Chaplin", contactDetails: { email: "charlie@example.com" }, totalPayments: 0, outstandingBalance: 0, totalBookings: 0, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "classic actor", notes: "" },
-  { id: "4", name: "Diana Prince", contactDetails: { email: "diana@example.com" }, totalPayments: 0, outstandingBalance: 0, totalBookings: 0, avatarUrl: "https://placehold.co/80x80.png", dataAiHint: "heroine woman", notes: "" },
-];
 
 const paymentStatusVariantMap: Record<PaymentStatus, "default" | "secondary" | "destructive" | "outline" | "success" | "warning"> = {
   Paid: "success",
@@ -44,7 +38,7 @@ const bookingStatusVariantMap: Record<BookingStatus, "default" | "secondary" | "
 type LayoutMode = 'grid' | 'list';
 
 export default function ClientsPage() {
-  const [mockClients, setMockClients] = useState<Client[]>(initialMockClients);
+  const [clients, setClients] = useState<Client[]>(mockClientsData); // Use centralized data
   const [isAddClientDialogOpen, setIsAddClientDialogOpen] = useState(false);
   const [isEditClientDialogOpen, setIsEditClientDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -76,14 +70,14 @@ export default function ClientsPage() {
   const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase();
 
   const handleEditNote = (clientName: string) => {
-    const clientToEdit = mockClients.find(c => c.name === clientName);
+    const clientToEdit = clients.find(c => c.name === clientName);
     if (clientToEdit) {
       handleOpenEditDialog(clientToEdit);
     }
   };
 
   const getClientPayments = (clientName: string): Payment[] => {
-    const clientBookings = initialMockBookings.filter(b => b.clientName === clientName);
+    const clientBookings = mockBookingsData.filter(b => b.clientName === clientName); // Use mockBookingsData
     const allPayments: Payment[] = [];
     clientBookings.forEach(booking => {
       if (booking.payments) {
@@ -94,7 +88,7 @@ export default function ClientsPage() {
   };
   
   const getClientBookingsList = (clientName: string): Booking[] => {
-    return initialMockBookings.filter(booking => booking.clientName === clientName)
+    return mockBookingsData.filter(booking => booking.clientName === clientName) // Use mockBookingsData
                               .sort((a,b) => {
                                 const dateA = a.bookingDates[0]?.dateTime ? new Date(a.bookingDates[0].dateTime) : new Date(0);
                                 const dateB = b.bookingDates[0]?.dateTime ? new Date(b.bookingDates[0].dateTime) : new Date(0);
@@ -148,7 +142,7 @@ export default function ClientsPage() {
     }
 
     const newClient: Client = {
-      id: (mockClients.length + Date.now()).toString(),
+      id: (mockClientsData.length + Date.now()).toString(), // Use mockClientsData
       name: newClientName,
       contactDetails: {
         email: newClientEmail.trim() || undefined,
@@ -159,12 +153,14 @@ export default function ClientsPage() {
       notes: newClientNotes.trim() || undefined,
       avatarUrl: newClientPhotoPreview || `https://placehold.co/80x80.png?text=${getInitials(newClientName)}`,
       dataAiHint: newClientPhotoPreview ? "person client custom" : "person client",
-      totalPayments: 0, // Will be dynamically calculated
-      outstandingBalance: 0, // Will be dynamically calculated
-      totalBookings: 0, // Will be dynamically calculated
+      totalPayments: 0, 
+      outstandingBalance: 0, 
+      totalBookings: 0, 
     };
 
-    setMockClients(prevClients => [...prevClients, newClient]);
+    mockClientsData.unshift(newClient); // Add to centralized data
+    setClients([...mockClientsData]); // Update local state
+
     toast.success(`Client "${newClient.name}" added successfully!`);
     resetNewClientForm();
     setIsAddClientDialogOpen(false);
@@ -203,22 +199,29 @@ export default function ClientsPage() {
       dataAiHint: editClientPhotoPreview && editClientPhotoPreview !== editingClient.avatarUrl ? "person client custom" : editingClient.dataAiHint,
     };
 
-    setMockClients(prevClients =>
-      prevClients.map(c => (c.id === editingClient.id ? updatedClient : c))
-    );
+    const clientIndex = mockClientsData.findIndex(c => c.id === editingClient.id); // Use mockClientsData
+    if (clientIndex !== -1) {
+      mockClientsData[clientIndex] = updatedClient; // Update in centralized data
+    }
+    setClients([...mockClientsData]); // Update local state
+
     toast.success(`Client "${updatedClient.name}" updated successfully!`);
     setIsEditClientDialogOpen(false);
     setEditingClient(null);
   };
   
   const handleDeleteClient = (clientId: string, clientName: string) => {
-    setMockClients(prevClients => prevClients.filter(client => client.id !== clientId));
+    const clientIndex = mockClientsData.findIndex(c => c.id === clientId); // Use mockClientsData
+    if (clientIndex !== -1) {
+      mockClientsData.splice(clientIndex, 1); // Remove from centralized data
+    }
+    setClients([...mockClientsData]); // Update local state
     toast.info(`Client "${clientName}" deleted.`);
   };
 
   const clientsWithDynamicData = useMemo(() => {
-    return mockClients.map(client => {
-        const clientBookings = initialMockBookings.filter(b => b.clientName === client.name);
+    return clients.map(client => { // Iterate over local 'clients' state which is synced with mockClientsData
+        const clientBookings = mockBookingsData.filter(b => b.clientName === client.name); // Use mockBookingsData
         const totalPaidForClient = clientBookings.reduce((sum, booking) => {
             return sum + (booking.payments?.filter(p => p.status === 'Paid').reduce((acc, p) => acc + p.amount, 0) || 0);
         }, 0);
@@ -232,7 +235,7 @@ export default function ClientsPage() {
             outstandingBalance: outstandingBalance < 0 ? 0 : outstandingBalance,
         };
     });
-  }, [mockClients, initialMockBookings]); // Add initialMockBookings to dependency array
+  }, [clients, mockBookingsData]); 
 
   const filteredClients = useMemo(() => {
     let clientsToDisplay = [...clientsWithDynamicData];

@@ -11,8 +11,8 @@ import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import type { EventClickArg, EventSourceInput, EventInput } from '@fullcalendar/core';
-import { initialMockBookings } from '@/app/(app)/bookings/page';
 import type { BookingStatus, BookingDateTime } from '@/types';
+import { mockBookingsData } from '@/lib/mock-data'; // Import from centralized mock data
 
 
 const getEventClassNames = (status: BookingStatus): string[] => {
@@ -64,14 +64,15 @@ const sriLankanHolidays: EventInput[] = [
 export default function CalendarPage() {
   const [weekendsVisible, setWeekendsVisible] = React.useState(true);
 
-  const bookingEvents: EventSourceInput = initialMockBookings.flatMap(booking =>
+  // Use mockBookingsData directly for events. Re-evaluate if component state for bookings is needed later.
+  const bookingEvents: EventSourceInput = mockBookingsData.flatMap(booking =>
     booking.bookingDates.map((bookingDateItem: BookingDateTime) => ({
-      id: `${booking.id}_${bookingDateItem.id}`, // Ensure unique event ID for each date instance
+      id: `${booking.id}_${bookingDateItem.id}`, 
       title: `${booking.packageName} (${booking.clientName})`,
       start: bookingDateItem.dateTime,
       allDay: false,
       extendedProps: {
-        bookingId: booking.id, // Store original booking ID
+        bookingId: booking.id, 
         clientName: booking.clientName,
         packageName: booking.packageName,
         status: booking.status,
@@ -131,7 +132,7 @@ export default function CalendarPage() {
             <FullCalendar
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
               initialView="dayGridMonth"
-              events={[bookingEvents, sriLankanHolidays]}
+              events={[bookingEvents, sriLankanHolidays]} // Pass bookings events directly
               eventClick={handleEventClick}
               weekends={weekendsVisible}
               height="auto"
