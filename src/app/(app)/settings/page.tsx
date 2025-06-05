@@ -16,7 +16,7 @@ import { useTheme } from 'next-themes';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
-import type { UserProfile, AvatarShape, BookingCategory, Booking, CurrencyCode, FontTheme } from '@/types';
+import type { UserProfile, AvatarShape, BookingCategory, Booking, FontTheme } from '@/types'; // Removed CurrencyCode as it's now in constants
 import { Switch } from '@/components/ui/switch';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogDesc, DialogFooter, DialogClose } from "@/components/ui/dialog";
@@ -41,6 +41,7 @@ import {
   SELECTED_CURRENCY_LS_KEY,
   AVAILABLE_CURRENCIES,
   type CurrencyDefinition,
+  type CurrencyCode,
   ALL_LOCAL_STORAGE_KEYS,
   DATE_FORMAT_LS_KEY,
   DATE_FORMATS,
@@ -122,12 +123,12 @@ export default function SettingsPage() {
 
   const applyThemeClass = (themeType: 'font' | 'accent', themeValue: FontTheme | AccentThemeValue) => {
     if (themeType === 'accent') {
-      ACCENT_THEMES.forEach(theme => { // Use ACCENT_THEMES from constants
+      ACCENT_THEMES.forEach(theme => {
         document.documentElement.classList.remove(`theme-accent-${theme.value}`);
       });
       document.documentElement.classList.add(`theme-accent-${themeValue}`);
     } else if (themeType === 'font') {
-      FONT_THEMES.forEach(theme => { // Use FONT_THEMES from constants
+      FONT_THEMES.forEach(theme => {
         document.documentElement.classList.remove(`font-theme-${theme.value}`);
       });
       if (themeValue !== 'default-sans') {
@@ -584,7 +585,7 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <Label className="flex items-center"><Droplet className="mr-1.5 h-4 w-4" /> Accent Gradient</Label>
+            <Label className="flex items-center"><Droplet className="mr-1.5 h-4 w-4" /> Primary Color</Label>
             <RadioGroup value={pendingAccentTheme} onValueChange={(value) => setPendingAccentTheme(value as AccentThemeValue)} className="grid grid-cols-1 gap-4 mt-2 sm:grid-cols-2">
               {ACCENT_THEMES.map(themeOption => (
                 <Label
@@ -940,3 +941,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+
