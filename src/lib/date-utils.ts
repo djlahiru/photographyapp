@@ -47,8 +47,15 @@ export function getActualClockFormatString(formatValue?: ClockFormatValue): stri
   return formatObject ? formatObject.exampleFormat : CLOCK_FORMATS.find(f => f.value === DEFAULT_CLOCK_FORMAT_VALUE)!.exampleFormat;
 }
 
-export function getActualClockFormatParts(formatValue?: ClockFormatValue): { hours: string; minutes: string; seconds: string; ampm: string } {
+export function getActualClockFormatParts(formatValue?: ClockFormatValue): { hours: string; minutes: string; ampm: string } {
   const valueToUse = formatValue || getSelectedClockFormatValue();
   const formatObject = CLOCK_FORMATS.find(f => f.value === valueToUse);
-  return formatObject ? formatObject.parts : CLOCK_FORMATS.find(f => f.value === DEFAULT_CLOCK_FORMAT_VALUE)!.parts;
+  const defaultFormatObject = CLOCK_FORMATS.find(f => f.value === DEFAULT_CLOCK_FORMAT_VALUE)!;
+
+  if (formatObject && formatObject.parts) {
+    const { hours, minutes, ampm } = formatObject.parts;
+    return { hours, minutes, ampm: ampm || '' };
+  }
+  const { hours, minutes, ampm } = defaultFormatObject.parts;
+  return { hours, minutes, ampm: ampm || '' };
 }

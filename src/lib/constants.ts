@@ -59,8 +59,8 @@ export type DateFormatValue = typeof DATE_FORMATS[number]['value'];
 export const DEFAULT_DATE_FORMAT: DateFormatValue = 'MMMM d, yyyy';
 
 export const CLOCK_FORMATS = [
-    { value: '12h', label: '12-hour (AM/PM)', exampleFormat: 'h:mm:ss a', parts: { hours: 'h', minutes: 'mm', seconds: 'ss', ampm: 'a' } },
-    { value: '24h', label: '24-hour', exampleFormat: 'HH:mm:ss', parts: { hours: 'HH', minutes: 'mm', seconds: 'ss', ampm: '' } },
+    { value: '12h', label: '12-hour (AM/PM)', exampleFormat: 'h:mm a', parts: { hours: 'h', minutes: 'mm', ampm: 'a' } },
+    { value: '24h', label: '24-hour', exampleFormat: 'HH:mm', parts: { hours: 'HH', minutes: 'mm', ampm: '' } },
 ] as const;
 export type ClockFormatValue = typeof CLOCK_FORMATS[number]['value'];
 export const DEFAULT_CLOCK_FORMAT_VALUE: ClockFormatValue = '12h';
@@ -135,17 +135,17 @@ export const ACCENT_THEMES: AccentTheme[] = [
   {
     value: 'orange-gradient',
     label: 'Sunset Orange Gradient',
-    lightColors: { 
-      accent: '46 100% 50%', 
-      accentForeground: '20 80% 10%', 
-      ring: '46 100% 45%', 
-      chart2: '46 100% 50%' 
+    lightColors: {
+      accent: '6 100% 38%', // Corresponds to #c21500 (darker start)
+      accentForeground: '20 80% 10%', // Dark text for light orange
+      ring: '6 100% 33%',
+      chart2: '46 100% 50%' // Lighter orange for charts if needed
     },
-    darkColors: { 
-      accent: '46 100% 65%', 
-      accentForeground: '40 100% 95%', 
-      ring: '46 100% 60%', 
-      chart2: '46 100% 65%' 
+    darkColors: {
+      accent: '6 100% 48%', // Lightened version of #c21500
+      accentForeground: '40 100% 95%', // Very light text for dark orange
+      ring: '6 100% 43%',
+      chart2: '46 100% 65%' // Lightened version of #ffc500
     },
     gradientPreview: 'linear-gradient(to right, #c21500, #ffc500)',
     lightGradientStartHsl: '6 100% 38%',
@@ -175,5 +175,3 @@ export const ALL_LOCAL_STORAGE_KEYS: string[] = [
   DATE_FORMAT_LS_KEY,
   CLOCK_FORMAT_LS_KEY,
 ];
-
-    

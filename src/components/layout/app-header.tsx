@@ -113,7 +113,7 @@ export function AppHeader() {
 
     const timerId = setInterval(() => {
       setCurrentDateTime(new Date());
-    }, 1000); // Update every second for live clock
+    }, 1000 * 60); // Update every minute as seconds are not displayed
 
     return () => {
       window.removeEventListener('profileUpdated', handleProfileUpdate);
@@ -146,9 +146,7 @@ export function AppHeader() {
   
   const formattedHours = format(currentDateTime, clockFormatParts.hours);
   const formattedMinutes = format(currentDateTime, clockFormatParts.minutes);
-  const formattedSeconds = format(currentDateTime, clockFormatParts.seconds);
   const amPmPart = clockFormatParts.ampm ? ` ${format(currentDateTime, clockFormatParts.ampm)}` : '';
-  const showBlinkingColon = currentDateTime.getSeconds() % 2 === 0;
 
 
   return (
@@ -221,10 +219,8 @@ export function AppHeader() {
         <p className="text-sm text-muted-foreground hidden lg:block whitespace-nowrap mr-2 tabular-nums">
           {dayOfWeekPart}, {formattedDatePart},{' '}
           <span>{formattedHours}</span>
-          <span style={{ opacity: showBlinkingColon ? 1 : 0.4 }} className="transition-opacity duration-150 mx-px">:</span>
-          <span>{formattedMinutes}</span>
           <span className="mx-px">:</span>
-          <span>{formattedSeconds}</span>
+          <span>{formattedMinutes}</span>
           {amPmPart}
         </p>
 
