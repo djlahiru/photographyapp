@@ -10,7 +10,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction'; // for eventClick
 import listPlugin from '@fullcalendar/list'; 
 import timeGridPlugin from '@fullcalendar/timegrid'; // for timeGrid views
-import type { EventClickArg, EventSourceInput } from '@fullcalendar/core';
+import type { EventClickArg, EventSourceInput, EventInput } from '@fullcalendar/core';
 import { mockBookings } from '@/app/(app)/bookings/page'; 
 import type { BookingStatus } from '@/types';
 
@@ -24,16 +24,12 @@ const getEventClassNames = (status: BookingStatus): string[] => {
   // Using theme-based colors where possible
   switch (status) {
     case 'Pending':
-      // Using accent for pending. If accent color is not suitable, this could be changed.
-      // The PRD mentions accent is Soft Orange, but globals.css has Violet. Following globals.css.
       classNames.push('bg-accent', 'border-accent', 'text-accent-foreground');
       break;
     case 'Confirmed':
       classNames.push('bg-primary', 'border-primary', 'text-primary-foreground');
       break;
     case 'Completed':
-      // Green is often used for completed/success, but not a direct theme background color.
-      // Using a specific green, ensuring text contrast.
       classNames.push('bg-green-500', 'border-green-600', 'text-white');
       break;
     case 'Cancelled':
@@ -45,10 +41,51 @@ const getEventClassNames = (status: BookingStatus): string[] => {
   return classNames;
 };
 
+// Sample Sri Lankan Holidays for 2024 (demonstration)
+const sriLankanHolidays: EventInput[] = [
+  {
+    title: 'Thaipongal Day',
+    start: '2024-01-15',
+    allDay: true,
+    backgroundColor: 'hsl(var(--muted))',
+    borderColor: 'hsl(var(--border))',
+    textColor: 'hsl(var(--muted-foreground))',
+    classNames: ['opacity-80']
+  },
+  {
+    title: 'National Day',
+    start: '2024-02-04',
+    allDay: true,
+    backgroundColor: 'hsl(var(--muted))',
+    borderColor: 'hsl(var(--border))',
+    textColor: 'hsl(var(--muted-foreground))',
+    classNames: ['opacity-80']
+  },
+  {
+    title: 'Sinhala & Tamil New Year\'s Day',
+    start: '2024-04-13',
+    allDay: true,
+    backgroundColor: 'hsl(var(--muted))',
+    borderColor: 'hsl(var(--border))',
+    textColor: 'hsl(var(--muted-foreground))',
+    classNames: ['opacity-80']
+  },
+  {
+    title: 'Vesak Full Moon Poya Day',
+    start: '2024-05-23',
+    allDay: true,
+    backgroundColor: 'hsl(var(--muted))',
+    borderColor: 'hsl(var(--border))',
+    textColor: 'hsl(var(--muted-foreground))',
+    classNames: ['opacity-80']
+  },
+];
+
+
 export default function CalendarPage() {
   const [weekendsVisible, setWeekendsVisible] = React.useState(true);
 
-  const calendarEvents: EventSourceInput = mockBookings.map(booking => ({
+  const bookingEvents: EventSourceInput = mockBookings.map(booking => ({
     id: booking.id,
     title: `${booking.packageName} (${booking.clientName})`,
     start: booking.bookingDate,
@@ -65,6 +102,11 @@ export default function CalendarPage() {
 
   const handleEventClick = (clickInfo: EventClickArg) => {
     console.log('Event clicked:', clickInfo.event);
+    // Check if it's a holiday event (by checking if extendedProps are missing, for this example)
+    if (!clickInfo.event.extendedProps.clientName) { 
+       alert(`Holiday: ${clickInfo.event.title}\nDate: ${clickInfo.event.start ? clickInfo.event.start.toLocaleDateString() : 'N/A'}`);
+       return;
+    }
     alert(
       `Booking Details:\n
       ID: ${clickInfo.event.id}\n
@@ -99,7 +141,7 @@ export default function CalendarPage() {
             In-App Calendar
           </CardTitle>
           <CardDescription>
-            This calendar displays your bookings. Use the toolbar to change views and navigate. Click an event for details.
+            This calendar displays your bookings and Sri Lankan public holidays (sample). Use the toolbar to change views and navigate. Click an event for details.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -107,7 +149,7 @@ export default function CalendarPage() {
             <FullCalendar
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
               initialView="dayGridMonth"
-              events={calendarEvents}
+              events={[bookingEvents, sriLankanHolidays]} // Pass multiple event sources
               eventClick={handleEventClick}
               weekends={weekendsVisible}
               height="auto" 
@@ -120,7 +162,7 @@ export default function CalendarPage() {
               editable={false} 
               selectable={false} 
               dayMaxEvents={true} 
-              slotDuration={'00:30:00'} // Example: sets time slots to 30 minutes for timeGrid views
+              slotDuration={'00:30:00'} 
               eventTimeFormat={{ 
                 hour: 'numeric',
                 minute: '2-digit',
@@ -133,3 +175,4 @@ export default function CalendarPage() {
     </div>
   );
 }
+
