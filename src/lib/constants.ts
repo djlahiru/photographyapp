@@ -59,8 +59,8 @@ export type DateFormatValue = typeof DATE_FORMATS[number]['value'];
 export const DEFAULT_DATE_FORMAT: DateFormatValue = 'MMMM d, yyyy';
 
 export const CLOCK_FORMATS = [
-    { value: '12h', label: '12-hour (AM/PM)', exampleFormat: 'h:mm a' },
-    { value: '24h', label: '24-hour', exampleFormat: 'HH:mm' },
+    { value: '12h', label: '12-hour (AM/PM)', exampleFormat: 'h:mm:ss a', parts: { hours: 'h', minutes: 'mm', seconds: 'ss', ampm: 'a' } },
+    { value: '24h', label: '24-hour', exampleFormat: 'HH:mm:ss', parts: { hours: 'HH', minutes: 'mm', seconds: 'ss', ampm: '' } },
 ] as const;
 export type ClockFormatValue = typeof CLOCK_FORMATS[number]['value'];
 export const DEFAULT_CLOCK_FORMAT_VALUE: ClockFormatValue = '12h';
@@ -135,26 +135,23 @@ export const ACCENT_THEMES: AccentTheme[] = [
   {
     value: 'orange-gradient',
     label: 'Sunset Orange Gradient',
-    // Hex: #c21500 (darker) to #ffc500 (lighter)
-    // #c21500 -> HSL: 6 100% 38%
-    // #ffc500 -> HSL: 46 100% 50%
     lightColors: { 
-      accent: '46 100% 50%', // #ffc500
-      accentForeground: '20 80% 10%', // Dark foreground for contrast
+      accent: '46 100% 50%', 
+      accentForeground: '20 80% 10%', 
       ring: '46 100% 45%', 
       chart2: '46 100% 50%' 
     },
     darkColors: { 
-      accent: '46 100% 65%', // Lightened #ffc500 for dark mode
-      accentForeground: '40 100% 95%', // Light foreground for contrast
+      accent: '46 100% 65%', 
+      accentForeground: '40 100% 95%', 
       ring: '46 100% 60%', 
       chart2: '46 100% 65%' 
     },
     gradientPreview: 'linear-gradient(to right, #c21500, #ffc500)',
-    lightGradientStartHsl: '6 100% 38%', // #c21500
-    lightGradientEndHsl: '46 100% 50%', // #ffc500
-    darkGradientStartHsl: '6 100% 48%',  // Lightened #c21500 for dark mode
-    darkGradientEndHsl: '46 100% 65%', // Lightened #ffc500 for dark mode
+    lightGradientStartHsl: '6 100% 38%',
+    lightGradientEndHsl: '46 100% 50%',
+    darkGradientStartHsl: '6 100% 48%',
+    darkGradientEndHsl: '46 100% 65%',
   },
 ];
 export type AccentThemeValue = typeof ACCENT_THEMES[number]['value'];
@@ -178,6 +175,5 @@ export const ALL_LOCAL_STORAGE_KEYS: string[] = [
   DATE_FORMAT_LS_KEY,
   CLOCK_FORMAT_LS_KEY,
 ];
-
 
     

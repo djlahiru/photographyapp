@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image'; // Import next/image
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
-import { getGreetingParts, getSelectedDateFormat, getActualClockFormatString, getSelectedClockFormatValue } from '@/lib/date-utils';
+import { getGreetingParts, getSelectedDateFormat, getActualClockFormatParts, getSelectedClockFormatValue } from '@/lib/date-utils';
 import { Button } from '@/components/ui/button';
 import { Bell, Globe, Sunrise, Sunset, Moon, Sun as SunIcon } from 'react-feather';
 import { useTheme } from 'next-themes';
@@ -52,7 +52,8 @@ export function AppHeader() {
   const isMobileView = useIsMobile();
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [displayDateFormat, setDisplayDateFormat] = useState<DateFormatValue>(DEFAULT_DATE_FORMAT);
-  const [displayClockFormatString, setDisplayClockFormatString] = useState<string>(getActualClockFormatString(DEFAULT_CLOCK_FORMAT_VALUE));
+  const [clockFormatParts, setClockFormatParts] = useState(getActualClockFormatParts(DEFAULT_CLOCK_FORMAT_VALUE));
+
 
   const [headerUser, setHeaderUser] = useState<UserProfile>(defaultUser);
   const [headerAvatarShape, setHeaderAvatarShape] = useState<AvatarShape>('circle');
@@ -81,7 +82,7 @@ export function AppHeader() {
 
     loadProfileAndShape();
     setDisplayDateFormat(getSelectedDateFormat());
-    setDisplayClockFormatString(getActualClockFormatString());
+    setClockFormatParts(getActualClockFormatParts());
 
 
     const handleProfileUpdate = () => loadProfileAndShape();
@@ -100,7 +101,7 @@ export function AppHeader() {
       setDisplayDateFormat(getSelectedDateFormat());
     };
     const handleClockFormatChange = () => {
-      setDisplayClockFormatString(getActualClockFormatString());
+      setClockFormatParts(getActualClockFormatParts());
     };
 
 
@@ -142,8 +143,12 @@ export function AppHeader() {
 
   const formattedDatePart = format(currentDateTime, displayDateFormat);
   const dayOfWeekPart = format(currentDateTime, "E");
-  const timePart = format(currentDateTime, displayClockFormatString); // Use dynamic clock format
-  const fullDateTimeString = `${dayOfWeekPart}, ${formattedDatePart}, ${timePart}`;
+  
+  const formattedHours = format(currentDateTime, clockFormatParts.hours);
+  const formattedMinutes = format(currentDateTime, clockFormatParts.minutes);
+  const formattedSeconds = format(currentDateTime, clockFormatParts.seconds);
+  const amPmPart = clockFormatParts.ampm ? ` ${format(currentDateTime, clockFormatParts.ampm)}` : '';
+  const showBlinkingColon = currentDateTime.getSeconds() % 2 === 0;
 
 
   return (
@@ -213,8 +218,14 @@ export function AppHeader() {
 
       {/* Right Group */}
       <div className="flex items-center gap-0.5 sm:gap-1">
-        <p className="text-sm text-muted-foreground hidden lg:block whitespace-nowrap mr-2">
-          {fullDateTimeString}
+        <p className="text-sm text-muted-foreground hidden lg:block whitespace-nowrap mr-2 tabular-nums">
+          {dayOfWeekPart}, {formattedDatePart},{' '}
+          <span>{formattedHours}</span>
+          <span style={{ opacity: showBlinkingColon ? 1 : 0.4 }} className="transition-opacity duration-150 mx-px">:</span>
+          <span>{formattedMinutes}</span>
+          <span className="mx-px">:</span>
+          <span>{formattedSeconds}</span>
+          {amPmPart}
         </p>
 
         <DropdownMenu>
