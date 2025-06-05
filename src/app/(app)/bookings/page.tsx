@@ -50,17 +50,6 @@ const featherIconComponentsMap: Record<string, React.ElementType> = {
   Clock, CheckCircle, XCircle, Edit, PlusCircle, DollarSign, Mail, FilePlus,
 };
 
-const PREDEFINED_GRADIENTS: { label: string; value: string; textColor: string }[] = [
-  { label: "Rose Petal", value: "bg-gradient-to-br from-pink-400 via-pink-500 to-red-500", textColor: "text-white" },
-  { label: "Ocean Breeze", value: "bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-500", textColor: "text-white" },
-  { label: "Forest Path", value: "bg-gradient-to-br from-emerald-400 via-green-500 to-teal-600", textColor: "text-white" },
-  { label: "Sunset Glow", value: "bg-gradient-to-br from-amber-400 via-orange-500 to-red-600", textColor: "text-white" },
-  { label: "Royal Purple", value: "bg-gradient-to-br from-purple-500 via-violet-600 to-indigo-600", textColor: "text-white" },
-  { label: "Graphite Stone", value: "bg-gradient-to-br from-slate-500 via-gray-600 to-zinc-700", textColor: "text-white" },
-  { label: "Golden Sand", value: "bg-gradient-to-br from-yellow-300 via-amber-400 to-orange-400", textColor: "text-black" },
-  { label: "Minty Fresh", value: "bg-gradient-to-br from-green-200 via-teal-300 to-cyan-300", textColor: "text-black" },
-];
-
 
 type LayoutMode = 'grid' | 'list';
 
@@ -96,18 +85,11 @@ export default function BookingsPage() {
   const [isViewDetailsDialogOpen, setIsViewDetailsDialogOpen] = React.useState(false);
   const [layoutMode, setLayoutMode] = React.useState<LayoutMode>('grid');
 
-  const [bookingCategories, setBookingCategories] = React.useState<BookingCategory[]>(mockBookingCategoriesData);
-  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = React.useState(false);
-  const [editingCategory, setEditingCategory] = React.useState<BookingCategory | null>(null);
-  const [categoryDialogName, setCategoryDialogName] = React.useState('');
-  const [categoryDialogGradient, setCategoryDialogGradient] = React.useState(PREDEFINED_GRADIENTS[0].value);
-  const [categoryDialogTextColor, setCategoryDialogTextColor] = React.useState(PREDEFINED_GRADIENTS[0].textColor);
-
 
   const filteredBookings = React.useMemo(() => {
     return bookings.filter(booking => {
       const statusMatch = selectedStatuses.length === 0 || selectedStatuses.includes(booking.status);
-      const categoryDetails = booking.categoryId ? bookingCategories.find(c => c.id === booking.categoryId) : null;
+      const categoryDetails = booking.categoryId ? mockBookingCategoriesData.find(c => c.id === booking.categoryId) : null;
       const categoryNameMatch = categoryDetails ? categoryDetails.name.toLowerCase().includes(searchTerm.toLowerCase()) : false;
       const searchMatch = searchTerm.trim() === '' ||
         booking.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -115,7 +97,7 @@ export default function BookingsPage() {
         categoryNameMatch;
       return statusMatch && searchMatch;
     });
-  }, [bookings, searchTerm, selectedStatuses, bookingCategories]);
+  }, [bookings, searchTerm, selectedStatuses, mockBookingCategoriesData]);
 
   const handleStatusUpdate = (bookingId: string, newStatus: BookingStatus) => {
     const bookingIndex = mockBookingsData.findIndex(b => b.id === bookingId);
@@ -234,7 +216,7 @@ export default function BookingsPage() {
     };
     mockClientsData.unshift(newClient);
     toast.success(`Client "${newClient.name}" added. You can now select them.`);
-    setBookingClientName(newClient.name); // Auto-select the newly added client
+    setBookingClientName(newClient.name); 
     setIsAddNewClientDialogForBookingOpen(false);
     resetNewClientForBookingForm();
   };
@@ -276,70 +258,6 @@ export default function BookingsPage() {
     }
     resetBookingForm();
   };
-  
-  // Category Management
-  const handleOpenCategoryDialog = (category?: BookingCategory) => {
-    if (category) {
-      setEditingCategory(category);
-      setCategoryDialogName(category.name);
-      const selectedGradient = PREDEFINED_GRADIENTS.find(g => g.value === category.gradientClasses && g.textColor === category.textColorClass) || PREDEFINED_GRADIENTS[0];
-      setCategoryDialogGradient(selectedGradient.value);
-      setCategoryDialogTextColor(selectedGradient.textColor);
-    } else {
-      setEditingCategory(null);
-      setCategoryDialogName('');
-      setCategoryDialogGradient(PREDEFINED_GRADIENTS[0].value);
-      setCategoryDialogTextColor(PREDEFINED_GRADIENTS[0].textColor);
-    }
-    setIsCategoryDialogOpen(true);
-  };
-
-  const handleGradientChange = (value: string) => {
-    const selected = PREDEFINED_GRADIENTS.find(g => g.value === value);
-    if (selected) {
-      setCategoryDialogGradient(selected.value);
-      setCategoryDialogTextColor(selected.textColor);
-    }
-  };
-
-  const handleSaveCategory = () => {
-    if (!categoryDialogName.trim()) {
-      toast.error("Category name cannot be empty.");
-      return;
-    }
-    if (editingCategory) {
-      const updatedCategories = bookingCategories.map(cat =>
-        cat.id === editingCategory.id ? { ...cat, name: categoryDialogName, gradientClasses: categoryDialogGradient, textColorClass: categoryDialogTextColor } : cat
-      );
-      setBookingCategories(updatedCategories);
-      const idx = mockBookingCategoriesData.findIndex(c => c.id === editingCategory.id);
-      if (idx !== -1) mockBookingCategoriesData[idx] = { ...mockBookingCategoriesData[idx], name: categoryDialogName, gradientClasses: categoryDialogGradient, textColorClass: categoryDialogTextColor };
-      toast.success(`Category "${categoryDialogName}" updated.`);
-    } else {
-      const newCategory: BookingCategory = {
-        id: `cat-${Date.now()}`,
-        name: categoryDialogName.trim(),
-        gradientClasses: categoryDialogGradient,
-        textColorClass: categoryDialogTextColor,
-      };
-      setBookingCategories(prev => [newCategory, ...prev]);
-      mockBookingCategoriesData.unshift(newCategory);
-      toast.success(`Category "${newCategory.name}" added.`);
-    }
-    setIsCategoryDialogOpen(false);
-  };
-
-  const handleDeleteCategory = (categoryId: string) => {
-    const isCategoryInUse = bookings.some(booking => booking.categoryId === categoryId);
-    if (isCategoryInUse) {
-      toast.error("Cannot delete category: It is currently used by one or more bookings.");
-      return;
-    }
-    setBookingCategories(prev => prev.filter(cat => cat.id !== categoryId));
-    const idx = mockBookingCategoriesData.findIndex(c => c.id === categoryId);
-    if (idx !== -1) mockBookingCategoriesData.splice(idx, 1);
-    toast.info("Category deleted.");
-  };
 
 
   return (
@@ -347,7 +265,7 @@ export default function BookingsPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
             <h1 className="text-3xl font-bold tracking-tight font-headline">Bookings Management</h1>
-            <p className="text-muted-foreground">Schedule, view, and manage client bookings and categories.</p>
+            <p className="text-muted-foreground">Schedule, view, and manage client bookings.</p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto justify-end flex-wrap">
            <div className="relative w-full sm:w-auto flex-grow sm:flex-grow-0">
@@ -370,120 +288,84 @@ export default function BookingsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="font-headline flex items-center"><Tag className="mr-2 h-5 w-5 text-primary" />Manage Categories</CardTitle>
-              <Button variant="outline" size="sm" onClick={() => handleOpenCategoryDialog()}><Plus className="mr-1 h-4 w-4" />Add</Button>
-            </CardHeader>
-            <CardContent>
-              {bookingCategories.length > 0 ? (
-                <ScrollArea className="max-h-[300px] pr-2">
-                  <div className="grid grid-cols-1 gap-3">
-                    {bookingCategories.map(category => (
-                      <div key={category.id} className={cn("p-3 rounded-lg shadow-sm border flex flex-col justify-between", category.gradientClasses, category.textColorClass)}>
-                        <span className="font-medium text-sm mb-2 break-words">{category.name}</span>
-                        <div className="flex gap-1.5 self-end mt-1">
-                          <Button variant="ghost" size="icon" className={cn("h-7 w-7 hover:bg-white/20", category.textColorClass)} onClick={() => handleOpenCategoryDialog(category)} title="Edit Category">
-                            <Edit3 className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className={cn("h-7 w-7 hover:bg-white/20", category.textColorClass)} onClick={() => handleDeleteCategory(category.id)} title="Delete Category" disabled={bookings.some(b => b.categoryId === category.id)}>
-                            <Trash className="h-4 w-4" />
-                          </Button>
+      {filteredBookings.length > 0 ? (
+          <div className={cn( layoutMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" : "flex flex-col gap-4" )}>
+            {filteredBookings.map((booking) => {
+                const StatusIcon = statusIconMap[booking.status];
+                const totalPaid = booking.payments?.filter(p => p.status === 'Paid').reduce((sum, p) => sum + p.amount, 0) || 0;
+                const remainingAmount = booking.price - totalPaid;
+                const firstBookingDateEntry = booking.bookingDates && booking.bookingDates.length > 0 ? booking.bookingDates[0] : null;
+                const firstBookingDate = firstBookingDateEntry && firstBookingDateEntry.dateTime ? parseISO(firstBookingDateEntry.dateTime) : null;
+                const category = booking.categoryId ? mockBookingCategoriesData.find(c => c.id === booking.categoryId) : null;
+
+                return (
+                <Card key={booking.id} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300">
+                    <CardHeader className="p-4">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <CardTitle className="text-lg font-semibold font-headline leading-tight">{booking.packageName}</CardTitle>
+                                <CardDescription className="text-xs">Client: {booking.clientName}</CardDescription>
+                            </div>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 -mt-1 -mr-1"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleOpenViewDetailsDialog(booking)}><FileTextIcon className="mr-2 h-4 w-4" />View Details</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleOpenEditBookingDialog(booking)}><Edit className="mr-2 h-4 w-4" />Edit Booking</DropdownMenuItem>
+                                    <DropdownMenuSub>
+                                      <DropdownMenuSubTrigger><CheckCircle className="mr-2 h-4 w-4" />Update Status</DropdownMenuSubTrigger>
+                                      <DropdownMenuPortal><DropdownMenuSubContent>
+                                          {ALL_STATUSES.map((statusOption) => ( <DropdownMenuItem key={statusOption} onClick={() => handleStatusUpdate(booking.id, statusOption)} disabled={booking.status === statusOption}> {React.createElement(statusIconMap[statusOption], { className: "mr-2 h-4 w-4" })} {statusOption} </DropdownMenuItem> ))}
+                                      </DropdownMenuSubContent></DropdownMenuPortal>
+                                    </DropdownMenuSub>
+                                    <DropdownMenuItem onClick={() => toast.info(`Track payment for booking ${booking.id} - coming soon!`)}><DollarSign className="mr-2 h-4 w-4" />Track Payment</DropdownMenuItem>
+                                    {booking.activityLog && booking.activityLog.length > 0 && ( <DropdownMenuItem onClick={() => setSelectedBookingForLog(booking)}><Clock className="mr-2 h-4 w-4" /> View Activity Log</DropdownMenuItem> )}
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10" onClick={() => handleStatusUpdate(booking.id, "Cancelled" as BookingStatus)} disabled={booking.status === "Cancelled"}><Trash2 className="mr-2 h-4 w-4" />Cancel Booking</DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              ) : (
-                <p className="text-muted-foreground text-center py-4 text-sm">No categories defined. Click "Add" to create one.</p>
-              )}
-            </CardContent>
-          </Card>
+                    </CardHeader>
+                    <CardContent className="p-4 flex-grow space-y-3 text-sm">
+                        <div className="space-y-1">
+                            <div className="flex items-center">
+                                <CalendarIconFeather className="h-4 w-4 mr-2 text-muted-foreground flex-shrink-0" />
+                                {firstBookingDate && isValid(firstBookingDate) ? ( <div className="flex-grow"><span>{format(firstBookingDate, "eee, MMM d, yyyy 'at' h:mm a")}</span>{booking.bookingDates.length > 1 && <span className="ml-1 text-xs text-muted-foreground">(+{booking.bookingDates.length -1} more)</span>}</div> ) : ( <span className="flex-grow">No date set</span> )}
+                            </div>
+                            {firstBookingDateEntry?.note && ( <div className="flex items-start pl-6"><FileTextIcon className="h-3.5 w-3.5 mr-1.5 mt-0.5 text-muted-foreground flex-shrink-0" /><p className="text-xs text-muted-foreground italic leading-tight">{firstBookingDateEntry.note}</p></div> )}
+                        </div>
+                        {category && (
+                            <div className="flex items-center">
+                                <Tag className="h-4 w-4 mr-2 text-muted-foreground" />
+                                <Badge className={cn("text-xs px-1.5 py-0.5", category.gradientClasses, category.textColorClass)}>{category.name}</Badge>
+                            </div>
+                        )}
+                        <div className="space-y-1 pt-2 border-t border-border/50">
+                            <div className="flex items-center"><DollarSign className="h-4 w-4 mr-2 text-muted-foreground" /><span>Total Price: ${booking.price.toFixed(2)}</span></div>
+                            <div className="flex items-center text-green-600 dark:text-green-400"><TrendingUp className="h-4 w-4 mr-2" /><span>Paid: ${totalPaid.toFixed(2)}</span></div>
+                            <div className={`flex items-center ${remainingAmount > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-muted-foreground'}`}>{remainingAmount > 0 ? <TrendingDown className="h-4 w-4 mr-2" /> : <CreditCard className="h-4 w-4 mr-2"/>}<span>Remaining: ${remainingAmount.toFixed(2)}</span></div>
+                        </div>
+                    </CardContent>
+                    <CardFooter className="p-4 border-t flex items-center justify-between">
+                        <Button variant="ghost" size="icon" title="View Details" onClick={() => handleOpenViewDetailsDialog(booking)} className="text-muted-foreground hover:text-primary"><Eye className="h-5 w-5" /></Button>
+                        <Badge variant={statusVariantMap[booking.status]} className="flex-grow justify-center py-1.5 text-xs ml-2"><StatusIcon className="mr-1.5 h-3.5 w-3.5" />{booking.status}</Badge>
+                    </CardFooter>
+                </Card>
+            )})}
         </div>
-
-        <div className="lg:col-span-3">
-          {filteredBookings.length > 0 ? (
-             <div className={cn( layoutMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" : "flex flex-col gap-4" )}>
-                {filteredBookings.map((booking) => {
-                    const StatusIcon = statusIconMap[booking.status];
-                    const totalPaid = booking.payments?.filter(p => p.status === 'Paid').reduce((sum, p) => sum + p.amount, 0) || 0;
-                    const remainingAmount = booking.price - totalPaid;
-                    const firstBookingDateEntry = booking.bookingDates && booking.bookingDates.length > 0 ? booking.bookingDates[0] : null;
-                    const firstBookingDate = firstBookingDateEntry && firstBookingDateEntry.dateTime ? parseISO(firstBookingDateEntry.dateTime) : null;
-                    const category = booking.categoryId ? bookingCategories.find(c => c.id === booking.categoryId) : null;
-
-                    return (
-                    <Card key={booking.id} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300">
-                        <CardHeader className="p-4">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <CardTitle className="text-lg font-semibold font-headline leading-tight">{booking.packageName}</CardTitle>
-                                    <CardDescription className="text-xs">Client: {booking.clientName}</CardDescription>
-                                </div>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 -mt-1 -mr-1"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem onClick={() => handleOpenViewDetailsDialog(booking)}><FileTextIcon className="mr-2 h-4 w-4" />View Details</DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleOpenEditBookingDialog(booking)}><Edit className="mr-2 h-4 w-4" />Edit Booking</DropdownMenuItem>
-                                        <DropdownMenuSub>
-                                          <DropdownMenuSubTrigger><CheckCircle className="mr-2 h-4 w-4" />Update Status</DropdownMenuSubTrigger>
-                                          <DropdownMenuPortal><DropdownMenuSubContent>
-                                              {ALL_STATUSES.map((statusOption) => ( <DropdownMenuItem key={statusOption} onClick={() => handleStatusUpdate(booking.id, statusOption)} disabled={booking.status === statusOption}> {React.createElement(statusIconMap[statusOption], { className: "mr-2 h-4 w-4" })} {statusOption} </DropdownMenuItem> ))}
-                                          </DropdownMenuSubContent></DropdownMenuPortal>
-                                        </DropdownMenuSub>
-                                        <DropdownMenuItem onClick={() => toast.info(`Track payment for booking ${booking.id} - coming soon!`)}><DollarSign className="mr-2 h-4 w-4" />Track Payment</DropdownMenuItem>
-                                        {booking.activityLog && booking.activityLog.length > 0 && ( <DropdownMenuItem onClick={() => setSelectedBookingForLog(booking)}><Clock className="mr-2 h-4 w-4" /> View Activity Log</DropdownMenuItem> )}
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10" onClick={() => handleStatusUpdate(booking.id, "Cancelled" as BookingStatus)} disabled={booking.status === "Cancelled"}><Trash2 className="mr-2 h-4 w-4" />Cancel Booking</DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="p-4 flex-grow space-y-3 text-sm">
-                            <div className="space-y-1">
-                                <div className="flex items-center">
-                                    <CalendarIconFeather className="h-4 w-4 mr-2 text-muted-foreground flex-shrink-0" />
-                                    {firstBookingDate && isValid(firstBookingDate) ? ( <div className="flex-grow"><span>{format(firstBookingDate, "eee, MMM d, yyyy 'at' h:mm a")}</span>{booking.bookingDates.length > 1 && <span className="ml-1 text-xs text-muted-foreground">(+{booking.bookingDates.length -1} more)</span>}</div> ) : ( <span className="flex-grow">No date set</span> )}
-                                </div>
-                                {firstBookingDateEntry?.note && ( <div className="flex items-start pl-6"><FileTextIcon className="h-3.5 w-3.5 mr-1.5 mt-0.5 text-muted-foreground flex-shrink-0" /><p className="text-xs text-muted-foreground italic leading-tight">{firstBookingDateEntry.note}</p></div> )}
-                            </div>
-                            {category && (
-                                <div className="flex items-center">
-                                    <Tag className="h-4 w-4 mr-2 text-muted-foreground" />
-                                    <Badge className={cn("text-xs px-1.5 py-0.5", category.gradientClasses, category.textColorClass)}>{category.name}</Badge>
-                                </div>
-                            )}
-                            <div className="space-y-1 pt-2 border-t border-border/50">
-                                <div className="flex items-center"><DollarSign className="h-4 w-4 mr-2 text-muted-foreground" /><span>Total Price: ${booking.price.toFixed(2)}</span></div>
-                                <div className="flex items-center text-green-600 dark:text-green-400"><TrendingUp className="h-4 w-4 mr-2" /><span>Paid: ${totalPaid.toFixed(2)}</span></div>
-                                <div className={`flex items-center ${remainingAmount > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-muted-foreground'}`}>{remainingAmount > 0 ? <TrendingDown className="h-4 w-4 mr-2" /> : <CreditCard className="h-4 w-4 mr-2"/>}<span>Remaining: ${remainingAmount.toFixed(2)}</span></div>
-                            </div>
-                        </CardContent>
-                        <CardFooter className="p-4 border-t flex items-center justify-between">
-                            <Button variant="ghost" size="icon" title="View Details" onClick={() => handleOpenViewDetailsDialog(booking)} className="text-muted-foreground hover:text-primary"><Eye className="h-5 w-5" /></Button>
-                            <Badge variant={statusVariantMap[booking.status]} className="flex-grow justify-center py-1.5 text-xs ml-2"><StatusIcon className="mr-1.5 h-3.5 w-3.5" />{booking.status}</Badge>
-                        </CardFooter>
-                    </Card>
-                )})}
-            </div>
-          ) : (
-             <div className="flex flex-col items-center justify-center py-20 text-center rounded-lg border border-dashed lg:min-h-[calc(100vh-20rem)]"> {/* Adjust min-height if needed */}
-                <BookOpen className="h-20 w-20 text-muted-foreground mb-6" />
-                <h3 className="text-2xl font-semibold mb-3 font-headline">No Bookings Found</h3>
-                <p className="text-muted-foreground mb-6 max-w-sm">
-                    {searchTerm || selectedStatuses.length > 0
-                    ? "No bookings match your current filters. Try adjusting your search or filter criteria."
-                    : "You haven't scheduled any bookings yet. Click the button below to get started!"}
-                </p>
-                <Button size="lg" onClick={handleOpenAddBookingDialog}>
-                    <PlusCircle className="mr-2 h-5 w-5" /> Schedule New Booking
-                </Button>
-            </div>
-          )}
+      ) : (
+          <div className="flex flex-col items-center justify-center py-20 text-center rounded-lg border border-dashed lg:min-h-[calc(100vh-20rem)]">
+            <BookOpen className="h-20 w-20 text-muted-foreground mb-6" />
+            <h3 className="text-2xl font-semibold mb-3 font-headline">No Bookings Found</h3>
+            <p className="text-muted-foreground mb-6 max-w-sm">
+                {searchTerm || selectedStatuses.length > 0
+                ? "No bookings match your current filters. Try adjusting your search or filter criteria."
+                : "You haven't scheduled any bookings yet. Click the button below to get started!"}
+            </p>
+            <Button size="lg" onClick={handleOpenAddBookingDialog}>
+                <PlusCircle className="mr-2 h-5 w-5" /> Schedule New Booking
+            </Button>
         </div>
-      </div>
+      )}
 
 
       {selectedBookingForLog && selectedBookingForLog.activityLog && ( <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center p-4" onClick={() => setSelectedBookingForLog(null)}><div className="bg-card rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}><BookingActivityLog logs={selectedBookingForLog.activityLog} title={`Activity Log for ${selectedBookingForLog.clientName}'s Booking`} description={`Timeline of events for booking ID: ${selectedBookingForLog.id}. Click outside to close.`}/></div></div> )}
@@ -521,7 +403,7 @@ export default function BookingsPage() {
                 <SelectTrigger id="booking-category"><SelectValue placeholder="Select a category" /></SelectTrigger>
                 <SelectContent><SelectGroup><SelectLabel>Available Categories</SelectLabel>
                   <SelectItem value="NO_CATEGORY_SELECTED_PLACEHOLDER_DIALOG">None</SelectItem>
-                  {bookingCategories.map(cat => ( <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem> ))}
+                  {mockBookingCategoriesData.map(cat => ( <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem> ))}
                 </SelectGroup></SelectContent>
               </Select>
             </div>
@@ -628,41 +510,6 @@ export default function BookingsPage() {
         </DialogContent>
       </Dialog>
       
-      <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="font-headline">{editingCategory ? "Edit Booking Category" : "Add New Booking Category"}</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="category-name">Category Name</Label>
-              <Input id="category-name" value={categoryDialogName} onChange={(e) => setCategoryDialogName(e.target.value)} placeholder="e.g., Wedding, Portrait" />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="category-gradient">Color Gradient</Label>
-              <Select value={categoryDialogGradient} onValueChange={handleGradientChange}>
-                <SelectTrigger id="category-gradient"><SelectValue placeholder="Select a gradient" /></SelectTrigger>
-                <SelectContent>
-                  {PREDEFINED_GRADIENTS.map(gradient => (
-                    <SelectItem key={gradient.value} value={gradient.value}>
-                      <div className="flex items-center">
-                        <span className={cn("w-4 h-4 rounded-full mr-2 border", gradient.value)}></span>
-                        {gradient.label}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild><Button variant="outline" onClick={() => setIsCategoryDialogOpen(false)}>Cancel</Button></DialogClose>
-            <Button onClick={handleSaveCategory}><Save className="mr-2 h-4 w-4" />{editingCategory ? "Save Changes" : "Add Category"}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-
       {selectedBookingForDetailsView && (
         <Dialog open={isViewDetailsDialogOpen} onOpenChange={setIsViewDetailsDialogOpen}>
             <DialogContent className="sm:max-w-2xl">
@@ -680,11 +527,11 @@ export default function BookingsPage() {
                                     {selectedBookingForDetailsView.status}
                                 </Badge>
                             </div>
-                             {selectedBookingForDetailsView.categoryId && bookingCategories.find(c => c.id === selectedBookingForDetailsView.categoryId) && (
+                             {selectedBookingForDetailsView.categoryId && mockBookingCategoriesData.find(c => c.id === selectedBookingForDetailsView.categoryId) && (
                                 <div>
                                     <Label className="font-semibold text-muted-foreground">Category</Label>
-                                    <Badge className={cn("mt-1 py-1 text-xs", bookingCategories.find(c => c.id === selectedBookingForDetailsView.categoryId)?.gradientClasses, bookingCategories.find(c => c.id === selectedBookingForDetailsView.categoryId)?.textColorClass)}>
-                                        {bookingCategories.find(c => c.id === selectedBookingForDetailsView.categoryId)?.name}
+                                    <Badge className={cn("mt-1 py-1 text-xs", mockBookingCategoriesData.find(c => c.id === selectedBookingForDetailsView.categoryId)?.gradientClasses, mockBookingCategoriesData.find(c => c.id === selectedBookingForDetailsView.categoryId)?.textColorClass)}>
+                                        {mockBookingCategoriesData.find(c => c.id === selectedBookingForDetailsView.categoryId)?.name}
                                     </Badge>
                                 </div>
                             )}

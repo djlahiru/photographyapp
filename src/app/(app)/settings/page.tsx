@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIcon, Eye, Droplet, Edit3, Square, Circle as CircleIcon, Image as ImageIconFeather, Save, Trash2, AlertTriangle } from "react-feather";
+import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIcon, Eye, Droplet, Edit3, Square, Circle as CircleIcon, Image as ImageIconFeather, Save, Trash2, AlertTriangle, Tag, Plus } from "react-feather";
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 import { format } from 'date-fns';
@@ -15,8 +15,13 @@ import { useTheme } from 'next-themes';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
-import type { UserProfile, AvatarShape } from '@/types';
+import type { UserProfile, AvatarShape, BookingCategory, Booking } from '@/types';
 import { Switch } from '@/components/ui/switch';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogDesc, DialogFooter, DialogClose } from "@/components/ui/dialog"; // Aliased DialogDescription
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
+import { mockBookingCategoriesData, mockBookingsData } from '@/lib/mock-data'; // Import booking data for checking usage
 import {
   USER_PROFILE_LS_KEY,
   AVATAR_SHAPE_LS_KEY,
@@ -44,6 +49,17 @@ const FONT_THEMES: { value: FontTheme; label: string }[] = [
   { value: 'default-sans', label: 'Default Sans' },
   { value: 'classic-serif', label: 'Classic Serif' },
   { value: 'modern-mono', label: 'Modern Mono' },
+];
+
+const PREDEFINED_GRADIENTS: { label: string; value: string; textColor: string }[] = [
+  { label: "Rose Petal", value: "bg-gradient-to-br from-pink-400 via-pink-500 to-red-500", textColor: "text-white" },
+  { label: "Ocean Breeze", value: "bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-500", textColor: "text-white" },
+  { label: "Forest Path", value: "bg-gradient-to-br from-emerald-400 via-green-500 to-teal-600", textColor: "text-white" },
+  { label: "Sunset Glow", value: "bg-gradient-to-br from-amber-400 via-orange-500 to-red-600", textColor: "text-white" },
+  { label: "Royal Purple", value: "bg-gradient-to-br from-purple-500 via-violet-600 to-indigo-600", textColor: "text-white" },
+  { label: "Graphite Stone", value: "bg-gradient-to-br from-slate-500 via-gray-600 to-zinc-700", textColor: "text-white" },
+  { label: "Golden Sand", value: "bg-gradient-to-br from-yellow-300 via-amber-400 to-orange-400", textColor: "text-black" },
+  { label: "Minty Fresh", value: "bg-gradient-to-br from-green-200 via-teal-300 to-cyan-300", textColor: "text-black" },
 ];
 
 
@@ -74,6 +90,15 @@ export default function SettingsPage() {
   const [dashboardCoverPhotoFile, setDashboardCoverPhotoFile] = useState<File | null>(null);
   const [dashboardCoverPhotoPreview, setDashboardCoverPhotoPreview] = useState<string | null>(null);
   const [dashboardBlurIntensity, setDashboardBlurIntensity] = useState<number>(8);
+
+  // Booking Category Management State
+  const [bookingCategories, setBookingCategories] = useState<BookingCategory[]>(mockBookingCategoriesData);
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<BookingCategory | null>(null);
+  const [categoryDialogName, setCategoryDialogName] = useState('');
+  const [categoryDialogGradient, setCategoryDialogGradient] = useState(PREDEFINED_GRADIENTS[0].value);
+  const [categoryDialogTextColor, setCategoryDialogTextColor] = useState(PREDEFINED_GRADIENTS[0].textColor);
+
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentDateTime(new Date()), 1000 * 60);
@@ -150,7 +175,6 @@ export default function SettingsPage() {
     toast.success("Profile changes saved.");
     window.dispatchEvent(new CustomEvent('profileUpdated'));
     if (profileImageFile) {
-        console.log("New profile image was selected:", profileImageFile.name);
         setProfileImageFile(null); 
     }
   };
@@ -249,6 +273,71 @@ export default function SettingsPage() {
     localStorage.setItem(DASHBOARD_COVER_PHOTO_BLUR_LS_KEY, newIntensity.toString());
     window.dispatchEvent(new CustomEvent('dashboardCoverPhotoStyleChange'));
   };
+
+  // Booking Category Management Functions
+  const handleOpenCategoryDialog = (category?: BookingCategory) => {
+    if (category) {
+      setEditingCategory(category);
+      setCategoryDialogName(category.name);
+      const selectedGradient = PREDEFINED_GRADIENTS.find(g => g.value === category.gradientClasses && g.textColor === category.textColorClass) || PREDEFINED_GRADIENTS[0];
+      setCategoryDialogGradient(selectedGradient.value);
+      setCategoryDialogTextColor(selectedGradient.textColor);
+    } else {
+      setEditingCategory(null);
+      setCategoryDialogName('');
+      setCategoryDialogGradient(PREDEFINED_GRADIENTS[0].value);
+      setCategoryDialogTextColor(PREDEFINED_GRADIENTS[0].textColor);
+    }
+    setIsCategoryDialogOpen(true);
+  };
+
+  const handleGradientChange = (value: string) => {
+    const selected = PREDEFINED_GRADIENTS.find(g => g.value === value);
+    if (selected) {
+      setCategoryDialogGradient(selected.value);
+      setCategoryDialogTextColor(selected.textColor);
+    }
+  };
+
+  const handleSaveCategory = () => {
+    if (!categoryDialogName.trim()) {
+      toast.error("Category name cannot be empty.");
+      return;
+    }
+    if (editingCategory) {
+      const updatedCategories = bookingCategories.map(cat =>
+        cat.id === editingCategory.id ? { ...cat, name: categoryDialogName, gradientClasses: categoryDialogGradient, textColorClass: categoryDialogTextColor } : cat
+      );
+      setBookingCategories(updatedCategories);
+      const idx = mockBookingCategoriesData.findIndex(c => c.id === editingCategory.id);
+      if (idx !== -1) mockBookingCategoriesData[idx] = { ...mockBookingCategoriesData[idx], name: categoryDialogName, gradientClasses: categoryDialogGradient, textColorClass: categoryDialogTextColor };
+      toast.success(`Category "${categoryDialogName}" updated.`);
+    } else {
+      const newCategory: BookingCategory = {
+        id: `cat-${Date.now()}`,
+        name: categoryDialogName.trim(),
+        gradientClasses: categoryDialogGradient,
+        textColorClass: categoryDialogTextColor,
+      };
+      setBookingCategories(prev => [newCategory, ...prev]);
+      mockBookingCategoriesData.unshift(newCategory);
+      toast.success(`Category "${newCategory.name}" added.`);
+    }
+    setIsCategoryDialogOpen(false);
+  };
+
+  const handleDeleteCategory = (categoryId: string) => {
+    const isCategoryInUse = mockBookingsData.some(booking => booking.categoryId === categoryId);
+    if (isCategoryInUse) {
+      toast.error("Cannot delete category: It is currently used by one or more bookings.");
+      return;
+    }
+    setBookingCategories(prev => prev.filter(cat => cat.id !== categoryId));
+    const idx = mockBookingCategoriesData.findIndex(c => c.id === categoryId);
+    if (idx !== -1) mockBookingCategoriesData.splice(idx, 1);
+    toast.info("Category deleted.");
+  };
+
 
 
   return (
@@ -429,6 +518,84 @@ export default function SettingsPage() {
       </Card>
       
       <Separator />
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <div>
+            <CardTitle className="flex items-center"><Tag className="mr-2 h-5 w-5"/> Booking Category Management</CardTitle>
+            <CardDescription>Create, edit, and delete categories for your bookings.</CardDescription>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => handleOpenCategoryDialog()}>
+            <Plus className="mr-1 h-4 w-4" /> Add Category
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {bookingCategories.length > 0 ? (
+            <ScrollArea className="h-[300px] pr-2 -mr-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {bookingCategories.map(category => (
+                  <div key={category.id} className={cn("p-3 rounded-lg shadow-sm border flex flex-col justify-between", category.gradientClasses, category.textColorClass)}>
+                    <span className="font-medium text-sm mb-2 break-words">{category.name}</span>
+                    <div className="flex gap-1.5 self-end mt-1">
+                      <Button variant="ghost" size="icon" className={cn("h-7 w-7 hover:bg-white/20", category.textColorClass)} onClick={() => handleOpenCategoryDialog(category)} title="Edit Category">
+                        <Edit3 className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className={cn("h-7 w-7 hover:bg-white/20", category.textColorClass, mockBookingsData.some(b => b.categoryId === category.id) && "opacity-50 cursor-not-allowed")} 
+                        onClick={() => handleDeleteCategory(category.id)} 
+                        title={mockBookingsData.some(b => b.categoryId === category.id) ? "Cannot delete: Category in use" : "Delete Category"}
+                        disabled={mockBookingsData.some(b => b.categoryId === category.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          ) : (
+            <p className="text-muted-foreground text-center py-4 text-sm">No categories defined. Click "Add Category" to create one.</p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-headline">{editingCategory ? "Edit Booking Category" : "Add New Booking Category"}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="category-name">Category Name</Label>
+              <Input id="category-name" value={categoryDialogName} onChange={(e) => setCategoryDialogName(e.target.value)} placeholder="e.g., Wedding, Portrait" />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="category-gradient">Color Gradient</Label>
+              <Select value={categoryDialogGradient} onValueChange={handleGradientChange}>
+                <SelectTrigger id="category-gradient"><SelectValue placeholder="Select a gradient" /></SelectTrigger>
+                <SelectContent>
+                  {PREDEFINED_GRADIENTS.map(gradient => (
+                    <SelectItem key={gradient.value} value={gradient.value}>
+                      <div className="flex items-center">
+                        <span className={cn("w-4 h-4 rounded-full mr-2 border", gradient.value)}></span>
+                        {gradient.label}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild><Button variant="outline" onClick={() => setIsCategoryDialogOpen(false)}>Cancel</Button></DialogClose>
+            <Button onClick={handleSaveCategory}><Save className="mr-2 h-4 w-4" />{editingCategory ? "Save Changes" : "Add Category"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Separator />
       
       <Card>
         <CardHeader>
@@ -561,4 +728,3 @@ export default function SettingsPage() {
   );
 }
     
-
