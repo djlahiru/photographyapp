@@ -3,11 +3,11 @@ import { SummaryStats } from "@/components/dashboard/summary-stats";
 import { OverviewList } from "@/components/dashboard/overview-list";
 import { CalendarStatus } from "@/components/dashboard/calendar-status";
 import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
-import { RevenueGoalChart } from "@/components/dashboard/revenue-goal-chart";
+import { MonthlyBookingsByCategoryChart } from "@/components/dashboard/monthly-bookings-by-category-chart"; // Changed import
 import { ProjectStatusProgress } from "@/components/dashboard/project-status-progress";
 import { WorkProgressTracker } from "@/components/dashboard/work-progress-tracker";
-import { DashboardCoverPhotoDisplay } from "@/components/dashboard/dashboard-cover-photo-display"; // Import the new component
-import { BookOpen, Clock, UserPlus, MoreHorizontal, Activity } from "react-feather"; 
+import { DashboardCoverPhotoDisplay } from "@/components/dashboard/dashboard-cover-photo-display";
+import { BookOpen, Clock, UserPlus, MoreHorizontal, Activity } from "react-feather";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -50,7 +50,7 @@ const currentProjectStage = "Editing";
 export default function DashboardPage() {
   return (
     <div className="space-y-8">
-      <DashboardCoverPhotoDisplay /> {/* Add the cover photo display here */}
+      <DashboardCoverPhotoDisplay />
       <SummaryStats />
       
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
@@ -69,7 +69,7 @@ export default function DashboardPage() {
             itemAction={itemActionMenu}
         />
          <div className="lg:col-span-1 space-y-8">
-          <RevenueGoalChart />
+          <MonthlyBookingsByCategoryChart /> {/* Changed component */}
           <WorkProgressTracker stages={projectStages} currentStageName={currentProjectStage} />
           <CategoryBreakdown />
           <ProjectStatusProgress />
