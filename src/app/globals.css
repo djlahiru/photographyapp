@@ -34,7 +34,7 @@
     --muted: 210 30% 94%;                  /* Lighter Gray-Blue */
     --muted-foreground: 210 20% 55%;       /* Medium Gray-Blue */
 
-    /* --- Default Accent Theme (NOW Oceanic Blue) --- */
+    /* --- Default Accent Theme (Oceanic Blue) --- */
     --accent: 205 75% 50%;                 
     --accent-foreground: 210 60% 98%;       
     --accent-gradient-start-hsl: 205 75% 50%;
@@ -98,7 +98,7 @@
     --muted: 220 15% 30%;
     --muted-foreground: 210 20% 60%;
 
-    /* --- Default Accent Theme (NOW Oceanic Blue - Dark) --- */
+    /* --- Default Accent Theme (Oceanic Blue - Dark) --- */
     --accent: 205 70% 60%;                 
     --accent-foreground: 210 30% 15%;      
     --accent-gradient-start-hsl: 205 70% 60%;
@@ -132,8 +132,9 @@
     --chart-5: 240 50% 65%;
   }
 
-  /* --- Accent Themes --- */
-  .theme-accent-default { /* This class now applies Oceanic Blue as the 'default' selectable theme */
+  /* --- Base Accent Theme Definition (Oceanic Blue by default) --- */
+  /* This class is applied by default and ensures the base accent colors are set. */
+  .theme-accent-default { 
     --accent: 205 75% 50%;                 
     --accent-foreground: 210 60% 98%;       
     --accent-gradient-start-hsl: 205 75% 50%;
@@ -158,114 +159,6 @@
     --chart-2: 205 70% 60%;
     --ring: 205 70% 55%;
     --sidebar-ring: 205 65% 58%;
-  }
-
-  .theme-accent-violet { /* New theme class for Vibrant Violet */
-    --accent: 270 70% 65%;                 
-    --accent-foreground: 270 60% 98%;       
-    --accent-gradient-start-hsl: 270 70% 65%;
-    --accent-gradient-end-hsl: 270 60% 55%;
-    --sidebar-accent: 270 70% 65%;          
-    --sidebar-accent-foreground: 270 60% 98%;
-    --sidebar-accent-gradient-start-hsl: 270 70% 65%;
-    --sidebar-accent-gradient-end-hsl: 270 60% 55%;
-    --chart-2: 270 70% 65%;
-    --ring: 270 70% 60%; /* Violet ring */
-    --sidebar-ring: 270 70% 65%;
-  }
-  .dark .theme-accent-violet {
-    --accent: 270 70% 70%;                 
-    --accent-foreground: 270 40% 10%;      
-    --accent-gradient-start-hsl: 270 70% 70%;
-    --accent-gradient-end-hsl: 270 60% 60%;
-    --sidebar-accent: 270 70% 70%;         
-    --sidebar-accent-foreground: 270 40% 10%;
-    --sidebar-accent-gradient-start-hsl: 270 70% 70%;
-    --sidebar-accent-gradient-end-hsl: 270 60% 60%;
-    --chart-2: 270 70% 70%;
-    --ring: 270 70% 65%; /* Violet ring dark */
-    --sidebar-ring: 270 70% 70%;
-  }
-
-  .theme-accent-oceanic { /* Explicit Oceanic Blue still available if needed, but matches default */
-    --accent: 205 75% 50%; 
-    --accent-foreground: 210 60% 98%;
-    --accent-gradient-start-hsl: 205 75% 50%;
-    --accent-gradient-end-hsl: 205 65% 40%;
-    --sidebar-accent: 205 70% 48%;
-    --sidebar-accent-foreground: 210 60% 98%;
-    --sidebar-accent-gradient-start-hsl: 205 70% 48%;
-    --sidebar-accent-gradient-end-hsl: 205 60% 38%;
-    --chart-2: 205 75% 50%;
-    --ring: 205 75% 45%; 
-    --sidebar-ring: 205 70% 48%;
-  }
-  .dark .theme-accent-oceanic {
-    --accent: 205 70% 60%; 
-    --accent-foreground: 210 30% 15%;
-    --accent-gradient-start-hsl: 205 70% 60%;
-    --accent-gradient-end-hsl: 205 60% 50%;
-    --sidebar-accent: 205 65% 58%;
-    --sidebar-accent-foreground: 210 30% 15%;
-    --sidebar-accent-gradient-start-hsl: 205 65% 58%;
-    --sidebar-accent-gradient-end-hsl: 205 55% 48%;
-    --chart-2: 205 70% 60%;
-    --ring: 205 70% 55%;
-    --sidebar-ring: 205 65% 58%;
-  }
-
-  .theme-accent-forest {
-    --accent: 140 60% 40%; 
-    --accent-foreground: 140 30% 95%;
-    --accent-gradient-start-hsl: 140 60% 40%;
-    --accent-gradient-end-hsl: 140 50% 30%;
-    --sidebar-accent: 140 55% 38%;
-    --sidebar-accent-foreground: 140 30% 95%;
-    --sidebar-accent-gradient-start-hsl: 140 55% 38%;
-    --sidebar-accent-gradient-end-hsl: 140 45% 28%;
-    --chart-2: 140 60% 40%;
-    --ring: 140 60% 35%;
-    --sidebar-ring: 140 55% 38%;
-  }
-  .dark .theme-accent-forest {
-    --accent: 140 50% 50%; 
-    --accent-foreground: 140 25% 10%;
-    --accent-gradient-start-hsl: 140 50% 50%;
-    --accent-gradient-end-hsl: 140 40% 40%;
-    --sidebar-accent: 140 45% 48%;
-    --sidebar-accent-foreground: 140 25% 10%;
-    --sidebar-accent-gradient-start-hsl: 140 45% 48%;
-    --sidebar-accent-gradient-end-hsl: 140 35% 38%;
-    --chart-2: 140 50% 50%;
-    --ring: 140 50% 45%;
-    --sidebar-ring: 140 45% 48%;
-  }
-
-  .theme-accent-sunset {
-    --accent: 25 90% 55%; 
-    --accent-foreground: 25 40% 98%;
-    --accent-gradient-start-hsl: 25 90% 55%;
-    --accent-gradient-end-hsl: 25 80% 45%;
-    --sidebar-accent: 25 85% 53%;
-    --sidebar-accent-foreground: 25 40% 98%;
-    --sidebar-accent-gradient-start-hsl: 25 85% 53%;
-    --sidebar-accent-gradient-end-hsl: 25 75% 43%;
-    --chart-2: 25 90% 55%;
-    --ring: 25 90% 50%;
-    --sidebar-ring: 25 85% 53%;
-  }
-  .dark .theme-accent-sunset {
-    --accent: 25 80% 65%; 
-    --accent-foreground: 25 30% 10%;
-    --accent-gradient-start-hsl: 25 80% 65%;
-    --accent-gradient-end-hsl: 25 70% 55%;
-    --sidebar-accent: 25 75% 63%;
-    --sidebar-accent-foreground: 25 30% 10%;
-    --sidebar-accent-gradient-start-hsl: 25 75% 63%;
-    --sidebar-accent-gradient-end-hsl: 25 65% 53%;
-    --chart-2: 25 80% 65%;
-    --ring: 25 80% 60%;
-    --sidebar-ring: 25 75% 63%;
   }
 
   /* --- Font Themes --- */

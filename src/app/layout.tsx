@@ -10,7 +10,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import { I18nProviderClient } from '@/components/i18n-provider-client';
 // Removed useTheme import as it's not directly used here for class manipulation
 
-type AccentTheme = 'default' | 'oceanic' | 'forest' | 'sunset';
 type FontTheme = 'default-sans' | 'classic-serif' | 'modern-mono';
 
 export default function RootLayout({
@@ -21,17 +20,13 @@ export default function RootLayout({
 
   useEffect(() => {
     const applyCustomThemes = () => {
-      // Apply persisted accent theme
-      const storedAccentTheme = localStorage.getItem('accentTheme') as AccentTheme | null;
+      // Ensure default accent theme is applied if no other is specified (though others are removed now)
       document.documentElement.classList.forEach(cls => {
-        if (cls.startsWith('theme-accent-')) {
+        if (cls.startsWith('theme-accent-') && cls !== 'theme-accent-default') {
           document.documentElement.classList.remove(cls);
         }
       });
-      if (storedAccentTheme && storedAccentTheme !== 'default') {
-        document.documentElement.classList.add(`theme-accent-${storedAccentTheme}`);
-      } else {
-         // Ensure default is applied if nothing is stored or if 'default' is explicitly chosen
+      if (!document.documentElement.classList.contains('theme-accent-default')) {
         document.documentElement.classList.add('theme-accent-default');
       }
 
@@ -51,7 +46,6 @@ export default function RootLayout({
     applyCustomThemes(); // Apply on initial mount
 
     // Listen for theme changes dispatched from the settings page
-    window.addEventListener('accentThemeChanged', applyCustomThemes);
     window.addEventListener('fontThemeChanged', applyCustomThemes);
 
     // App Name logic
@@ -69,7 +63,6 @@ export default function RootLayout({
     }
 
     return () => {
-      window.removeEventListener('accentThemeChanged', applyCustomThemes);
       window.removeEventListener('fontThemeChanged', applyCustomThemes);
     };
   }, []); // Empty dependency array means this runs once on mount and cleans up on unmount

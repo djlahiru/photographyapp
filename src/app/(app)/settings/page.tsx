@@ -25,7 +25,6 @@ import { mockBookingCategoriesData, mockBookingsData } from '@/lib/mock-data';
 import {
   USER_PROFILE_LS_KEY,
   AVATAR_SHAPE_LS_KEY,
-  ACCENT_THEME_LS_KEY,
   FONT_THEME_LS_KEY,
   DASHBOARD_COVER_PHOTO_LS_KEY,
   DASHBOARD_COVER_PHOTO_BLUR_LS_KEY,
@@ -38,16 +37,7 @@ import {
 } from '@/lib/constants';
 
 
-type AccentTheme = 'default' | 'violet' | 'oceanic' | 'forest' | 'sunset'; 
 type FontTheme = 'default-sans' | 'classic-serif' | 'modern-mono';
-
-const ACCENT_THEMES: { value: AccentTheme; label: string }[] = [
-  { value: 'default', label: 'Default Blue' }, 
-  { value: 'violet', label: 'Vibrant Violet' }, 
-  { value: 'forest', label: 'Forest Green' },
-  { value: 'sunset', label: 'Sunset Orange' },
-];
-
 
 const FONT_THEMES: { value: FontTheme; label: string }[] = [
   { value: 'default-sans', label: 'Default Sans' },
@@ -89,7 +79,6 @@ export default function SettingsPage() {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
 
   const [avatarShape, setAvatarShape] = useState<AvatarShape>('circle');
-  const [currentAccentTheme, setCurrentAccentTheme] = useState<AccentTheme>('default'); 
   const [currentFontTheme, setCurrentFontTheme] = useState<FontTheme>('default-sans');
 
   const [dashboardCoverPhotoFile, setDashboardCoverPhotoFile] = useState<File | null>(null);
@@ -138,11 +127,7 @@ export default function SettingsPage() {
 
     const storedShape = localStorage.getItem(AVATAR_SHAPE_LS_KEY) as AvatarShape | null;
     if (storedShape) setAvatarShape(storedShape);
-
-    const storedAccentTheme = localStorage.getItem(ACCENT_THEME_LS_KEY) as AccentTheme | null;
-    if (storedAccentTheme) setCurrentAccentTheme(storedAccentTheme);
-    else setCurrentAccentTheme('default'); 
-
+    
     const storedFontTheme = localStorage.getItem(FONT_THEME_LS_KEY) as FontTheme | null;
     if (storedFontTheme) setCurrentFontTheme(storedFontTheme);
     
@@ -222,8 +207,8 @@ export default function SettingsPage() {
     window.dispatchEvent(new CustomEvent('avatarShapeChange', { detail: shape }));
   };
 
-  const applyThemeClass = (themeType: 'accent' | 'font', themeValue: AccentTheme | FontTheme) => {
-    const classPrefix = themeType === 'accent' ? 'theme-accent-' : 'font-theme-';
+  const applyThemeClass = (themeType: 'font', themeValue: FontTheme) => {
+    const classPrefix = 'font-theme-';
     
     document.documentElement.classList.forEach(cls => {
         if (cls.startsWith(classPrefix)) {
@@ -231,19 +216,9 @@ export default function SettingsPage() {
         }
     });
 
-    if (themeType === 'accent') {
-      document.documentElement.classList.add(`${classPrefix}${themeValue}`);
-    } else if (themeType === 'font' && themeValue !== 'default-sans') {
+    if (themeValue !== 'default-sans') {
       document.documentElement.classList.add(`${classPrefix}${themeValue}`);
     }
-  };
-
-
-  const handleAccentThemeChange = (themeValue: AccentTheme) => {
-    setCurrentAccentTheme(themeValue);
-    localStorage.setItem(ACCENT_THEME_LS_KEY, themeValue);
-    applyThemeClass('accent', themeValue);
-    window.dispatchEvent(new CustomEvent('accentThemeChanged'));
   };
 
   const handleFontThemeChange = (themeValue: FontTheme) => {
@@ -488,40 +463,7 @@ export default function SettingsPage() {
                 </Button>
             )}
           </div>
-          <div>
-            <Label className="flex items-center"><Droplet className="mr-1.5 h-4 w-4" />Accent Color</Label>
-            <RadioGroup value={currentAccentTheme} onValueChange={(value) => handleAccentThemeChange(value as AccentTheme)} className="grid grid-cols-2 gap-4 mt-2 sm:grid-cols-2">
-              {ACCENT_THEMES.map(item => (
-                <Label
-                  key={item.value}
-                  htmlFor={`accent-${item.value}`}
-                  className="flex items-center space-x-2 p-3 border rounded-md hover:bg-accent/10 cursor-pointer has-[:checked]:bg-accent/20 has-[:checked]:border-accent"
-                >
-                  <RadioGroupItem 
-                    value={item.value} 
-                    id={`accent-${item.value}`} 
-                    className="border-accent text-accent data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground"
-                  />
-                  <span>{item.label}</span>
-                  <span className={`ml-auto h-4 w-4 rounded-full border theme-preview-${item.value}`}></span>
-                </Label>
-              ))}
-            </RadioGroup>
-            <style jsx>{`
-              .theme-preview-default { background-image: linear-gradient(to right, hsl(205 75% 50%), hsl(205 65% 40%)); } 
-              .dark .theme-preview-default { background-image: linear-gradient(to right, hsl(205 70% 60%), hsl(205 60% 50%)); } 
-              
-              .theme-preview-violet { background-image: linear-gradient(to right, hsl(270 70% 65%), hsl(270 60% 55%)); } 
-              .dark .theme-preview-violet { background-image: linear-gradient(to right, hsl(270 70% 70%), hsl(270 60% 60%)); } 
-
-              .theme-preview-oceanic { background-image: linear-gradient(to right, hsl(205 75% 50%), hsl(205 65% 40%)); }
-              .dark .theme-preview-oceanic { background-image: linear-gradient(to right, hsl(205 70% 60%), hsl(205 60% 50%)); }
-              .theme-preview-forest { background-image: linear-gradient(to right, hsl(140 60% 40%), hsl(140 50% 30%)); }
-              .dark .theme-preview-forest { background-image: linear-gradient(to right, hsl(140 50% 50%), hsl(140 40% 40%)); }
-              .theme-preview-sunset { background-image: linear-gradient(to right, hsl(25 90% 55%), hsl(25 80% 45%)); }
-              .dark .theme-preview-sunset { background-image: linear-gradient(to right, hsl(25 80% 65%), hsl(25 70% 55%)); }
-            `}</style>
-          </div>
+          
            <div>
             <Label className="flex items-center"><Edit3 className="mr-1.5 h-4 w-4" /> Font Style</Label>
             <RadioGroup value={currentFontTheme} onValueChange={(value) => handleFontThemeChange(value as FontTheme)} className="grid grid-cols-1 gap-4 mt-2 sm:grid-cols-2">
