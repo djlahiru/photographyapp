@@ -37,7 +37,9 @@ export default function RootLayout({
 
     // Apply persisted font theme
     const storedFontTheme = localStorage.getItem('fontTheme') as FontTheme | null;
-    currentHtmlClasses.forEach(cls => {
+    // Re-fetch class list as it might have changed
+    const updatedHtmlClasses = document.documentElement.className.split(' ');
+    updatedHtmlClasses.forEach(cls => {
       if (cls.startsWith('font-theme-')) {
         document.documentElement.classList.remove(cls);
       }
@@ -71,7 +73,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased flex flex-col min-h-screen"> {/* Added flex flex-col and min-h-screen (though min-h-screen is also in globals.css) */}
+      <body className="antialiased">
         <I18nProviderClient>
           <ThemeProvider
             attribute="class"
@@ -79,7 +81,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <div className="flex-grow flex flex-col"> {/* Wrapper for children + toast to make it grow */}
+            <div className="flex-grow flex flex-col">
               {children}
               <ToastContainer theme="colored" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
             </div>

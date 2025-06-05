@@ -3,9 +3,7 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'PT Sans', sans-serif;
-}
+/* Removed direct body font-family here, will be in @layer base */
 
 @layer base {
   :root {
@@ -179,7 +177,7 @@ body {
   }
 
   /* --- Font Themes --- */
-  /* Default is PT Sans via body tag */
+  /* Default font (PT Sans) is now applied in body @layer base */
   .font-theme-classic-serif body {
     font-family: Georgia, serif;
   }
@@ -201,10 +199,11 @@ body {
     @apply border-border;
   }
   body {
-    @apply text-foreground;
-    background-color: hsl(var(--background)); 
-    min-height: 100vh;
-    /* Default font-family is set in the global body style at the top */
+    font-family: 'PT Sans', sans-serif; /* Apply PT Sans directly */
+    @apply bg-background text-foreground; /* Tailwind colors */
+    @apply flex flex-col; /* For sticky footer structure */
+    min-height: 100vh; /* Ensures full viewport height */
+    /* antialiased is a utility class, can be applied on body tag if needed */
   }
 }
 
@@ -218,5 +217,3 @@ body {
     background-color: hsl(var(--sidebar-gradient-bg-start-hsl)); 
   }
 }
-
-    
