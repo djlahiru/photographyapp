@@ -163,8 +163,8 @@ export default function PackagesPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight font-headline">Photography Packages</h1>
-          <p className="text-muted-foreground">Create, view, edit, and manage your service packages.</p>
+          <h1 className="text-3xl font-bold tracking-tight font-headline">Packages</h1>
+          <p className="text-muted-foreground">Create, view, edit, and manage your packages.</p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto justify-end flex-wrap">
             <div className="flex items-center gap-2">

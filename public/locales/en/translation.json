@@ -1,6 +1,12 @@
 
 {
   "appName": "WorkFlowZen",
+  "english": "English",
+  "sinhala": "Sinhala",
+  "tamil": "Tamil",
+  "language": "Language",
+  "toggleTheme": "Toggle Theme",
+  "toggleNotifications": "Toggle Notifications",
   "greeting": {
     "morning": "Good Morning",
     "afternoon": "Good Afternoon",
@@ -17,11 +23,5 @@
     "payments": "Payments",
     "settings": "Settings"
   },
-  "language": "Language",
-  "english": "English",
-  "sinhala": "Sinhala",
-  "tamil": "Tamil",
-  "toggleTheme": "Toggle theme",
-  "toggleNotifications": "Toggle notifications",
-  "logout": "Log Out"
+  "logout": "Logout"
 }
