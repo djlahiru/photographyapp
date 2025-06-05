@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -80,7 +80,7 @@ export default function PaymentsPage() {
       setAvailableBookingsForClient([]); // No client name entered
     }
     setSelectedBookingIdForPayment(undefined); // Reset booking if client name changes or clears
-  }, [paymentClientName, mockBookingsData, mockClientsData]);
+  }, [paymentClientName]);
 
 
   const allPayments: EnrichedPayment[] = useMemo(() => {
@@ -97,7 +97,7 @@ export default function PaymentsPage() {
       });
     });
     return payments.sort((a, b) => parseISO(b.paymentDate).getTime() - parseISO(a.paymentDate).getTime());
-  }, [mockBookingsData, mockClientsData, refreshKey]);
+  }, [refreshKey]);
 
   const filteredPayments = useMemo(() => {
     return allPayments.filter(payment => {
@@ -148,9 +148,9 @@ export default function PaymentsPage() {
       totalPaidAllTime,
       totalTransactions: allPayments.length,
     };
-  }, [allPayments, mockBookingsData, refreshKey]);
+  }, [allPayments, refreshKey]);
 
-  const resetRecordPaymentForm = () => {
+  const resetRecordPaymentForm = useCallback(() => {
     setPaymentClientName('');
     setSuggestedPaymentClients([]);
     setIsPaymentClientSuggestionsOpen(false);
@@ -161,7 +161,7 @@ export default function PaymentsPage() {
     setPaymentStatus(undefined);
     setPaymentDescription('');
     setAvailableBookingsForClient([]);
-  };
+  }, []);
   
   const resetNewClientForPaymentForm = () => {
     setNewClientForPaymentName('');
@@ -174,10 +174,10 @@ export default function PaymentsPage() {
     setNewClientForPaymentPhotoPreview(null);
   };
 
-  const handleOpenRecordPaymentDialog = () => {
+  const handleOpenRecordPaymentDialog = useCallback(() => {
     resetRecordPaymentForm();
     setIsRecordPaymentDialogOpen(true);
-  };
+  }, [resetRecordPaymentForm]);
   
   useEffect(() => {
     const openDialog = () => handleOpenRecordPaymentDialog();
@@ -185,7 +185,7 @@ export default function PaymentsPage() {
     return () => {
       window.removeEventListener('fabOpenRecordPaymentDialog', openDialog);
     };
-  }, []); 
+  }, [handleOpenRecordPaymentDialog]); 
 
   const handlePaymentClientNameChange = (name: string) => {
     setPaymentClientName(name);

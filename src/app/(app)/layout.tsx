@@ -4,7 +4,7 @@
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { AppHeader } from '@/components/layout/app-header';
-// import { FloatingActionButton } from '@/components/ui/floating-action-button'; // Removed import
+import { FloatingActionButton } from '@/components/ui/floating-action-button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { BottomNavigationBar } from '@/components/layout/bottom-navigation-bar';
 import { cn } from '@/lib/utils';
@@ -44,7 +44,10 @@ export default function AppLayout({
         )}>
          {children}
         </div>
-        {/* Floating Action Button removed from here */}
+        {/* Floating Action Button positioned at the bottom right */}
+        <div className="fixed bottom-6 right-6 z-50">
+          <FloatingActionButton />
+        </div>
       </main>
       {isMobileView && <BottomNavigationBar />}
     </SidebarProvider>
