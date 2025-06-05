@@ -1,18 +1,22 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, DollarSign, Users, TrendingUp, TrendingDown, List, Filter, Search, CreditCard, Briefcase, Calendar as CalendarIconFeather, Package } from "react-feather";
-import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
+import { PlusCircle, DollarSign, Users, TrendingUp, TrendingDown, List, Filter, Search, CreditCard, Briefcase, Calendar as CalendarIconFeather, Package, Save } from "react-feather";
+import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval, isValid } from 'date-fns';
 import type { Payment, Booking, Client, PaymentStatus } from '@/types';
 import { mockBookingsData, mockClientsData } from '@/lib/mock-data';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectGroup, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'react-toastify';
 
 const paymentStatusVariantMap: Record<PaymentStatus, "default" | "secondary" | "destructive" | "outline" | "success" | "warning"> = {
   Paid: "success",
@@ -20,6 +24,10 @@ const paymentStatusVariantMap: Record<PaymentStatus, "default" | "secondary" | "
   Failed: "destructive",
   Refunded: "outline",
 };
+
+const PAYMENT_METHODS = ["Credit Card", "Bank Transfer", "Cash", "Online Payment", "Other"];
+const PAYMENT_STATUSES: PaymentStatus[] = ["Paid", "Pending", "Failed"];
+
 
 interface EnrichedPayment extends Payment {
   clientName: string;
@@ -30,6 +38,34 @@ interface EnrichedPayment extends Payment {
 export default function PaymentsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | 'all'>('all');
+  const [refreshKey, setRefreshKey] = useState(0); // To force re-evaluation of memoized values
+
+  // State for Record Payment Dialog
+  const [isRecordPaymentDialogOpen, setIsRecordPaymentDialogOpen] = useState(false);
+  const [selectedClientIdForPayment, setSelectedClientIdForPayment] = useState<string | undefined>(undefined);
+  const [selectedBookingIdForPayment, setSelectedBookingIdForPayment] = useState<string | undefined>(undefined);
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [paymentDate, setPaymentDate] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<string | undefined>(undefined);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | undefined>(undefined);
+  const [paymentDescription, setPaymentDescription] = useState('');
+  
+  const [availableBookingsForClient, setAvailableBookingsForClient] = useState<Booking[]>([]);
+
+  useEffect(() => {
+    if (selectedClientIdForPayment) {
+      const client = mockClientsData.find(c => c.id === selectedClientIdForPayment);
+      if (client) {
+        setAvailableBookingsForClient(mockBookingsData.filter(b => b.clientName === client.name && b.status !== 'Cancelled'));
+      } else {
+        setAvailableBookingsForClient([]);
+      }
+    } else {
+      setAvailableBookingsForClient([]);
+    }
+    setSelectedBookingIdForPayment(undefined); // Reset booking if client changes
+  }, [selectedClientIdForPayment, mockBookingsData, mockClientsData]);
+
 
   const allPayments: EnrichedPayment[] = useMemo(() => {
     const payments: EnrichedPayment[] = [];
@@ -45,7 +81,7 @@ export default function PaymentsPage() {
       });
     });
     return payments.sort((a, b) => parseISO(b.paymentDate).getTime() - parseISO(a.paymentDate).getTime());
-  }, [mockBookingsData, mockClientsData]);
+  }, [mockBookingsData, mockClientsData, refreshKey]);
 
   const filteredPayments = useMemo(() => {
     return allPayments.filter(payment => {
@@ -60,11 +96,11 @@ export default function PaymentsPage() {
 
       return matchesSearch && matchesStatus;
     });
-  }, [allPayments, searchTerm, statusFilter]);
+  }, [allPayments, searchTerm, statusFilter, refreshKey]);
 
   const recentPayments = useMemo(() => {
     return allPayments.slice(0, 5);
-  }, [allPayments]);
+  }, [allPayments, refreshKey]);
 
   const summaryStats = useMemo(() => {
     const now = new Date();
@@ -77,7 +113,7 @@ export default function PaymentsPage() {
     allPayments.forEach(payment => {
       if (payment.status === 'Paid') {
         totalPaidAllTime += payment.amount;
-        if (isWithinInterval(parseISO(payment.paymentDate), currentMonthInterval)) {
+         if (isValid(parseISO(payment.paymentDate)) && isWithinInterval(parseISO(payment.paymentDate), currentMonthInterval)) {
           totalRevenueThisMonth += payment.amount;
         }
       }
@@ -96,13 +132,66 @@ export default function PaymentsPage() {
       totalPaidAllTime,
       totalTransactions: allPayments.length,
     };
-  }, [allPayments, mockBookingsData]);
+  }, [allPayments, mockBookingsData, refreshKey]);
 
-
-  const handleRecordPayment = () => {
-    // This will eventually open a dialog
-    alert("Record New Payment dialog coming soon!");
+  const resetRecordPaymentForm = () => {
+    setSelectedClientIdForPayment(undefined);
+    setSelectedBookingIdForPayment(undefined);
+    setPaymentAmount('');
+    setPaymentDate('');
+    setPaymentMethod(undefined);
+    setPaymentStatus(undefined);
+    setPaymentDescription('');
+    setAvailableBookingsForClient([]);
   };
+
+  const handleOpenRecordPaymentDialog = () => {
+    resetRecordPaymentForm();
+    setIsRecordPaymentDialogOpen(true);
+  };
+
+  const handleRecordPaymentSubmit = () => {
+    if (!selectedClientIdForPayment || !selectedBookingIdForPayment || !paymentAmount || !paymentDate || !paymentMethod || !paymentStatus) {
+      toast.error("Please fill in all required fields for the payment.");
+      return;
+    }
+    const amount = parseFloat(paymentAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast.error("Please enter a valid positive amount.");
+      return;
+    }
+    if (!isValid(new Date(paymentDate))) {
+        toast.error("Please enter a valid payment date.");
+        return;
+    }
+
+    const bookingIndex = mockBookingsData.findIndex(b => b.id === selectedBookingIdForPayment);
+    if (bookingIndex === -1) {
+      toast.error("Selected booking not found. Please try again.");
+      return;
+    }
+
+    const newPayment: Payment = {
+      id: `payment-${Date.now()}`,
+      bookingId: selectedBookingIdForPayment,
+      amount: amount,
+      paymentDate: new Date(paymentDate).toISOString(),
+      method: paymentMethod,
+      status: paymentStatus,
+      description: paymentDescription.trim() || undefined,
+    };
+
+    if (!mockBookingsData[bookingIndex].payments) {
+      mockBookingsData[bookingIndex].payments = [];
+    }
+    mockBookingsData[bookingIndex].payments!.unshift(newPayment);
+
+    toast.success(`Payment of $${amount.toFixed(2)} recorded for booking.`);
+    setRefreshKey(prev => prev + 1); // Trigger re-calculation of memoized values
+    setIsRecordPaymentDialogOpen(false);
+    resetRecordPaymentForm();
+  };
+
 
   return (
     <div className="space-y-8">
@@ -111,7 +200,7 @@ export default function PaymentsPage() {
             <h1 className="text-3xl font-bold tracking-tight font-headline">Payment Management</h1>
             <p className="text-muted-foreground">Track, record, and manage all client payments.</p>
         </div>
-        <Button onClick={handleRecordPayment}>
+        <Button onClick={handleOpenRecordPaymentDialog}>
             <PlusCircle className="mr-2 h-4 w-4" /> Record New Payment
         </Button>
       </div>
@@ -193,9 +282,11 @@ export default function PaymentsPage() {
                         {payment.status}
                       </Badge>
                       <p className="text-lg font-semibold text-primary">${payment.amount.toFixed(2)}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {format(parseISO(payment.paymentDate), "MMM d, yyyy, h:mm a")}
-                      </p>
+                       {isValid(parseISO(payment.paymentDate)) && (
+                        <p className="text-xs text-muted-foreground">
+                            {format(parseISO(payment.paymentDate), "MMM d, yyyy, h:mm a")}
+                        </p>
+                       )}
                     </div>
                   </div>
                 ))}
@@ -207,7 +298,7 @@ export default function PaymentsPage() {
         </CardContent>
       </Card>
 
-      {/* Payment History Table - Placeholder */}
+      {/* Payment History Table */}
       <Card className="shadow-xl">
         <CardHeader>
           <CardTitle className="font-headline">Full Payment History</CardTitle>
@@ -260,7 +351,7 @@ export default function PaymentsPage() {
                         {payment.bookingCategory && <span className="text-xs text-muted-foreground block">({payment.bookingCategory})</span>}
                     </TableCell>
                     <TableCell className="text-right">${payment.amount.toFixed(2)}</TableCell>
-                    <TableCell>{format(parseISO(payment.paymentDate), "MMM d, yyyy")}</TableCell>
+                    <TableCell>{isValid(parseISO(payment.paymentDate)) ? format(parseISO(payment.paymentDate), "MMM d, yyyy") : 'Invalid Date'}</TableCell>
                     <TableCell>{payment.method || 'N/A'}</TableCell>
                     <TableCell className="text-center">
                       <Badge variant={paymentStatusVariantMap[payment.status]}>{payment.status}</Badge>
@@ -281,6 +372,144 @@ export default function PaymentsPage() {
           </ScrollArea>
         </CardContent>
       </Card>
+
+      {/* Record New Payment Dialog */}
+      <Dialog open={isRecordPaymentDialogOpen} onOpenChange={setIsRecordPaymentDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-headline">Record New Payment</DialogTitle>
+            <DialogDescription>
+              Fill in the details below to add a new payment record.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
+            <div className="grid gap-2">
+              <Label htmlFor="payment-client">Client</Label>
+              <Select value={selectedClientIdForPayment} onValueChange={setSelectedClientIdForPayment}>
+                <SelectTrigger id="payment-client">
+                  <SelectValue placeholder="Select a client" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Clients</SelectLabel>
+                    {mockClientsData.map(client => (
+                      <SelectItem key={client.id} value={client.id}>
+                        {client.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {selectedClientIdForPayment && (
+              <div className="grid gap-2">
+                <Label htmlFor="payment-booking">Booking</Label>
+                <Select value={selectedBookingIdForPayment} onValueChange={setSelectedBookingIdForPayment} disabled={availableBookingsForClient.length === 0}>
+                  <SelectTrigger id="payment-booking">
+                    <SelectValue placeholder={availableBookingsForClient.length > 0 ? "Select a booking" : "No active bookings for client"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Client's Bookings</SelectLabel>
+                      {availableBookingsForClient.map(booking => {
+                        const firstDate = booking.bookingDates[0]?.dateTime ? format(parseISO(booking.bookingDates[0].dateTime), 'MMM d, yy') : 'No Date';
+                        return (
+                          <SelectItem key={booking.id} value={booking.id}>
+                            {booking.packageName} ({firstDate}) - ${booking.price.toFixed(2)}
+                          </SelectItem>
+                        )
+                      })}
+                       {availableBookingsForClient.length === 0 && <SelectItem value="no-booking" disabled>No active bookings</SelectItem>}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div className="grid gap-2">
+              <Label htmlFor="payment-amount">Amount ($)</Label>
+              <Input
+                id="payment-amount"
+                type="number"
+                placeholder="e.g., 100.00"
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(e.target.value)}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="payment-date">Payment Date</Label>
+              <Input
+                id="payment-date"
+                type="datetime-local"
+                value={paymentDate}
+                onChange={(e) => setPaymentDate(e.target.value)}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="payment-method">Payment Method</Label>
+              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                <SelectTrigger id="payment-method">
+                  <SelectValue placeholder="Select method" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Methods</SelectLabel>
+                    {PAYMENT_METHODS.map(method => (
+                      <SelectItem key={method} value={method}>
+                        {method}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="payment-status">Payment Status</Label>
+              <Select value={paymentStatus} onValueChange={(val) => setPaymentStatus(val as PaymentStatus)}>
+                <SelectTrigger id="payment-status">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Statuses</SelectLabel>
+                    {PAYMENT_STATUSES.map(status => (
+                      <SelectItem key={status} value={status}>
+                        {status}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="payment-description">Description (Optional)</Label>
+              <Textarea
+                id="payment-description"
+                placeholder="e.g., Deposit for wedding, Final payment"
+                value={paymentDescription}
+                onChange={(e) => setPaymentDescription(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="outline" onClick={resetRecordPaymentForm}>
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button type="button" onClick={handleRecordPaymentSubmit}>
+              <Save className="mr-2 h-4 w-4" /> Save Payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
