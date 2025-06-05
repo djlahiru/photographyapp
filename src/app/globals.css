@@ -144,7 +144,7 @@
   }
   .dark .theme-accent-default-blue {
     --accent: 205 70% 60%;
-    --accent-foreground: 210 30% 15%;
+    --accent-foreground: 210 30% 15%; /* This is already dark */
     --primary: hsl(var(--accent));
     --primary-foreground: hsl(var(--accent-foreground));
     --ring: 205 70% 55%;
@@ -176,7 +176,7 @@
   }
   .dark .theme-accent-violet-gradient {
     --accent: 260 70% 70%;
-    --accent-foreground: 260 30% 15%;
+    --accent-foreground: 260 30% 15%; /* This is already dark */
     --primary: hsl(var(--accent));
     --primary-foreground: hsl(var(--accent-foreground));
     --ring: 260 70% 65%;
@@ -208,7 +208,7 @@
   }
   .dark .theme-accent-green-gradient {
     --accent: 140 55% 50%;
-    --accent-foreground: 140 30% 10%;
+    --accent-foreground: 140 30% 10%; /* This is already dark */
     --primary: hsl(var(--accent));
     --primary-foreground: hsl(var(--accent-foreground));
     --ring: 140 55% 45%;
@@ -240,7 +240,7 @@
   }
   .dark .theme-accent-orange-gradient {
     --accent: 30 80% 65%;
-    --accent-foreground: 20 30% 10%;
+    --accent-foreground: 20 30% 10%; /* This is already dark */
     --primary: hsl(var(--accent));
     --primary-foreground: hsl(var(--accent-foreground));
     --ring: 30 80% 60%;
@@ -284,14 +284,17 @@
 @layer components {
   /* Active sidebar menu items */
   .sidebar-menu-button--active {
-    @apply shadow-md; /* Add shadow for consistency */
+    @apply shadow-md;
     background-image: linear-gradient(to right, hsl(var(--gradient-start-hsl)), hsl(var(--gradient-end-hsl)));
-    color: hsl(var(--sidebar-accent-foreground));
-    /* filter: brightness(100%); Removed default filter */
+    color: hsl(var(--foreground)); /* Use main foreground (dark in light mode) for text */
     transition: filter 0.2s ease-in-out;
   }
   .sidebar-menu-button--active:hover {
-    filter: brightness(95%); /* Slight dim on hover for the active gradient button */
+    filter: brightness(95%);
+  }
+  /* In dark mode, use the theme's specific sidebar accent foreground which is already dark */
+  .dark .sidebar-menu-button--active {
+    color: hsl(var(--sidebar-accent-foreground));
   }
 
   /* Hover for non-active sidebar items */
