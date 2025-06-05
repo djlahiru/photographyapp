@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'; // Removed CardFooter
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from 'react-toastify';
 import { LogIn } from 'react-feather';
@@ -116,11 +116,13 @@ export default function LoginPage() {
             </Button>
           </form>
         </CardContent>
-         <CardFooter className="text-center block mt-4">
+        {/* Removed CardFooter element
+        <CardFooter className="text-center block mt-4">
             <p className="text-xs text-muted-foreground">
                 Not {currentUser.name !== defaultLoginUser.name ? currentUser.name : "you"}? <a href="#" onClick={() => { localStorage.removeItem(USER_PROFILE_LS_KEY); localStorage.removeItem(AUTH_STATUS_LS_KEY); router.refresh(); }} className="underline hover:text-primary">Log in with a different account.</a>
             </p>
         </CardFooter>
+        */}
       </Card>
     </div>
   );
