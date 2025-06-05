@@ -8,19 +8,44 @@ export interface UserProfile {
   avatarUrl?: string;
 }
 
+export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
+export type TaskStatus = 'To Do' | 'In Progress' | 'Waiting' | 'Completed' | 'Cancelled'; // For form and data
+export type KanbanBoardStatus = 'To Do' | 'In Progress' | 'Done'; // For actual board columns
+
+export interface TaskFileAttachment {
+  id: string;
+  name: string;
+  url: string; // Could be a data URI for mock, or a path
+  type: string; // e.g., 'image/png', 'application/pdf'
+  size: number; // in bytes
+}
+
+// Updated Task interface
 export interface Task {
   id: string;
   title: string;
   description?: string;
-  assignee?: UserProfile;
+  assignee?: string; // Text input for now
   dueDate?: string; // ISO date string
-  status: 'To Do' | 'In Progress' | 'Done';
-  columnId: string; // To link with Kanban columns
+  startDate?: string; // ISO date string
+  priority: TaskPriority;
+  status: TaskStatus; // Use the richer status for data
+  relatedClientId?: string;
+  relatedBookingId?: string;
+  category?: string; // Comma-separated string for tags
+  attachments?: TaskFileAttachment[];
+  reminderDate?: string; // ISO date string
+  subtasks?: string; // Textarea for now
+  colorTag?: string; // e.g., 'red-500', 'blue-500', or a semantic name like 'project-alpha'
+  createdBy: string; // e.g., 'Admin User'
+  createdAt: string; // ISO date string
+  // columnId: string; // Retained if still planning direct Kanban column mapping, or derived from status
 }
+
 
 export interface KanbanColumn {
   id: string;
-  title: string;
+  title: KanbanBoardStatus; // Columns on board represent a subset of task statuses
   taskIds: string[];
 }
 
@@ -29,9 +54,9 @@ export interface PhotographyPackage {
   name: string;
   description: string;
   price: number;
-  services: string[]; // Array of service descriptions
-  imageUrl?: string; // Added for package image
-  dataAiHint?: string; // Added for AI hint for package image
+  services: string[];
+  imageUrl?: string;
+  dataAiHint?: string;
 }
 
 export interface Client {
@@ -58,24 +83,24 @@ export interface Payment {
   id: string;
   bookingId: string;
   amount: number;
-  paymentDate: string; // ISO date string
-  method?: string; // e.g., 'Credit Card', 'Bank Transfer'
+  paymentDate: string;
+  method?: string;
   status: PaymentStatus;
-  description?: string; // e.g., "Deposit for Wedding Package"
+  description?: string;
 }
 
 export interface BookingActivityLogEntry {
   id: string;
-  timestamp: string; // ISO date string
-  action: string; // e.g., "Booking confirmed", "Payment of $50 received", "Status updated to Completed"
-  actor?: string; // e.g., "System", "Admin", "Client Name" (optional)
+  timestamp: string;
+  action: string;
+  actor?: string;
   iconName?: keyof typeof import('react-feather');
 }
 
 export interface BookingDateTime {
-  id: string; // Unique ID for this date/time entry, e.g., for React keys
-  dateTime: string; // ISO date string or format compatible with datetime-local
-  note?: string; // Optional note for this specific session
+  id: string;
+  dateTime: string;
+  note?: string;
 }
 
 export interface Booking {
@@ -83,11 +108,11 @@ export interface Booking {
   clientName: string;
   packageId: string;
   packageName: string;
-  bookingDates: BookingDateTime[]; // Changed from single bookingDate
+  bookingDates: BookingDateTime[];
   category?: string;
   status: BookingStatus;
   price: number;
-  notes?: string; // General notes for the booking
+  notes?: string;
   payments?: Payment[];
   activityLog?: BookingActivityLogEntry[];
 }
