@@ -217,7 +217,9 @@ export default function BookingsPage() {
                                 </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem><Edit className="mr-2 h-4 w-4" />Edit Booking</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => toast.info(`Edit booking ${booking.id} - coming soon!`)}>
+                                        <Edit className="mr-2 h-4 w-4" />Edit Booking
+                                    </DropdownMenuItem>
                                     
                                     <DropdownMenuSub>
                                       <DropdownMenuSubTrigger>
@@ -240,14 +242,22 @@ export default function BookingsPage() {
                                       </DropdownMenuPortal>
                                     </DropdownMenuSub>
 
-                                    <DropdownMenuItem>Track Payment</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => toast.info(`Track payment for booking ${booking.id} - coming soon!`)}>
+                                      <DollarSign className="mr-2 h-4 w-4" />Track Payment
+                                    </DropdownMenuItem>
                                     {booking.activityLog && booking.activityLog.length > 0 && (
                                       <DropdownMenuItem onClick={() => setSelectedBookingForLog(booking)}>
                                           <Clock className="mr-2 h-4 w-4" /> View Activity Log
                                       </DropdownMenuItem>
                                     )}
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" />Cancel Booking</DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                                      onClick={() => handleStatusUpdate(booking.id, "Cancelled" as BookingStatus)}
+                                      disabled={booking.status === "Cancelled"}
+                                    >
+                                      <Trash2 className="mr-2 h-4 w-4" />Cancel Booking
+                                    </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
@@ -321,3 +331,4 @@ export default function BookingsPage() {
     </div>
   );
 }
+
