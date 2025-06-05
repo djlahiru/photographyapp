@@ -23,14 +23,13 @@
     --popover: 220 40% 99%;
     --popover-foreground: 220 25% 20%;
 
-    /* Fallback primary, accent, ring, and gradient colors (effectively the 'default-blue' theme) */
-    /* THESE WILL BE OVERRIDDEN BY .theme-accent-* classes FOR ACCENT */
-    --accent: 205 75% 50%; /* Default primary if no theme applied */
+    /* Fallback primary, accent, ring, and gradient colors (effectively the 'default-blue' theme if no specific theme class is applied) */
+    --accent: 205 75% 50%;
     --accent-foreground: 210 60% 98%;
     --primary: hsl(var(--accent));
     --primary-foreground: hsl(var(--accent-foreground));
     --ring: 205 75% 45%;
-    --chart-2: 205 75% 50%; /* Default chart-2 */
+    --chart-2: 205 75% 50%; /* Default chart-2 based on fallback accent */
     --gradient-start-hsl: 205 75% 50%; /* Fallback gradient start */
     --gradient-end-hsl: 195 85% 45%; /* Fallback gradient end */
 
@@ -48,8 +47,8 @@
 
     --radius: 0.5rem;
 
-    /* Fallback sidebar colors, will be themed */
-    --sidebar-background: hsl(var(--sidebar-gradient-bg-start-hsl));
+    /* Fallback sidebar colors, will be themed by .theme-accent-* and specific sidebar variables */
+    --sidebar-background: hsl(var(--sidebar-gradient-bg-start-hsl)); /* This is for the gradient bg itself */
     --sidebar-foreground: 220 20% 25%;
     --sidebar-border: 210 25% 80%;
     --sidebar-accent: hsl(var(--accent)); /* Fallback, themed by .theme-accent-* */
@@ -60,7 +59,7 @@
 
     /* Chart Colors (Chart 2 will be set by accent theme) */
     --chart-1: 195 85% 45%;
-    /* --chart-2 is set by accent theme */
+    /* --chart-2 is dynamically set by accent theme */
     --chart-3: 150 60% 50%;
     --chart-4: 30 90% 60%;
     --chart-5: 240 60% 70%;
@@ -95,7 +94,6 @@
     --gradient-start-hsl: 205 70% 60%; /* Fallback gradient start for dark */
     --gradient-end-hsl: 195 80% 55%; /* Fallback gradient end for dark */
 
-
     --secondary: 220 20% 25%;
     --secondary-foreground: 210 25% 75%;
 
@@ -119,13 +117,14 @@
 
     /* Chart Colors */
     --chart-1: 195 75% 55%;
-    /* --chart-2 is set by accent theme */
+    /* --chart-2 is dynamically set by accent theme */
     --chart-3: 150 50% 45%;
     --chart-4: 30 80% 55%;
     --chart-5: 240 50% 65%;
   }
 
   /* --- Accent Gradient Themes --- */
+
   /* Default Blue Gradient (Oceanic Blue) */
   .theme-accent-default-blue {
     --accent: 205 75% 50%;
@@ -144,7 +143,7 @@
   }
   .dark .theme-accent-default-blue {
     --accent: 205 70% 60%;
-    --accent-foreground: 210 30% 15%;
+    --accent-foreground: 210 30% 15%; /* Adjusted for dark mode button text */
     --primary: hsl(var(--accent));
     --primary-foreground: hsl(var(--accent-foreground));
     --ring: 205 70% 55%;
@@ -152,7 +151,7 @@
     --gradient-start-hsl: 205 70% 60%;
     --gradient-end-hsl: 195 80% 55%;
     --sidebar-accent: hsl(var(--accent));
-    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-accent-foreground: hsl(var(--accent-foreground)); /* Should be dark for contrast */
     --sidebar-ring: hsl(var(--ring));
     --sidebar-primary: hsl(var(--primary));
     --sidebar-primary-foreground: hsl(var(--primary-foreground));
@@ -176,7 +175,7 @@
   }
   .dark .theme-accent-violet-gradient {
     --accent: 260 70% 70%;
-    --accent-foreground: 260 30% 15%;
+    --accent-foreground: 260 30% 15%; /* Adjusted for dark mode button text */
     --primary: hsl(var(--accent));
     --primary-foreground: hsl(var(--accent-foreground));
     --ring: 260 70% 65%;
@@ -184,7 +183,7 @@
     --gradient-start-hsl: 260 70% 70%;
     --gradient-end-hsl: 270 75% 65%;
     --sidebar-accent: hsl(var(--accent));
-    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-accent-foreground: hsl(var(--accent-foreground)); /* Should be dark for contrast */
     --sidebar-ring: hsl(var(--ring));
     --sidebar-primary: hsl(var(--primary));
     --sidebar-primary-foreground: hsl(var(--primary-foreground));
@@ -208,7 +207,7 @@
   }
   .dark .theme-accent-green-gradient {
     --accent: 140 55% 50%;
-    --accent-foreground: 140 30% 10%;
+    --accent-foreground: 140 30% 10%; /* Adjusted for dark mode button text */
     --primary: hsl(var(--accent));
     --primary-foreground: hsl(var(--accent-foreground));
     --ring: 140 55% 45%;
@@ -216,7 +215,7 @@
     --gradient-start-hsl: 140 55% 50%;
     --gradient-end-hsl: 150 60% 45%;
     --sidebar-accent: hsl(var(--accent));
-    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-accent-foreground: hsl(var(--accent-foreground)); /* Should be dark for contrast */
     --sidebar-ring: hsl(var(--ring));
     --sidebar-primary: hsl(var(--primary));
     --sidebar-primary-foreground: hsl(var(--primary-foreground));
@@ -225,7 +224,7 @@
   /* Sunset Orange Gradient */
   .theme-accent-orange-gradient {
     --accent: 30 90% 55%;
-    --accent-foreground: 20 60% 98%;
+    --accent-foreground: 20 60% 98%; /* This is light, suitable for light mode buttons */
     --primary: hsl(var(--accent));
     --primary-foreground: hsl(var(--accent-foreground));
     --ring: 30 90% 50%;
@@ -240,7 +239,7 @@
   }
   .dark .theme-accent-orange-gradient {
     --accent: 30 80% 65%;
-    --accent-foreground: 20 30% 10%;
+    --accent-foreground: 20 30% 10%; /* Dark text for dark mode orange buttons */
     --primary: hsl(var(--accent));
     --primary-foreground: hsl(var(--accent-foreground));
     --ring: 30 80% 60%;
@@ -248,7 +247,7 @@
     --gradient-start-hsl: 30 80% 65%;
     --gradient-end-hsl: 40 85% 60%;
     --sidebar-accent: hsl(var(--accent));
-    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-accent-foreground: hsl(var(--accent-foreground)); /* Should be dark for contrast */
     --sidebar-ring: hsl(var(--ring));
     --sidebar-primary: hsl(var(--primary));
     --sidebar-primary-foreground: hsl(var(--primary-foreground));
@@ -314,3 +313,5 @@
     background-color: hsl(var(--sidebar-gradient-bg-start-hsl));
   }
 }
+
+    
