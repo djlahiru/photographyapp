@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image'; // Import next/image
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
-import { getGreetingParts } from '@/lib/date-utils';
+import { getGreetingParts, getSelectedDateFormat } from '@/lib/date-utils';
 import { Button } from '@/components/ui/button';
 import { Bell, Globe, Sunrise, Sunset, Moon, Sun as SunIcon } from 'react-feather';
 import { useTheme } from 'next-themes';
@@ -17,7 +17,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { UserProfile, AvatarShape } from '@/types';
-import { USER_PROFILE_LS_KEY, AVATAR_SHAPE_LS_KEY, SETTINGS_NAV_ITEM, APP_NAME_KEY } from '@/lib/constants';
+import { USER_PROFILE_LS_KEY, AVATAR_SHAPE_LS_KEY, SETTINGS_NAV_ITEM, APP_NAME_KEY, DEFAULT_DATE_FORMAT, type DateFormatValue } from '@/lib/constants';
 
 const GREETING_ICON_MAP: Record<string, React.ElementType> = {
   Sunrise: Sunrise,
@@ -51,6 +51,7 @@ export function AppHeader() {
   const [mounted, setMounted] = useState(false);
   const isMobileView = useIsMobile();
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
+  const [displayDateFormat, setDisplayDateFormat] = useState<DateFormatValue>(DEFAULT_DATE_FORMAT);
 
   const [headerUser, setHeaderUser] = useState<UserProfile>(defaultUser);
   const [headerAvatarShape, setHeaderAvatarShape] = useState<AvatarShape>('circle');
@@ -78,6 +79,8 @@ export function AppHeader() {
     };
 
     loadProfileAndShape();
+    setDisplayDateFormat(getSelectedDateFormat());
+
 
     const handleProfileUpdate = () => loadProfileAndShape();
     const handleAvatarShapeChange = (event: Event) => {
@@ -91,9 +94,14 @@ export function AppHeader() {
             setHeaderAvatarShape('circle');
         }
     };
+    const handleDateFormatChange = () => {
+      setDisplayDateFormat(getSelectedDateFormat());
+    };
 
     window.addEventListener('profileUpdated', handleProfileUpdate);
     window.addEventListener('avatarShapeChange', handleAvatarShapeChange);
+    window.addEventListener('dateFormatChanged', handleDateFormatChange);
+
 
     const timerId = setInterval(() => {
       setCurrentDateTime(new Date());
@@ -102,6 +110,7 @@ export function AppHeader() {
     return () => {
       window.removeEventListener('profileUpdated', handleProfileUpdate);
       window.removeEventListener('avatarShapeChange', handleAvatarShapeChange);
+      window.removeEventListener('dateFormatChanged', handleDateFormatChange);
       clearInterval(timerId);
     };
   }, []);
@@ -122,6 +131,12 @@ export function AppHeader() {
   };
 
   const GreetingIconComponent = greetingIconName ? GREETING_ICON_MAP[greetingIconName] : null;
+
+  const formattedDatePart = format(currentDateTime, displayDateFormat);
+  const dayOfWeekPart = format(currentDateTime, "E");
+  const timePart = format(currentDateTime, "HH:mm:ss");
+  const fullDateTimeString = `${dayOfWeekPart}, ${formattedDatePart}, ${timePart}`;
+
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 backdrop-blur-sm px-4 md:px-6 relative">
@@ -191,7 +206,7 @@ export function AppHeader() {
       {/* Right Group */}
       <div className="flex items-center gap-0.5 sm:gap-1">
         <p className="text-sm text-muted-foreground hidden lg:block whitespace-nowrap mr-2">
-          {format(currentDateTime, "E, MMM d, yyyy, HH:mm:ss")}
+          {fullDateTimeString}
         </p>
 
         <DropdownMenu>
@@ -236,5 +251,4 @@ export function AppHeader() {
   );
 }
     
-
     

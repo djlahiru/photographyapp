@@ -40,6 +40,15 @@ export const INVOICE_TEMPLATE_LS_KEY = 'invoiceTemplateHtml';
 export const INVOICE_HISTORY_LS_KEY = 'invoiceHistory';
 export const SELECTED_CURRENCY_LS_KEY = 'selectedCurrency';
 export const AUTH_STATUS_LS_KEY = 'ruboAuthStatus';
+export const DATE_FORMAT_LS_KEY = 'dateFormatPreference';
+
+export const DATE_FORMATS = [
+  { value: 'MM/dd/yyyy', label: 'MM/DD/YYYY' },
+  { value: 'dd/MM/yyyy', label: 'DD/MM/YYYY' },
+  { value: 'MMMM d, yyyy', label: 'Month D, YYYY (Default)' },
+] as const;
+export type DateFormatValue = typeof DATE_FORMATS[number]['value'];
+export const DEFAULT_DATE_FORMAT: DateFormatValue = 'MMMM d, yyyy';
 
 export interface CurrencyDefinition {
   code: CurrencyCode;
@@ -66,5 +75,7 @@ export const ALL_LOCAL_STORAGE_KEYS: string[] = [
   INVOICE_HISTORY_LS_KEY,
   SELECTED_CURRENCY_LS_KEY,
   AUTH_STATUS_LS_KEY,
+  DATE_FORMAT_LS_KEY, 
   // Add any new localStorage keys here for them to be included in the reset
 ];
+

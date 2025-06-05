@@ -1,4 +1,6 @@
 
+import { DATE_FORMAT_LS_KEY, DEFAULT_DATE_FORMAT, type DateFormatValue } from './constants';
+
 // Returns a translation key, optionally the name, and an icon name
 export function getGreetingParts(name?: string): { greetingKey: string; name?: string; iconName: 'Sunrise' | 'Sun' | 'Sunset' | 'Moon' } {
   const now = new Date();
@@ -21,4 +23,12 @@ export function getGreetingParts(name?: string): { greetingKey: string; name?: s
   }
 
   return { greetingKey, name, iconName };
+}
+
+export function getSelectedDateFormat(): DateFormatValue {
+  if (typeof window === 'undefined') {
+    return DEFAULT_DATE_FORMAT;
+  }
+  const storedFormat = localStorage.getItem(DATE_FORMAT_LS_KEY) as DateFormatValue | null;
+  return storedFormat || DEFAULT_DATE_FORMAT;
 }

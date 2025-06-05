@@ -8,7 +8,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIconSettings, Eye, Droplet, Edit3, Square, Circle as CircleIcon, Image as ImageIconFeather, Save, Trash2, AlertTriangle, Tag, Plus, DollarSign as DollarSignIcon, Sun as SunIcon, Moon as MoonIcon, RefreshCw } from "react-feather"; // Renamed Moon to MoonIcon
+import { User, Settings as SettingsIcon, Link as LinkIconFeather, Slash, Package, Calendar as CalendarIconSettings, Eye, Droplet, Edit3, Square, Circle as CircleIcon, Image as ImageIconFeather, Save, Trash2, AlertTriangle, Tag, Plus, DollarSign as DollarSignIcon, Sun as SunIcon, Moon as MoonIcon, RefreshCw } from "react-feather";
 import { toast } from 'react-toastify';
 import { ImageUploadDropzone } from '@/components/ui/image-upload-dropzone';
 import { format } from 'date-fns';
@@ -25,6 +25,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { mockBookingCategoriesData, mockBookingsData, resetAllMockData } from '@/lib/mock-data'; 
+import { getSelectedDateFormat } from '@/lib/date-utils';
 import {
   USER_PROFILE_LS_KEY,
   AVATAR_SHAPE_LS_KEY,
@@ -39,7 +40,11 @@ import {
   SELECTED_CURRENCY_LS_KEY,
   AVAILABLE_CURRENCIES,
   type CurrencyDefinition,
-  ALL_LOCAL_STORAGE_KEYS, 
+  ALL_LOCAL_STORAGE_KEYS,
+  DATE_FORMAT_LS_KEY,
+  DATE_FORMATS,
+  DEFAULT_DATE_FORMAT,
+  type DateFormatValue,
 } from '@/lib/constants';
 
 
@@ -101,10 +106,13 @@ export default function SettingsPage() {
 
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>('USD');
   const [mounted, setMounted] = useState(false); 
+  const [currentSelectedDateFormat, setCurrentSelectedDateFormat] = useState<DateFormatValue>(DEFAULT_DATE_FORMAT);
+
 
   useEffect(() => {
     setMounted(true);
     const timer = setInterval(() => setCurrentDateTime(new Date()), 1000 * 60);
+    setCurrentSelectedDateFormat(getSelectedDateFormat());
     
     const storedProfileString = localStorage.getItem(USER_PROFILE_LS_KEY);
     let profileFromStorage: UserProfile | null = null;
@@ -190,6 +198,13 @@ export default function SettingsPage() {
     toast.success(`Currency changed to ${AVAILABLE_CURRENCIES.find(c=>c.code === newCurrency)?.label || newCurrency}.`);
     window.dispatchEvent(new CustomEvent('profileUpdated')); 
     window.dispatchEvent(new CustomEvent('currencyChanged')); 
+  };
+
+  const handleDateFormatSelect = (formatValue: DateFormatValue) => {
+    setCurrentSelectedDateFormat(formatValue);
+    localStorage.setItem(DATE_FORMAT_LS_KEY, formatValue);
+    window.dispatchEvent(new CustomEvent('dateFormatChanged'));
+    toast.info(`Date format set to ${DATE_FORMATS.find(f => f.value === formatValue)?.label}. App-wide change will apply on next interaction or refresh in some areas.`);
   };
 
   const toggleCalendarConnection = () => {
@@ -649,7 +664,7 @@ export default function SettingsPage() {
             <div className="space-y-1 mt-1 text-sm">
               <p>
                 <span className="font-medium text-muted-foreground w-20 inline-block">Date :</span> 
-                <span className="text-foreground">{format(currentDateTime, "MMMM d, yyyy")}</span> 
+                <span className="text-foreground">{format(currentDateTime, currentSelectedDateFormat)}</span> 
               </p>
               <p>
                 <span className="font-medium text-muted-foreground w-20 inline-block">Time :</span> 
@@ -668,15 +683,14 @@ export default function SettingsPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start">
-                    <DropdownMenuItem onClick={() => toast.info(`Selected MM/DD/YYYY format. (e.g., ${format(currentDateTime, "MM/dd/yyyy")}) App-wide change coming soon!`)}>
-                       MM/DD/YYYY (e.g., {format(currentDateTime, "MM/dd/yyyy")})
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => toast.info(`Selected DD/MM/YYYY format. (e.g., ${format(currentDateTime, "dd/MM/yyyy")}) App-wide change coming soon!`)}>
-                      DD/MM/YYYY (e.g., {format(currentDateTime, "dd/MM/yyyy")})
-                    </DropdownMenuItem>
-                     <DropdownMenuItem onClick={() => toast.info(`Selected Default (Month D, YYYY) format. (e.g., ${format(currentDateTime, "MMMM d, yyyy")}) App-wide change coming soon!`)}>
-                      Default (e.g., {format(currentDateTime, "MMMM d, yyyy")})
-                    </DropdownMenuItem>
+                    {DATE_FORMATS.map(formatOption => (
+                      <DropdownMenuItem 
+                        key={formatOption.value}
+                        onClick={() => handleDateFormatSelect(formatOption.value)}
+                      >
+                       {formatOption.label} (e.g., {format(currentDateTime, formatOption.value)})
+                      </DropdownMenuItem>
+                    ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <DropdownMenu>
@@ -844,4 +858,3 @@ export default function SettingsPage() {
   );
 }
     
-
