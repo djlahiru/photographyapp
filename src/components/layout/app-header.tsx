@@ -63,7 +63,7 @@ export function AppHeader() {
       if (storedProfile) {
         try {
           const parsedProfile: UserProfile = JSON.parse(storedProfile);
-          profileToUse = { ...defaultUser, ...parsedProfile }; 
+          profileToUse = { ...defaultUser, ...parsedProfile };
         } catch (e) {
           console.error("Failed to parse user profile for header", e);
           profileToUse = defaultUser;
@@ -83,15 +83,15 @@ export function AppHeader() {
     const handleAvatarShapeChange = (event: Event) => {
         const customEvent = event as CustomEvent<AvatarShape>;
         const storedShape = localStorage.getItem(AVATAR_SHAPE_LS_KEY) as AvatarShape | null;
-        if (customEvent.detail) { 
+        if (customEvent.detail) {
             setHeaderAvatarShape(customEvent.detail);
-        } else if (storedShape) { 
+        } else if (storedShape) {
             setHeaderAvatarShape(storedShape);
         } else {
-            setHeaderAvatarShape('circle'); 
+            setHeaderAvatarShape('circle');
         }
     };
-    
+
     window.addEventListener('profileUpdated', handleProfileUpdate);
     window.addEventListener('avatarShapeChange', handleAvatarShapeChange);
 
@@ -134,10 +134,10 @@ export function AppHeader() {
           <TooltipProvider delayDuration={300}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Link href={SETTINGS_NAV_ITEM.href} passHref legacyBehavior>
-                  <a className="flex items-center p-1 rounded-md hover:bg-accent focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={`Profile: ${headerUser.name}`}>
+                <Link href={SETTINGS_NAV_ITEM.href}
+                  className="flex items-center p-1 rounded-md hover:bg-accent focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={`Profile: ${headerUser.name}`}>
                     <Avatar className={cn(
-                      "h-8 w-8", 
+                      "h-8 w-8",
                       headerAvatarShape === 'circle' ? 'rounded-full' : 'rounded-md'
                     )}>
                       <AvatarImage src={headerUser.avatarUrl} alt={headerUser.name || 'User avatar'} data-ai-hint="user avatar" />
@@ -148,7 +148,6 @@ export function AppHeader() {
                         {getInitials(headerUser.name)}
                       </AvatarFallback>
                     </Avatar>
-                  </a>
                 </Link>
               </TooltipTrigger>
               <TooltipContent side="bottom" align="start">
@@ -166,28 +165,26 @@ export function AppHeader() {
             </h1>
         </div>
       </div>
-      
+
       {/* Logo - Centered */}
       <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        <Link href="/dashboard" passHref legacyBehavior>
-          <a aria-label={`${t(APP_NAME_KEY)} Dashboard`}>
-            <Image 
-              src="/images/rubo-logo.png" 
-              alt={`${t(APP_NAME_KEY)} Logo`} 
-              width={160} 
-              height={27} 
-              priority 
-              className="hidden sm:block" 
+        <Link href="/dashboard" aria-label={`${t(APP_NAME_KEY)} Dashboard`}>
+            <Image
+              src="/images/rubo-logo.png"
+              alt={`${t(APP_NAME_KEY)} Logo`}
+              width={160}
+              height={27}
+              priority
+              className="hidden sm:block"
             />
-             <Image 
-              src="/images/rubo-logo.png" 
-              alt={`${t(APP_NAME_KEY)} Logo`} 
-              width={80} 
-              height={14} 
-              priority 
-              className="block sm:hidden" 
+             <Image
+              src="/images/rubo-logo.png"
+              alt={`${t(APP_NAME_KEY)} Logo`}
+              width={80}
+              height={14}
+              priority
+              className="block sm:hidden"
             />
-          </a>
         </Link>
       </div>
 
