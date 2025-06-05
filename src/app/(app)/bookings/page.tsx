@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup, SelectLabel } from "@/components/ui/select";
-import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIconFeather, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle, Search, TrendingUp, TrendingDown, CreditCard, Save, UserPlus, Plus, Trash, FileText as FileTextIcon, Info, Grid, List as ListIcon } from "react-feather";
+import { PlusCircle, BookOpen, Edit, Trash2, Filter, MoreVertical, Clock, Calendar as CalendarIconFeather, User, Tag, DollarSign, CheckCircle, Mail, FilePlus, XCircle, Search, TrendingUp, TrendingDown, CreditCard, Save, UserPlus, Plus, Trash, FileText as FileTextIcon, Info, Grid, List as ListIcon, Eye } from "react-feather";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
 import type { Booking, BookingStatus, Payment, PaymentStatus, BookingActivityLogEntry, Client, BookingDateTime } from "@/types";
@@ -528,8 +528,11 @@ export default function BookingsPage() {
                             </div>
                         </div>
                     </CardContent>
-                    <CardFooter className="p-4 border-t">
-                         <Badge variant={statusVariantMap[booking.status]} className="w-full justify-center py-1.5 text-xs">
+                    <CardFooter className="p-4 border-t flex items-center justify-between">
+                        <Button variant="ghost" size="icon" title="View Details" onClick={() => handleOpenViewDetailsDialog(booking)} className="text-muted-foreground hover:text-primary">
+                            <Eye className="h-5 w-5" />
+                        </Button>
+                        <Badge variant={statusVariantMap[booking.status]} className="flex-grow justify-center py-1.5 text-xs ml-2">
                             <StatusIcon className="mr-1.5 h-3.5 w-3.5" />
                             {booking.status}
                         </Badge>
@@ -540,7 +543,7 @@ export default function BookingsPage() {
       ) : (
         <div className="flex flex-col items-center justify-center py-20 text-center rounded-lg border border-dashed">
           <BookOpen className="h-20 w-20 text-muted-foreground mb-6" />
-           {bookings.length === 0 && searchTerm.trim() === '' && selectedStatuses.length === 0 ? (
+           {mockBookingsData.length === 0 && searchTerm.trim() === '' && selectedStatuses.length === 0 ? (
             <>
               <h3 className="text-2xl font-semibold mb-3 font-headline">No Bookings Yet</h3>
               <p className="text-muted-foreground mb-6 max-w-sm">You haven&apos;t scheduled any bookings. Click the button to create your first one.</p>
@@ -953,4 +956,5 @@ export default function BookingsPage() {
 
 
     
+
 
