@@ -21,6 +21,7 @@ import { Switch } from '@/components/ui/switch';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogDesc, DialogFooter, DialogClose } from "@/components/ui/dialog"; 
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { mockBookingCategoriesData, mockBookingsData, resetAllMockData } from '@/lib/mock-data'; 
@@ -660,10 +661,25 @@ export default function SettingsPage() {
               </p>
             </div>
             <div className="flex gap-2 mt-3">
-                <Button variant="outline" size="sm" onClick={() => toast.info("Date format changing feature coming soon! (e.g., MM/DD/YYYY, DD/MM/YYYY)")}>
-                    <Edit3 className="mr-1.5 h-3.5 w-3.5" /> Change Date Format
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => toast.info("Clock format changing feature coming soon! (e.g., 12-hour with AM/PM or 24-hour time)")}>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Edit3 className="mr-1.5 h-3.5 w-3.5" /> Change Date Format
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuItem onClick={() => toast.info(`Selected MM/DD/YYYY format. (App-wide change for this format is coming soon!)`)}>
+                       MM/DD/YYYY (e.g., {format(currentDateTime, "MM/dd/yyyy")})
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => toast.info(`Selected DD/MM/YYYY format. (App-wide change for this format is coming soon!)`)}>
+                      DD/MM/YYYY (e.g., {format(currentDateTime, "dd/MM/yyyy")})
+                    </DropdownMenuItem>
+                     <DropdownMenuItem onClick={() => toast.info(`Selected Default (Month D, YYYY) format. (App-wide change for this format is coming soon!)`)}>
+                      Default (e.g., {format(currentDateTime, "MMMM d, yyyy")})
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button variant="outline" size="sm" onClick={() => toast.info("Clock format changing feature coming soon! (e.g., 12-hour (with AM/PM) or 24-hour time)")}>
                     <Edit3 className="mr-1.5 h-3.5 w-3.5" /> Change Clock Format
                 </Button>
             </div>
